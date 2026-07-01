@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>管理后台 - Poker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0503;color:#ffe8b7;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;padding:20px;max-width:1200px;margin:0 auto}
+h1{font-size:24px;color:#ffd56a;margin-bottom:20px;text-shadow:0 2px 0 #291004}
+h2{font-size:16px;color:#d3aa70;margin:16px 0 8px}
+.card{background:linear-gradient(180deg,rgba(75,42,20,.92),rgba(30,13,6,.94));border:1px solid #805020;border-radius:16px;padding:14px;margin:10px 0}
+.card table{width:100%;border-collapse:collapse;font-size:13px}
+.card th{text-align:left;color:#d3aa70;padding:6px 4px;border-bottom:1px solid #5a3515;font-size:11px;white-space:nowrap}
+.card td{padding:5px 4px;border-bottom:1px solid rgba(100,60,20,.2);font-size:12px;white-space:nowrap}
+.card tr{cursor:pointer;transition:background .15s}.card tr:hover{background:rgba(200,140,50,.08)}.card tr.active{background:rgba(200,140,50,.15)}
+.badge{display:inline-block;border:1px solid #7c4b1e;background:rgba(0,0,0,.24);border-radius:999px;padding:1px 7px;color:#ffdc82;font-size:10px;font-weight:900}
+.badge.admin{background:#c78b35;color:#221006;border-color:#ffcf64}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.stat{text-align:center;padding:12px;background:rgba(0,0,0,.24);border-radius:12px;border:1px solid #5a3515}.stat b{font-size:20px;display:block;color:#ffd56a}.stat span{font-size:11px;color:#d3aa70}
+.loginBox{text-align:center;padding:40px 20px}
+.loginBox input{width:100%;max-width:300px;padding:10px 12px;border-radius:12px;border:2px solid #7b4a1d;background:#1f0e06;color:#ffe8b7;font-size:15px;outline:none;margin:6px 0}
+.loginBox input:focus{border-color:#c78b35}
+.loginBtn{padding:12px 24px;border-radius:14px;border:2px solid #5e3515;background:linear-gradient(180deg,#ffdf82,#c7842e);color:#221006;font-weight:1000;font-size:15px;cursor:pointer;display:inline-block;margin-top:8px}
+.error{color:#e85a3a;font-size:13px;margin:6px 0;min-height:20px}
+.loading{text-align:center;padding:40px;color:#d3aa70}
+.backBtn{cursor:pointer;color:#d3aa70;font-size:13px;margin-bottom:12px;display:inline-block}.backBtn:active{color:#ffd56a}
+
+/* Search */
+.searchBar{width:100%;padding:10px 14px;border-radius:12px;border:2px solid #5a3515;background:#1a0b05;color:#ffe8b7;font-size:14px;outline:none;margin:6px 0 10px}.searchBar:focus{border-color:#c78b35}
+
+/* Detail panel */
+.detailPanel{background:rgba(40,20,8,.94);border:1px solid #7c4b1e;border-radius:16px;padding:16px;margin:10px 0;display:none;animation:fadeIn .2s}
+.detailPanel.open{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.detailGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.detailField{padding:6px 8px;background:rgba(0,0,0,.2);border-radius:8px;border:1px solid rgba(120,70,20,.2)}
+.detailField label{font-size:10px;color:#a9885a;display:block;margin-bottom:2px}
+.detailField .val{font-size:14px;color:#ffe8b7;font-weight:700}
+.detailField input,.detailField select{width:100%;padding:4px 6px;border-radius:6px;border:1px solid #5a3515;background:#1a0b05;color:#ffe8b7;font-size:13px;outline:none}
+.detailField input:focus{border-color:#c78b35}
+.detailSection{font-size:14px;color:#ffd56a;font-weight:900;margin:12px 0 6px;padding:0 4px}
+.detailActions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{padding:8px 16px;border-radius:10px;border:2px solid #5e3515;background:linear-gradient(180deg,#ffdf82,#c7842e);color:#221006;font-weight:1000;font-size:13px;cursor:pointer;text-align:center}
+.btn.danger{background:linear-gradient(180deg,#e85a3a,#b03020);border-color:#802010;color:#fff}
+.btn.secondary{background:rgba(255,255,255,.06);border-color:#5a3515;color:#d3aa70}
+.btn.sm{padding:4px 10px;font-size:11px}
+.btn:active{opacity:.8}
+.flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flex1{flex:1}
+.muted{color:#a9885a}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a0b05;border:1px solid #7c4b1e;padding:10px 20px;border-radius:12px;color:#ffe8b7;font-size:13px;z-index:999;animation:fadeIn .2s}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="loginBox" id="loginBox">
+    <h1>⚙️ 管理后台</h1>
+    <div class="error" id="err"></div>
+    <input id="userInput" placeholder="管理员用户名" autocomplete="username">
+    <input id="passInput" type="password" placeholder="密码" autocomplete="current-password">
+    <div class="loginBtn" id="loginBtn">登录</div>
+  </div>
+</div>
+
+<script>
+const TOKEN_KEY = 'poker_admin_token';
+let token = localStorage.getItem(TOKEN_KEY);
+let usersData = [];
+let expandedUserId = null;
+let searchQuery = '';
+
+function authHeaders() {
+  return token ? { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } : {};
+}
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return (s || '').replace(/[<>&]/g, function(c) { return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; }); }
+function toast(msg) { var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2000); }
+
+// Auto-login
+if (token) {
+  fetch('/api/auth/me', { headers: authHeaders() })
+    .then(r => r.json())
+    .then(d => { if (!d.error) { renderAdmin(); } else { token = null; localStorage.removeItem(TOKEN_KEY); } })
+    .catch(function(){ token = null; localStorage.removeItem(TOKEN_KEY); });
+}
+
+$('loginBtn').onclick = () => {
+  const username = $('userInput').value.trim();
+  const password = $('passInput').value;
+  if (!username || !password) { $('err').textContent = '请填写完整'; return; }
+  fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.error) { $('err').textContent = d.error; return; }
+    if (!d.user.is_admin) { $('err').textContent = '无管理员权限'; return; }
+    token = d.token;
+    localStorage.setItem(TOKEN_KEY, d.token);
+    renderAdmin();
+  })
+  .catch(function(){ $('err').textContent = '网络错误'; });
+};
+
+$('userInput').onkeydown = (e) => { if (e.key === 'Enter') $('passInput').focus(); };
+$('passInput').onkeydown = (e) => { if (e.key === 'Enter') $('loginBtn').click(); };
+
+function logout() {
+  token = null;
+  localStorage.removeItem(TOKEN_KEY);
+  location.reload();
+}
+
+function rankLabel(idx) {
+  var labels = ['新手', '青铜', '白银', '黄金', '铂金', '钻石'];
+  return labels[Math.min(idx || 0, labels.length - 1)];
+}
+
+function formatTime(t) {
+  if (!t) return '-';
+  return t;
+}
+
+function renderAdmin() {
+  $('app').innerHTML = '<div class="loading">加载中...</div>';
+  Promise.all([
+    fetch('/api/auth/admin/users', { headers: authHeaders() }).then(r => r.json()),
+    fetch('/api/auth/admin/stats', { headers: authHeaders() }).then(r => r.json())
+  ])
+  .then(function(res) {
+    var usersRes = res[0], statsRes = res[1];
+    if (usersRes.error) {
+      $('app').innerHTML = '<div class="loginBox"><h1>⚙️ 管理后台</h1><div class="error">' + esc(usersRes.error) + '</div><div class="backBtn" onclick="location.reload()">← 返回登录</div></div>';
+      return;
+    }
+    usersData = usersRes.users || [];
+    var stats = statsRes;
+    renderDashboard(stats);
+  })
+  .catch(function(e) {
+    $('app').innerHTML = '<div class="loginBox"><h1>⚙️ 管理后台</h1><div class="error">加载失败: ' + esc(e.message || e) + '</div><div class="backBtn" onclick="location.reload()">← 重试</div></div>';
+  });
+}
+
+function renderDashboard(stats) {
+  var html = '<div class="flex" style="justify-content:space-between"><div class="backBtn" onclick="logout()">← 退出管理</div></div>';
+  html += '<h1>⚙️ 管理后台</h1>';
+
+  // Stats cards
+  html += '<div class="grid4">';
+  html += '<div class="stat"><b>' + stats.total_users + '</b><span>注册用户</span></div>';
+  html += '<div class="stat"><b>' + stats.total_games + '</b><span>总局数</span></div>';
+  html += '<div class="stat"><b>' + usersData.filter(function(u){ return u.total_games > 0; }).length + '</b><span>活跃玩家</span></div>';
+  html += '<div class="stat"><b>' + usersData.filter(function(u){ return u.is_admin; }).length + '</b><span>管理员</span></div>';
+  html += '</div>';
+
+  // Recent users
+  if (stats.recent_users && stats.recent_users.length) {
+    html += '<h2>最近登录</h2><div class="card"><div style="display:flex;flex-wrap:wrap;gap:4px">';
+    stats.recent_users.forEach(function(u) {
+      html += '<span class="badge">' + esc(u.username) + '</span>';
+    });
+    html += '</div></div>';
+  }
+
+  // Search
+  html += '<h2>全部用户 (' + usersData.length + ')</h2>';
+  html += '<input class="searchBar" id="searchInput" placeholder="🔍 搜索用户名..." oninput="onSearch()">';
+
+  // Table
+  html += '<div class="card"><div style="overflow-x:auto"><table><tr>';
+  html += '<th>ID</th><th>用户名</th><th>类型</th><th>🪙</th><th>💎</th><th>场次</th><th>胜场</th><th>胜率</th><th>段位</th><th>角色</th><th>宝箱</th><th>注册</th><th>最后登录</th><th>操作</th>';
+  html += '</tr><tbody id="userTableBody">';
+  html += '</tbody></table></div></div>';
+  html += '<div id="detailPanel"></div>';
+
+  html += '<div class="card" id="mailSection" style="margin-top:16px">';
+  html += '<h2 style="margin:0 0 8px;cursor:pointer" onclick="toggleMailSection()">📧 全服邮件 <span id="mailToggle">▸</span></h2>';
+  html += '<div id="mailForm" style="display:none">';
+  html += '<div class="detailGrid">';
+  html += '<div class="detailField" style="grid-column:1/-1"><label>标题</label><input id="mailTitle" placeholder="例：版本更新公告"></div>';
+  html += '<div class="detailField" style="grid-column:1/-1"><label>内容</label><textarea id="mailBody" style="width:100%;padding:6px;border-radius:6px;border:1px solid #5a3515;background:#1a0b05;color:#ffe8b7;font-size:13px;outline:none;min-height:60px;resize:vertical" placeholder="邮件正文..."></textarea></div>';
+  html += '<div class="detailField"><label>附带钻石 💎</label><input id="mailGems" type="number" value="0" min="0"></div>';
+  html += '<div class="detailField"><label>附带金币 🪙</label><input id="mailCoins" type="number" value="0" min="0"></div>';
+  html += '</div>';
+  html += '<div class="detailActions"><div class="btn" onclick="sendGlobalMail()">📨 发送全服邮件</div></div>';
+  html += '</div></div>';
+
+  $('app').innerHTML = html;
+  renderUserRows();
+}
+
+function renderUserRows() {
+  var tbody = $('userTableBody');
+  if (!tbody) return;
+  var q = searchQuery.toLowerCase();
+  var filtered = usersData.filter(function(u) {
+    return !q || u.username.toLowerCase().indexOf(q) !== -1;
+  });
+  tbody.innerHTML = filtered.map(function(u) {
+    var gd = u.game_data || {};
+    var total = u.total_games || 0;
+    var wins = u.wins || 0;
+    var rate = total > 0 ? Math.round(wins / total * 100) + '%' : '-';
+    var typeLabel = u.is_admin ? '管理员' : (u.is_guest ? '游客' : '注册');
+    var typeCls = u.is_admin ? 'admin' : '';
+    var active = expandedUserId === u.id ? ' active' : '';
+    return '<tr class="' + active + '" onclick="toggleUser(' + u.id + ')">' +
+      '<td>' + u.id + '</td>' +
+      '<td>' + esc(u.username) + '</td>' +
+      '<td><span class="badge ' + typeCls + '">' + typeLabel + '</span></td>' +
+      '<td>' + (gd.coins || 0) + '</td>' +
+      '<td>' + (gd.gems || 0) + '</td>' +
+      '<td>' + total + '</td>' +
+      '<td>' + wins + '</td>' +
+      '<td>' + rate + '</td>' +
+      '<td>' + rankLabel(gd.rankIdx) + ' ' + (gd.stars || 0) + '★</td>' +
+      '<td>' + esc(gd.activeChar || '-') + '</td>' +
+      '<td>' + (gd.chest || 0) + '</td>' +
+      '<td>' + formatTime(u.created_at) + '</td>' +
+      '<td>' + formatTime(u.last_login) + '</td>' +
+      '<td><span class="btn sm secondary" onclick="event.stopPropagation();toggleUser(' + u.id + ')">详情</span></td>' +
+      '</tr>';
+  }).join('');
+
+  // Keep detail panel if user still visible
+  if (expandedUserId) {
+    var stillVisible = filtered.some(function(u){ return u.id === expandedUserId; });
+    if (!stillVisible) { expandedUserId = null; $('detailPanel').innerHTML = ''; }
+    else showDetail(expandedUserId);
+  }
+}
+
+function onSearch() {
+  searchQuery = $('searchInput').value.trim();
+  renderUserRows();
+}
+
+function toggleUser(id) {
+  if (expandedUserId === id) {
+    expandedUserId = null;
+    $('detailPanel').innerHTML = '';
+  } else {
+    expandedUserId = id;
+    showDetail(id);
+  }
+  renderUserRows();
+}
+
+function showDetail(id) {
+  var panel = $('detailPanel');
+  if (!panel) return;
+  var u = usersData.find(function(x){ return x.id === id; });
+  if (!u) { panel.innerHTML = ''; return; }
+  var gd = u.game_data || {};
+  var total = u.total_games || 0;
+  var wins = u.wins || 0;
+  var rate = total > 0 ? Math.round(wins / total * 100) + '%' : '-';
+  var skills = gd.skills || {};
+  var chars = gd.chars || {};
+  var tasks = gd.tasks || {};
+  var history = gd.history || [];
+
+  panel.className = 'detailPanel open';
+  panel.innerHTML =
+    '<div class="detailSection">📋 基础信息</div>' +
+    '<div class="detailGrid">' +
+      '<div class="detailField"><label>用户ID</label><div class="val">' + u.id + '</div></div>' +
+      '<div class="detailField"><label>用户名</label><input id="edit_username" value="' + esc(u.username) + '"></div>' +
+      '<div class="detailField"><label>类型</label><div class="val">' + (u.is_admin ? '管理员' : (u.is_guest ? '游客' : '注册用户')) + '</div></div>' +
+      '<div class="detailField"><label>注册时间</label><div class="val">' + formatTime(u.created_at) + '</div></div>' +
+      '<div class="detailField"><label>最后登录</label><div class="val">' + formatTime(u.last_login) + '</div></div>' +
+      '<div class="detailField"><label>重置密码</label><input id="edit_password" type="password" placeholder="留空不修改" autocomplete="off"></div>' +
+    '</div>' +
+
+    '<div class="detailSection">💰 货币 & 天梯</div>' +
+    '<div class="detailGrid">' +
+      '<div class="detailField"><label>金币 🪙</label><input id="edit_coins" type="number" value="' + (gd.coins || 0) + '"></div>' +
+      '<div class="detailField"><label>钻石 💎</label><input id="edit_gems" type="number" value="' + (gd.gems || 0) + '"></div>' +
+      '<div class="detailField"><label>宝箱</label><input id="edit_chest" type="number" value="' + (gd.chest || 0) + '" min="0" max="10"></div>' +
+      '<div class="detailField"><label>段位</label><select id="edit_rankIdx"><option value="0"' + (gd.rankIdx === 0 ? ' selected' : '') + '>新手</option><option value="1"' + (gd.rankIdx === 1 ? ' selected' : '') + '>青铜</option><option value="2"' + (gd.rankIdx === 2 ? ' selected' : '') + '>白银</option><option value="3"' + (gd.rankIdx === 3 ? ' selected' : '') + '>黄金</option><option value="4"' + (gd.rankIdx === 4 ? ' selected' : '') + '>铂金</option><option value="5"' + (gd.rankIdx === 5 ? ' selected' : '') + '>钻石</option></select></div>' +
+      '<div class="detailField"><label>星星/积分</label><input id="edit_stars" type="number" value="' + (gd.stars || 0) + '"></div>' +
+      '<div class="detailField"><label>天梯分 (rank)</label><input id="edit_rank" type="number" value="' + (gd.rank || 820) + '"></div>' +
+      '<div class="detailField"><label>保护场次</label><input id="edit_newbieGames" type="number" value="' + (gd.newbieGames || 0) + '"></div>' +
+      '<div class="detailField"><label>总局数</label><input id="edit_total" type="number" value="' + total + '"></div>' +
+      '<div class="detailField"><label>胜场</label><input id="edit_wins" type="number" value="' + wins + '"></div>' +
+      '<div class="detailField"><label>胜率</label><div class="val">' + rate + '</div></div>' +
+      '<div class="detailField"><label>连胜</label><input id="edit_streak" type="number" value="' + (gd.streak || 0) + '"></div>' +
+      '<div class="detailField"><label>最大连胜</label><input id="edit_maxStreak" type="number" value="' + (gd.maxStreak || 0) + '"></div>' +
+    '</div>' +
+
+    '<div class="detailSection">🌟 角色 (' + Object.keys(chars).length + ')</div>' +
+    '<div class="detailGrid">' +
+      Object.keys(chars).map(function(k) {
+        var c = chars[k] || {};
+        return '<div class="detailField"><label>' + esc(k) + '</label><div class="val" style="font-size:12px">' +
+          (c.owned ? '✅ 拥有' : '❌ 未拥有') +
+          ' · Lv.' + (c.lv || 1) +
+          ' · 碎片 ' + (c.shards || 0) +
+        '</div></div>';
+      }).join('') +
+    '</div>' +
+
+    '<div class="detailSection">🃏 功能牌库存</div>' +
+    '<div class="detailGrid">' +
+      Object.keys(skills).map(function(k) {
+        var s = skills[k];
+        return '<div class="detailField"><label>' + esc(k) + '</label><div class="val" style="font-size:12px">库存 ' + (s.copies || 0) + ' · 使用 ' + (s.uses || 0) + ' 次</div></div>';
+      }).join('') +
+    '</div>' +
+
+    '<div class="detailSection">📝 任务进度</div>' +
+    '<div class="detailGrid">' +
+      '<div class="detailField"><label>打牌任务</label><div class="val">' + (tasks.play !== undefined ? tasks.play : 0) + '/3</div></div>' +
+      '<div class="detailField"><label>技能任务</label><div class="val">' + (tasks.useSkill !== undefined ? tasks.useSkill : 0) + '/5</div></div>' +
+      '<div class="detailField"><label>胜利任务</label><div class="val">' + (tasks.winRound !== undefined ? tasks.winRound : 0) + '/6</div></div>' +
+      '<div class="detailField"><label>顺子任务</label><div class="val">' + (tasks.straight !== undefined ? tasks.straight : 0) + '/1</div></div>' +
+    '</div>' +
+
+    (history.length ? '<div class="detailSection">📜 最近对局 (' + history.length + ')</div><div class="card" style="margin:4px 0;padding:8px"><div style="max-height:180px;overflow-y:auto;font-size:11px">' +
+      history.slice(0, 20).map(function(h) {
+        var t = h.time ? new Date(h.time).toLocaleDateString() + ' ' + new Date(h.time).toLocaleTimeString().slice(0,5) : '';
+        return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(100,60,20,.12)"><span>' + (h.win ? '✅ 胜' : '❌ 负') + ' ' + esc(h.score || '') + '</span><span style="color:#a9885a">' + t + '</span></div>';
+      }).join('') +
+    '</div></div>' : '') +
+
+    '<div class="detailActions">' +
+      '<div class="btn" onclick="saveUser(' + u.id + ')">💾 保存修改</div>' +
+      '<div class="btn secondary" onclick="this.closest(\'.detailPanel\').classList.remove(\'open\');expandedUserId=null;renderUserRows()">关闭</div>' +
+      (!u.is_admin ? '<div class="btn danger" onclick="deleteUser(' + u.id + ',\'' + esc(u.username) + '\')">🗑 删除账号</div>' : '') +
+    '</div>';
+}
+
+function saveUser(id) {
+  var body = {
+    coins: parseInt($('edit_coins')?.value) || 0,
+    gems: parseInt($('edit_gems')?.value) || 0,
+    chest: parseInt($('edit_chest')?.value) || 0,
+    rankIdx: parseInt($('edit_rankIdx')?.value) || 0,
+    stars: parseInt($('edit_stars')?.value) || 0,
+    rank: parseInt($('edit_rank')?.value) || 820,
+    newbieGames: parseInt($('edit_newbieGames')?.value) || 0,
+    total_games: parseInt($('edit_total')?.value) || 0,
+    wins: parseInt($('edit_wins')?.value) || 0,
+    streak: parseInt($('edit_streak')?.value) || 0,
+    maxStreak: parseInt($('edit_maxStreak')?.value) || 0,
+    game_data: {
+      streak: parseInt($('edit_streak')?.value) || 0,
+      maxStreak: parseInt($('edit_maxStreak')?.value) || 0,
+      newbieGames: parseInt($('edit_newbieGames')?.value) || 0
+    }
+  };
+  var pw = $('edit_password')?.value;
+  if (pw) body.password = pw;
+
+  fetch('/api/auth/admin/users/' + id, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(body)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d) {
+    if (d.error) { toast('保存失败: ' + d.error); return; }
+    toast('✅ 保存成功');
+    // Update local data
+    var idx = usersData.findIndex(function(u){ return u.id === id; });
+    if (idx !== -1) {
+      if (d.user) usersData[idx] = d.user;
+      else usersData[idx].game_data = { ...usersData[idx].game_data, ...body.game_data, coins: body.coins, gems: body.gems, chest: body.chest, rankIdx: body.rankIdx, stars: body.stars, rank: body.rank };
+      if (body.total_games !== undefined) usersData[idx].total_games = body.total_games;
+      if (body.wins !== undefined) usersData[idx].wins = body.wins;
+    }
+    renderUserRows();
+    showDetail(id);
+  })
+  .catch(function(){ toast('网络错误'); });
+}
+
+function deleteUser(id, name) {
+  if (!confirm('确定删除用户 "' + name + '"（ID: ' + id + '）？此操作不可恢复！')) return;
+  if (!confirm('再次确认：删除 "' + name + '" 的所有数据？')) return;
+
+  fetch('/api/auth/admin/users/' + id, {
+    method: 'DELETE',
+    headers: authHeaders()
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d) {
+    if (d.error) { toast('删除失败: ' + d.error); return; }
+    toast('✅ 已删除 ' + name);
+    usersData = usersData.filter(function(u){ return u.id !== id; });
+    if (expandedUserId === id) { expandedUserId = null; $('detailPanel').innerHTML = ''; }
+    renderUserRows();
+  })
+  .catch(function(){ toast('网络错误'); });
+}
+
+function toggleMailSection() {
+  var f = $('mailForm');
+  var t = $('mailToggle');
+  if (f) { var open = f.style.display !== 'block'; f.style.display = open ? 'block' : 'none'; if (t) t.textContent = open ? '▾' : '▸'; }
+}
+
+function sendGlobalMail() {
+  var title = $('mailTitle')?.value.trim();
+  if (!title) { toast('请输入邮件标题'); return; }
+  var body = $('mailBody')?.value.trim() || '';
+  var gems = parseInt($('mailGems')?.value) || 0;
+  var coins = parseInt($('mailCoins')?.value) || 0;
+  var items = {};
+  if (gems > 0) items.gems = gems;
+  if (coins > 0) items.coins = coins;
+  if (!body && Object.keys(items).length === 0) { toast('请填写内容或附带道具'); return; }
+
+  fetch('/api/auth/admin/mail', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ title: title, body: body, items: Object.keys(items).length ? items : null })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d) {
+    if (d.error) { toast('发送失败: ' + d.error); return; }
+    toast('✅ 已发送给 ' + d.sentTo + ' 个用户');
+    $('mailTitle').value = '';
+    $('mailBody').value = '';
+    $('mailGems').value = '0';
+    $('mailCoins').value = '0';
+  })
+  .catch(function(){ toast('网络错误'); });
+}
+</script>
+</body>
+</html>

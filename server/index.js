@@ -8,7 +8,14 @@ const rooms = require('./rooms');
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'client')));
+
+const { initDb } = require('./db');
+initDb();
+
+const { router: authRouter } = require('./auth');
+app.use('/api/auth', authRouter);
 
 const server = http.createServer(app);
 const io = new Server(server, {

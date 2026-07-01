@@ -498,7 +498,7 @@ function buildPlayerView(battle, forSide) {
       name: o.name, char: o.char,
       hp: o.hp, handCount: o.hand.length,
       hand: o.revealed ? o.hand : undefined,
-      played: o.played,
+      played: (battle.phase === 'result' || (battle.submitted.player && battle.submitted.opp)) ? o.played : [],
       skills: o.skills, buff: {},
       locked: o.locked, playBonus: o.playBonus,
       nextPlayBonus: o.nextPlayBonus,

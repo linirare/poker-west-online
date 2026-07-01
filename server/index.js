@@ -17,8 +17,12 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3000;
 
+const chatMessages = [];
+const MAX_CHAT = 50;
+
 io.on('connection', (socket) => {
   console.log(`[connect] ${socket.id}`);
+  socket.emit('chat_history', chatMessages.slice(-30));
 
   // === PvE: Create solo game vs AI ===
   socket.on('pve_start', ({ skills, difficulty = 1 }) => {
@@ -35,11 +39,17 @@ io.on('connection', (socket) => {
     }, 600);
   });
 
+  // === PvP: List rooms ===
+  socket.on('pvp_list_rooms', () => {
+    socket.emit('room_list', rooms.listRooms());
+  });
+
   // === PvP: Create room ===
-  socket.on('pvp_create_room', ({ skills, name }) => {
-    const roomId = rooms.createRoom(socket.id, name || '玩家', skills, 'pvp');
+  socket.on('pvp_create_room', ({ skills, name, roomName }) => {
+    const roomId = rooms.createRoom(socket.id, name || '玩家', skills, 'pvp', 1, roomName);
     socket.join(roomId);
-    socket.emit('room_created', { roomId });
+    socket.emit('room_created', { roomId, hostName: name || '玩家', roomName });
+    io.emit('room_list', rooms.listRooms());
   });
 
   // === PvP: Join room ===
@@ -50,22 +60,86 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     const room = rooms.getRoom(roomId);
 
-    // Notify both players
-    io.to(roomId).emit('opponent_joined', {
-      players: room.players.map(p => ({ name: p.name, side: p.side }))
+    // Notify room members (not auto-start — host decides)
+    io.to(roomId).emit('player_joined', {
+      players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
     });
+    socket.emit('room_info', {
+      roomId,
+      hostId: room.hostId,
+      roomName: room.roomName,
+      players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
+    });
+    io.emit('room_list', rooms.listRooms());
+  });
 
-    // Auto-start when both players are ready
-    if (room.players.length === 2) {
-      const battle = rooms.startBattle(roomId);
-      if (!battle) return;
-
-      // Send player view to each
-      const hostSocket = room.players[0].socketId;
-      const guestSocket = room.players[1].socketId;
-      io.to(hostSocket).emit('game_state', game.buildPlayerView(battle, 'player'));
-      io.to(guestSocket).emit('game_state', game.buildPlayerView(battle, 'opp'));
+  // === PvP: Kick player ===
+  socket.on('pvp_kick_player', ({ roomId, targetSocketId }) => {
+    const room = rooms.getRoom(roomId);
+    if (!room || room.hostId !== socket.id) return;
+    const targetSock = io.sockets.sockets.get(targetSocketId);
+    if (targetSock) { targetSock.emit('kicked'); targetSock.leave(roomId); }
+    rooms.kickPlayer(roomId, targetSocketId);
+    const updated = rooms.getRoom(roomId);
+    if (updated) {
+      io.to(roomId).emit('player_joined', {
+        players: updated.players.map(p => ({ name: p.name, socketId: p.socketId }))
+      });
     }
+    io.emit('room_list', rooms.listRooms());
+  });
+
+  // === PvP: Host starts game ===
+  socket.on('pvp_host_start', () => {
+    const roomId = rooms.getPlayerRoom(socket.id);
+    if (!roomId) return;
+    const room = rooms.getRoom(roomId);
+    if (!room || room.hostId !== socket.id || room.players.length < 2) return;
+    room.phase = 'confirm';
+    io.to(roomId).emit('room_confirm', {
+      players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
+    });
+  });
+
+  // === PvP: Confirm ready ===
+  socket.on('pvp_confirm_ready', () => {
+    const roomId = rooms.getPlayerRoom(socket.id);
+    if (!roomId) return;
+    const room = rooms.getRoom(roomId);
+    if (!room || room.phase !== 'confirm') return;
+    const p = room.players.find(p => p.socketId === socket.id);
+    if (p) p.ready = true;
+    if (room.players.length >= 2 && room.players.every(p => p.ready)) {
+      const battle = rooms.startBattle(roomId);
+      if (battle) {
+        io.to(room.players[0].socketId).emit('game_state', game.buildPlayerView(battle, 'player'));
+        io.to(room.players[1].socketId).emit('game_state', game.buildPlayerView(battle, 'opp'));
+      }
+    } else {
+      io.to(roomId).emit('confirm_progress', {
+        readyCount: room.players.filter(p => p.ready).length,
+        total: room.players.length
+      });
+    }
+  });
+
+  // === PvP: Decline/exit during confirm ===
+  socket.on('pvp_decline', () => {
+    const roomId = rooms.getPlayerRoom(socket.id);
+    if (!roomId) return;
+    socket.leave(roomId);
+    rooms.leaveRoom(socket.id);
+    socket.emit('left_room');
+    const room = rooms.getRoom(roomId);
+    if (room && room.players.length > 0) {
+      io.to(roomId).emit('player_joined', {
+        players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
+      });
+    } else {
+      io.to(roomId).emit('opponent_left');
+      rooms.removeRoom(roomId);
+    }
+    io.emit('room_list', rooms.listRooms());
   });
 
   // === PvP: Submit play ===
@@ -93,14 +167,21 @@ io.on('connection', (socket) => {
     fighter.discard.push(...playedCards);
     room.battle.submitted[side] = true;
 
+    // Acknowledge submission to the sender
+    socket.emit('submitted', { side });
+
     // Check both submitted
     const otherSide = side === 'player' ? 'opp' : 'player';
     if (room.battle.submitted[otherSide]) {
-      // Both submitted - resolve
-      resolvePvPRound(room, roomId);
+      // Both submitted - resolve (with error handling to avoid crash disconnect)
+      try {
+        resolvePvPRound(room, roomId);
+      } catch (e) {
+        console.error('[resolvePvPRound error]', e);
+        io.to(roomId).emit('error', { msg: '结算异常，请重开一局' });
+      }
     } else {
       io.to(roomId).emit('opponent_submitted', { side });
-      socket.emit('submitted', { side });
       // Send fresh game_state to the waiting player so they see opponent's played cards
       const otherIdx = otherSide === 'player' ? 0 : 1;
       io.to(room.players[otherIdx].socketId).emit('game_state', game.buildPlayerView(room.battle, otherSide));
@@ -155,10 +236,15 @@ io.on('connection', (socket) => {
     if (!sk || sk.used || fighter.skillUses >= 2) return;
 
     sk.used = true; sk.charge = 0; fighter.skillUses++;
+    // Remember victim's discard length to detect newly discarded cards
+    const victim = room.battle[side === 'player' ? 'opp' : 'player'];
+    const dcLen = victim.discard.length;
     const logs = game.applySkill(side, skillId, room.battle, selected);
     room.battle.logs.push(...logs);
+    // Check if any cards were discarded from the victim
+    const lostCard = victim.discard.length > dcLen ? victim.discard[victim.discard.length - 1] : null;
 
-    io.to(roomId).emit('skill_used', { side, skillId, name: game.SM[skillId]?.name });
+    io.to(roomId).emit('skill_used', { side, skillId, name: game.SM[skillId]?.name, lostCard: lostCard ? { rank: lostCard.rank, suit: lostCard.suit } : null });
     socket.emit('game_state', game.buildPlayerView(room.battle, side));
     if (side === 'player') {
       socket.to(roomId).emit('game_state', game.buildPlayerView(room.battle, 'opp'));
@@ -216,13 +302,40 @@ io.on('connection', (socket) => {
     }
   });
 
+  // === PvP: Rematch (back to lobby) ===
+  socket.on('pvp_rematch', () => {
+    const roomId = rooms.getPlayerRoom(socket.id);
+    if (!roomId) return;
+    const room = rooms.getRoom(roomId);
+    if (!room) return;
+    room.phase = 'lobby';
+    room.battle = null;
+    room.players.forEach(p => { p.ready = false; });
+    io.to(roomId).emit('room_rematch', {
+      roomId, hostId: room.hostId, roomName: room.roomName,
+      players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
+    });
+    io.emit('room_list', rooms.listRooms());
+  });
+
   // === Leave room ===
   socket.on('leave_room', () => {
     const roomId = rooms.leaveRoom(socket.id);
     if (roomId) {
       socket.leave(roomId);
-      socket.to(roomId).emit('opponent_left');
-      rooms.removeRoom(roomId);
+      const room = rooms.getRoom(roomId);
+      if (room && room.players.length > 0) {
+        if (room.phase === 'playing') {
+          io.to(roomId).emit('opponent_left');
+        } else {
+          io.to(roomId).emit('player_joined', {
+            players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
+          });
+        }
+      } else {
+        io.to(roomId).emit('opponent_left');
+      }
+      io.emit('room_list', rooms.listRooms());
     }
   });
 
@@ -231,9 +344,32 @@ io.on('connection', (socket) => {
     console.log(`[disconnect] ${socket.id}`);
     const roomId = rooms.leaveRoom(socket.id);
     if (roomId) {
-      io.to(roomId).emit('opponent_left');
-      rooms.removeRoom(roomId);
+      const room = rooms.getRoom(roomId);
+      if (room && room.players.length > 0) {
+        if (room.phase === 'playing') {
+          io.to(roomId).emit('opponent_left');
+        } else {
+          io.to(roomId).emit('player_joined', {
+            players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
+          });
+        }
+      } else {
+        io.to(roomId).emit('opponent_left');
+      }
+      io.emit('room_list', rooms.listRooms());
     }
+  });
+
+  // === Chat ===
+  socket.on('chat_message', ({ name, text }) => {
+    if (!text || typeof text !== 'string') return;
+    const msg = text.trim().slice(0, 200);
+    if (!msg) return;
+    const displayName = (name || '匿名').slice(0, 12);
+    const entry = { name: displayName, text: msg, time: Date.now() };
+    chatMessages.push(entry);
+    if (chatMessages.length > MAX_CHAT) chatMessages.shift();
+    io.emit('new_chat_message', entry);
   });
 });
 

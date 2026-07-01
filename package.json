@@ -4,5 +4,8 @@
   "scripts": {
     "start": "cd server && node index.js",
     "build": "cd server && npm install"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.8.3"
   }
 }

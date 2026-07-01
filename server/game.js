@@ -195,7 +195,7 @@ function chooseBest(hand, n, community, buff) {
 }
 
 // === Skill application ===
-function applySkill(side, id, battle) {
+function applySkill(side, id, battle, selectedCards) {
   let a = battle[side], e = battle[side === 'player' ? 'opp' : 'player'];
   let own = side === 'player' ? '我方' : '对手', opp = side === 'player' ? '对手' : '我方';
   let logs = [];
@@ -216,7 +216,8 @@ function applySkill(side, id, battle) {
       } else { add(...draw(battle.deck, 1)); logs.push(`${own}抽1张牌`); }
       break;
     case 'magician': {
-      let target = sortCards(a.hand)[0];
+      // Use selected card if provided, otherwise copy highest
+      let target = (selectedCards && selectedCards.length) ? a.hand.find(c => selectedCards.includes(c.id)) : sortCards(a.hand)[0];
       if (target) { add(clone(target)); logs.push(`${own}复制 ${rankText(target.rank)}${target.suit}`); }
       break;
     }
@@ -227,7 +228,7 @@ function applySkill(side, id, battle) {
       }
       break;
     case 'fate': {
-      let c = sortCards(a.hand).slice(-1)[0];
+      let c = (selectedCards && selectedCards.length) ? a.hand.find(x => selectedCards.includes(x.id)) : sortCards(a.hand).slice(-1)[0];
       if (c) {
         discard(a, [c]);
         add({ id: 'c' + uid++, rank: 14, suit: c.suit });
@@ -262,7 +263,7 @@ function applySkill(side, id, battle) {
       break;
     }
     case 'plusminus': {
-      let c = sortCards(a.hand).slice(-1)[0];
+      let c = (selectedCards && selectedCards.length) ? a.hand.find(x => selectedCards.includes(x.id)) : sortCards(a.hand).slice(-1)[0];
       if (c) { let old = c.rank; c.rank = c.rank < 14 ? c.rank + 1 : c.rank - 1; logs.push(`${own}调整 ${rankText(old)}${c.suit} → ${rankText(c.rank)}${c.suit}`); }
       break;
     }
@@ -280,13 +281,15 @@ function applySkill(side, id, battle) {
     }
     case 'lock': e.locked = true; e.playBonus -= 1; logs.push(`${opp}本回合少打一张牌`); break;
     case 'shuffle': {
-      let c = sortCards(a.hand).slice(-1)[0];
+      let c = (selectedCards && selectedCards.length) ? a.hand.find(x => selectedCards.includes(x.id)) : sortCards(a.hand).slice(-1)[0];
       if (c) { discard(a, [c]); add(...draw(battle.deck, 2)); logs.push(`${own}弃 ${rankText(c.rank)}${c.suit}，抽2张`); }
       break;
     }
     case 'rogue':
       if (a.hand.length && e.hand.length) {
-        let c1 = a.hand[0], c2 = e.hand[Math.floor(Math.random() * e.hand.length)];
+        let c1 = (selectedCards && selectedCards.length) ? a.hand.find(x => selectedCards.includes(x.id)) : a.hand[0];
+        if (!c1) c1 = a.hand[0];
+        let c2 = e.hand[Math.floor(Math.random() * e.hand.length)];
         a.hand[a.hand.indexOf(c1)] = c2;
         e.hand[e.hand.indexOf(c2)] = c1;
         logs.push(`${own}与${opp}交换1张牌`);
@@ -494,6 +497,7 @@ function buildPlayerView(battle, forSide) {
     opponent: {
       name: o.name, char: o.char,
       hp: o.hp, handCount: o.hand.length,
+      hand: o.revealed ? o.hand : undefined,
       played: o.played,
       skills: o.skills, buff: {},
       locked: o.locked, playBonus: o.playBonus,

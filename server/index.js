@@ -101,6 +101,9 @@ io.on('connection', (socket) => {
     } else {
       io.to(roomId).emit('opponent_submitted', { side });
       socket.emit('submitted', { side });
+      // Send fresh game_state to the waiting player so they see opponent's played cards
+      const otherIdx = otherSide === 'player' ? 0 : 1;
+      io.to(room.players[otherIdx].socketId).emit('game_state', game.buildPlayerView(room.battle, otherSide));
     }
   });
 
@@ -138,7 +141,7 @@ io.on('connection', (socket) => {
   });
 
   // === PvP: Use skill ===
-  socket.on('use_skill', ({ skillId }) => {
+  socket.on('use_skill', ({ skillId, selected }) => {
     const roomId = rooms.getPlayerRoom(socket.id);
     if (!roomId) return;
     const room = rooms.getRoom(roomId);
@@ -152,7 +155,7 @@ io.on('connection', (socket) => {
     if (!sk || sk.used || fighter.skillUses >= 2) return;
 
     sk.used = true; sk.charge = 0; fighter.skillUses++;
-    const logs = game.applySkill(side, skillId, room.battle);
+    const logs = game.applySkill(side, skillId, room.battle, selected);
     room.battle.logs.push(...logs);
 
     io.to(roomId).emit('skill_used', { side, skillId, name: game.SM[skillId]?.name });
@@ -317,8 +320,8 @@ function finishGame(room, roomId) {
   if (b.mode === 'pvp') {
     const pWin = b.roundWins.player > b.roundWins.opp || b.opp.hp <= 0;
     const oWin = b.roundWins.opp > b.roundWins.player || b.player.hp <= 0;
-    io.to(room.players[0].socketId).emit('game_over', { win: pWin, roundWins: { ...b.roundWins }, playerHp: b.player.hp, oppHp: b.opp.hp });
-    io.to(room.players[1].socketId).emit('game_over', { win: oWin, roundWins: { ...b.roundWins }, playerHp: b.opp.hp, oppHp: b.player.hp });
+    io.to(room.players[0].socketId).emit('game_over', { win: pWin, roundWins: { player: b.roundWins.player, opp: b.roundWins.opp }, playerHp: b.player.hp, oppHp: b.opp.hp });
+    io.to(room.players[1].socketId).emit('game_over', { win: oWin, roundWins: { player: b.roundWins.opp, opp: b.roundWins.player }, playerHp: b.opp.hp, oppHp: b.player.hp });
   } else {
     const win = b.roundWins.player > b.roundWins.opp || b.opp.hp <= 0;
     io.to(roomId).emit('game_over', { win, roundWins: { ...b.roundWins }, playerHp: b.player.hp, oppHp: b.opp.hp });

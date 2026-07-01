@@ -642,6 +642,7 @@ function pvpConnect() {
     pvp.side = d.side; pvp.phase = 'battle'; pvp.serverState = d; pvp.selected = [];
     pvp.mySubmitted = false; pvp.oppSubmitted = false;
     renderPvPBattle();
+    if (d.opponent && d.opponent.hand) showPvPInspect(d.opponent.hand);
     const wm = q('#pvpWaitingModal'); if (wm) wm.remove();
     const hm = q('#pvpHomeModal'); if (hm) hm.remove();
   });
@@ -650,8 +651,7 @@ function pvpConnect() {
   socket.on('error', (d) => { toast('错误: ' + (d.msg || '')); });
   socket.on('opponent_left', () => { toast('对手已离开'); pvp = null; setScreen('home'); });
   socket.on('opponent_submitted', () => {
-    if (pvp) pvp.oppSubmitted = true;
-    if (pvp && pvp.phase === 'battle') renderPvPBattle();
+    if (pvp) { pvp.oppSubmitted = true; renderPvPBattle(); }
     toast('对手已出牌');
   });
   socket.on('submitted', () => { if (pvp) { pvp.mySubmitted = true; renderPvPBattle(); } });
@@ -704,7 +704,9 @@ function renderPvPBattle() {
 
 function pvpToggleSelect(id) {
   const s = pvp?.serverState;
-  if (!s || s.phase !== 'select' || s.submitted || pvp.mySubmitted) return;
+  if (!s) return;
+  if (s.phase !== 'select') return toast('当前不是出牌阶段');
+  if (s.submitted || pvp.mySubmitted) return;
   const need = pvp.need || Math.max(1, PLAY_COUNTS[s.round-1] + (s.player.playBonus||0));
   const i = pvp.selected.indexOf(id);
   if (i >= 0) pvp.selected.splice(i, 1);
@@ -714,7 +716,9 @@ function pvpToggleSelect(id) {
 
 function pvpSubmitPlay() {
   const s = pvp?.serverState;
-  if (!s || s.phase !== 'select' || pvp.mySubmitted) return;
+  if (!s) return toast('游戏状态未就绪');
+  if (s.phase !== 'select') return toast('当前不是出牌阶段');
+  if (pvp.mySubmitted) return toast('已出牌，等待对手...');
   const need = pvp.need;
   if (!pvp.selected || pvp.selected.length !== need) return toast('需要选择 '+need+' 张');
   socket.emit('submit_play', { selected: pvp.selected });
@@ -727,7 +731,12 @@ function pvpUseSkill(id) {
   const me = s.player, sk = me.skills[id];
   if (!sk || sk.used) return toast('已使用');
   if (me.skillUses >= 2) return toast('每回合最多2张');
-  socket.emit('use_skill', { skillId: id });
+  if (needsCardSelected(id)) {
+    if (!pvp.selected || pvp.selected.length < 1) return toast('请先选一张手牌再使用此技能');
+    socket.emit('use_skill', { skillId: id, selected: pvp.selected });
+  } else {
+    socket.emit('use_skill', { skillId: id });
+  }
 }
 
 function showPvPResult(d) {
@@ -738,11 +747,26 @@ function showPvPResult(d) {
   document.body.appendChild(m);
 }
 
+function showPvPInspect(hand) {
+  let m = document.createElement('div'); m.className = 'modal';
+  m.innerHTML = '<div class="modalBox"><div class="title" style="color:#321707">🔍 对手手牌</div><div class="cardRow">'+sortCards(hand).map(function(c){return cardHtml(c,'smallCard')}).join('')+'</div><div class="btn" id="closePvpInsp" style="margin-top:10px">知道了</div></div>';
+  document.body.appendChild(m);
+  q('#closePvpInsp').onclick = function(){ m.remove(); };
+  m.onclick = function(e){ if (e.target === m) m.remove(); };
+}
 function showPvPGameOver(d) {
   pvp = null;
   const win = d.win;
+  state.total = (state.total || 0) + 1;
+  if (win) state.wins = (state.wins || 0) + 1;
+  state.coins = (state.coins || 0) + (win ? 200 : 60);
+  state.gems = (state.gems || 0) + (win ? 8 : 3);
+  state.chest = Math.min(10, (state.chest || 0) + (win ? 2 : 1));
+  state.history = state.history || [];
+  state.history.unshift({ win: win, score: (d.roundWins?.player||0)+':'+(d.roundWins?.opp||0), time: Date.now(), mode: 'pvp' });
+  save();
   const m = document.createElement('div'); m.className = 'resultBanner';
-  m.innerHTML = '<div class="resultBox"><div class="resultTitle" style="font-size:26px">'+(win?'🏆 对战胜利':'💔 对战失败')+'</div><div class="finalScore">'+(d.roundWins?.player||0)+' : '+(d.roundWins?.opp||0)+'</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();setScreen('home')" style="margin-top:12px">回到主页</div></div>';
+  m.innerHTML = '<div class="resultBox"><div class="resultTitle" style="font-size:26px">'+(win?'🏆 对战胜利':'💔 对战失败')+'</div><div class="finalScore">'+(d.roundWins?.player||0)+' : '+(d.roundWins?.opp||0)+'</div><div style="margin:8px 0;font-size:15px;font-weight:1000">获得：🪙'+(win?200:60)+' 💎'+(win?8:3)+'</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();setScreen('home')" style="margin-top:12px">回到主页</div></div>';
   document.body.appendChild(m);
 }
 

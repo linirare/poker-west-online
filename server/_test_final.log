@@ -1,0 +1,31 @@
+=== PVP STRESS TEST ===
+Both connected
+Room:9KTW5V skills:bomb,magician
+FAILED:timeout waiting for game_state
+=== PVP STRESS TEST ===
+Both connected
+Room:XUWWUX skills:bomb,magician
+H hand:7 oppHand:7
+F hand:7 oppHand:7
+H need:3 sel:3
+H submitted OK
+F got opponent_submitted
+F got game_state2 phase:select oppPlayed:3
+F need:3 hand:7 sel:3
+FAILED:timeout waiting for submitted
+=== PVP STRESS TEST ===
+Both connected
+Room:JEEVGG skills:bomb,magician
+H hand:7 oppHand:7
+F hand:7 oppHand:7
+H need:3 sel:3
+H submitted OK
+F got opponent_submitted
+F got game_state2 phase:select oppPlayed:3
+F need:3 hand:7 sel:3
+F submitted OK
+H round_result winner:player dmg:1 isOver:false
+F round_result winner:player dmg:1 isOver:false
+=== PVP TEST PASSED ===
+H DISCONNECT reason:io client disconnect
+F DISCONNECT reason:io client disconnect

@@ -1,0 +1,14 @@
+=== FULL PVP TEST ===
+Both connected
+Room:SIBEVE
+Both got game_state, phase:select f_hand:7
+Host submitted OK
+Friend got opponent_submitted:{"side":"player"}
+=== FULL PVP TEST ===
+Both connected
+Room:9G5CLP
+Both got game_state, phase:select f_hand:7
+Host submitted OK
+Friend got opponent_submitted:{"side":"player"}
+F DISCONNECT reason:transport close
+H DISCONNECT reason:transport close

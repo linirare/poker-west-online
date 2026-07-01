@@ -1,0 +1,16 @@
+=== START ===
+Both connected
+rd type:object keys:roomId
+rd JSON:{"roomId":"90E674"}
+hgs type:object
+hgs keys:side,roomId,mode,round,phase,roundWins,last,community,submitted,opponentSubmitted,player,opponent,logs,isOver
+hgs.phase:select
+hgs.player type:object
+hgs.player keys:name,char,hp,hand,played,skills,buff,locked,playBonus,nextPlayBonus,nextDrawBonus,nextDrawPenalty,skillUses,skillDeck
+hgs.player.hand len:7
+hgs.round:1
+hgs.submitted:false
+need:3 selLen:3
+Submitted
+Result:submitted:{"side":"player"}
+=== END ===

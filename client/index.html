@@ -736,10 +736,9 @@ let socket = null;
 let pvp = null;
 let chatName = '玩家' + Math.floor(Math.random() * 900 + 100);
 
-const BACKEND_URL = 'https://poker.lirare.xyz';
 function pvpConnect() {
   if (socket && socket.connected) return;
-  try { socket = io(BACKEND_URL); } catch(e) { setTimeout(pvpConnect, 2000); return; }
+  try { socket = io(); } catch(e) { setTimeout(pvpConnect, 2000); return; }
   socket.on('connect', () => { toast('已连接服务器'); });
   socket.on('disconnect', () => { toast('与服务器断开'); });
   socket.on('room_list', (rooms) => {

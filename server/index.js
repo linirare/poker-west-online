@@ -203,8 +203,8 @@ io.on('connection', (socket) => {
       if (room.battle.ready.player && room.battle.ready.opp) {
         room.battle.ready = { player: false, opp: false };
         game.nextRound(room.battle);
-        io.to(roomId).emit('game_state', game.buildPlayerView(room.battle, 'player'));
-        io.to(roomId).emit('game_state_opp', game.buildPlayerView(room.battle, 'opp'));
+        io.to(room.players[0].socketId).emit('game_state', game.buildPlayerView(room.battle, 'player'));
+        io.to(room.players[1].socketId).emit('game_state', game.buildPlayerView(room.battle, 'opp'));
       }
     } else {
       game.nextRound(room.battle);
@@ -307,8 +307,9 @@ function resolvePvPRound(room, roomId) {
     oe: { name: oe.name, cat: oe.cat, cards: oe.cards },
     dmg, isOver: game.isOver(room.battle)
   });
-  io.to(roomId).emit('game_state', game.buildPlayerView(room.battle, 'player'));
-  io.to(roomId).emit('game_state_opp', game.buildPlayerView(room.battle, 'opp'));
+  // Send per-perspective game state
+  io.to(room.players[0].socketId).emit('game_state', game.buildPlayerView(room.battle, 'player'));
+  io.to(room.players[1].socketId).emit('game_state', game.buildPlayerView(room.battle, 'opp'));
 }
 
 function finishGame(room, roomId) {

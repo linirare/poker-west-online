@@ -510,10 +510,135 @@ const RANK_CONFIG=[
 {name:'传奇',icon:'♛',stars:0,desc:'1500分以上进入传奇'}
 ];
 let state={};
+let currentUser = null;
+const TOKEN_KEY = 'poker_token';
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  try {
+    const res = await fetch('/api/auth' + path, { ...opts, headers });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '请求失败');
+    return data;
+  } catch(e) {
+    if (e.message !== 'Failed to fetch') throw e;
+    return null;
+  }
+}
+
+function showAuthModal() {
+  const exists = q('#authModal'); if (exists) return;
+  const m = document.createElement('div'); m.className = 'modal'; m.id = 'authModal';
+  m.innerHTML =
+'<div class="modalBox" style="text-align:center;max-width:360px">' +
+  '<div class="saloonSign" style="font-size:20px;padding:6px 14px;margin-bottom:12px;display:inline-block">CODE 001</div>' +
+  '<div style="display:flex;gap:4px;margin-bottom:12px">' +
+    '<div class="btn" id="authTabLogin" style="flex:1;min-height:36px;padding:6px">登录</div>' +
+    '<div class="btn dark" id="authTabReg" style="flex:1;min-height:36px;padding:6px">注册</div>' +
+  '</div>' +
+  '<div id="authLoginForm">' +
+    '<input id="loginUser" placeholder="用户名" style="width:100%;padding:10px;margin-bottom:8px;border:2px solid #8b7550;border-radius:12px;font-size:14px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center;box-sizing:border-box">' +
+    '<input id="loginPass" type="password" placeholder="密码" style="width:100%;padding:10px;margin-bottom:10px;border:2px solid #8b7550;border-radius:12px;font-size:14px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center;box-sizing:border-box">' +
+    '<div class="btn" id="loginBtn" style="margin-bottom:6px">登录</div>' +
+  '</div>' +
+  '<div id="authRegForm" class="hidden">' +
+    '<input id="regUser" placeholder="用户名（2-16字）" style="width:100%;padding:10px;margin-bottom:8px;border:2px solid #8b7550;border-radius:12px;font-size:14px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center;box-sizing:border-box">' +
+    '<input id="regPass" type="password" placeholder="密码（至少4位）" style="width:100%;padding:10px;margin-bottom:10px;border:2px solid #8b7550;border-radius:12px;font-size:14px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center;box-sizing:border-box">' +
+    '<div class="btn" id="regBtn" style="margin-bottom:6px">注册</div>' +
+  '</div>' +
+  '<div class="small muted">登录后数据自动云端保存</div>' +
+'</div>';
+  document.body.appendChild(m);
+  q('#authTabLogin').onclick = () => { q('#authLoginForm').classList.remove('hidden'); q('#authRegForm').classList.add('hidden'); q('#authTabLogin').className = 'btn'; q('#authTabReg').className = 'btn dark'; };
+  q('#authTabReg').onclick = () => { q('#authRegForm').classList.remove('hidden'); q('#authLoginForm').classList.add('hidden'); q('#authTabReg').className = 'btn'; q('#authTabLogin').className = 'btn dark'; };
+  q('#loginBtn').onclick = handleLogin;
+  q('#regBtn').onclick = handleRegister;
+  q('#loginPass').onkeydown = (e) => { if (e.key === 'Enter') handleLogin(); };
+  q('#regPass').onkeydown = (e) => { if (e.key === 'Enter') handleRegister(); };
+}
+
+function hideAuthModal() { const m = q('#authModal'); if (m) m.remove(); }
+
+async function handleLogin() {
+  const u = q('#loginUser').value.trim(), p = q('#loginPass').value;
+  if (!u || !p) return toast('请填写用户名和密码');
+  q('#loginBtn').textContent = '登录中...';
+  try {
+    const d = await api('/login', { method: 'POST', body: JSON.stringify({ username: u, password: p }) });
+    if (!d) return toast('无法连接服务器');
+    localStorage.setItem(TOKEN_KEY, d.token);
+    currentUser = d.user;
+    await afterLogin();
+  } catch(e) { toast(e.message); q('#loginBtn').textContent = '登录'; }
+}
+
+async function handleRegister() {
+  const u = q('#regUser').value.trim(), p = q('#regPass').value;
+  if (!u || !p) return toast('请填写用户名和密码');
+  if (p.length < 4) return toast('密码至少4位');
+  q('#regBtn').textContent = '注册中...';
+  try {
+    const d = await api('/register', { method: 'POST', body: JSON.stringify({ username: u, password: p }) });
+    if (!d) return toast('无法连接服务器');
+    localStorage.setItem(TOKEN_KEY, d.token);
+    currentUser = d.user;
+    await afterLogin();
+  } catch(e) { toast(e.message); q('#regBtn').textContent = '注册'; }
+}
+
+function handleLogout() {
+  localStorage.removeItem(TOKEN_KEY);
+  currentUser = null;
+  state = initState(); save();
+  showAuthModal();
+}
+
+async function afterLogin() {
+  try {
+    const d = await api('/load');
+    const gd = d.game_data || {};
+    if (Object.keys(gd).length > 0) {
+      state = { ...initState(), ...gd };
+      for (const id of ['bomb','magician','intel','plusminus','glove','recycle'])
+        state.skills[id] = { copies: 3, uses: 0, ...(state.skills[id] || {}) };
+      state.chars.cowboy = { owned: true, lv: 1, shards: 0, ...(state.chars?.cowboy || {}) };
+    } else { state = initState(); }
+    if (d.total_games !== undefined) state.total = d.total_games;
+    if (d.wins !== undefined) state.wins = d.wins;
+  } catch(e) { state = initState(); }
+  ensureDefaults(); save(); hideAuthModal(); render('home'); pvpConnect();
+}
+
+function ensureDefaults() {
+  for (const id of ['bomb','magician','intel','plusminus','glove','recycle']) state.skills[id] = { copies: 3, uses: 0, ...(state.skills[id] || {}) };
+  state.chars.cowboy = { owned: true, lv: 1, shards: 0, ...(state.chars?.cowboy || {}) };
+  if (state.autoPlay === undefined) state.autoPlay = false;
+  if (state.difficulty === undefined) state.difficulty = 1;
+  if (!state.handCounts) state.handCounts = [0,0,0,0,0,0,0,0,0,0];
+  if (state.rankIdx === undefined) state.rankIdx = 0;
+  if (state.stars === undefined) state.stars = 0;
+  if (state.points === undefined) state.points = 1000;
+  if (state.newbieGames === undefined) state.newbieGames = 0;
+  if (state.streak === undefined) state.streak = 0;
+  if (state.maxStreak === undefined) state.maxStreak = state.streak || 0;
+}
+
+let _saveTimer = null;
+function serverSave() {
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async () => {
+    try {
+      await api('/save', { method: 'PUT', body: JSON.stringify({ game_data: state, total_games: state.total || 0, wins: state.wins || 0 }) });
+    } catch(e) { /* silent */ }
+  }, 2000);
+}
+
 function q(s){return document.querySelector(s)}function qa(s){return [...document.querySelectorAll(s)]}
 function initState(){return{coins:2600,gems:460,rank:820,rankIdx:0,stars:0,points:1000,newbieGames:0,total:0,wins:0,streak:0,maxStreak:0,chest:0,autoPlay:false,difficulty:1,handCounts:[0,0,0,0,0,0,0,0,0,0],activeChar:'cowboy',equipped:['bomb','magician'],skills:{bomb:{copies:6,uses:0},magician:{copies:4,uses:0},intel:{copies:4,uses:0},plusminus:{copies:4,uses:0},lock:{copies:3,uses:0},god:{copies:2,uses:0},glove:{copies:3,uses:0},recycle:{copies:3,uses:0}},chars:{cowboy:{owned:true,lv:1,shards:0},sheriff:{owned:true,lv:1,shards:0},lily:{owned:false,lv:1,shards:0},miner:{owned:false,lv:1,shards:0}},tasks:{play:0,useSkill:0,winRound:0,straight:0},history:[]}}
-function load(){try{state=JSON.parse(localStorage.getItem(LS))||initState()}catch(e){state=initState()}for(const id of ['bomb','magician','intel','plusminus','glove','recycle'])state.skills[id]??={copies:3,uses:0};state.chars.cowboy??={owned:true,lv:1,shards:0};state.autoPlay??=false;state.difficulty??=1;state.handCounts??=[0,0,0,0,0,0,0,0,0,0];state.rankIdx??=0;state.stars??=0;state.points??=1000;state.newbieGames??=0;state.streak??=0;state.maxStreak??=state.streak||0;save()}
-function save(){localStorage.setItem(LS,JSON.stringify(state))}
+function load(){try{state=JSON.parse(localStorage.getItem(LS))||initState()}catch(e){state=initState()}ensureDefaults();save()}
+function save(){localStorage.setItem(LS,JSON.stringify(state));serverSave()}
 function rankCfg(){return RANK_CONFIG[Math.min(state.rankIdx||0,RANK_CONFIG.length-1)]}
 function rankProgressText(){const c=rankCfg();if((state.rankIdx||0)===0)return `${state.newbieGames||0}/3 场保护期`;if((state.rankIdx||0)>=5)return `${state.points||1000} 分`;return `${state.stars||0}/${c.stars} 星`}
 function setScreen(s){if(pvp&&(pvp.phase==='lobby'||pvp.phase==='battle')){socket.emit('leave_room');pvp=null}render(s)}
@@ -961,8 +1086,27 @@ function showPvPConfirm(d) {
   q('#pvpDeclineBtn').onclick = function(){ socket.emit('pvp_decline'); m.remove(); if (pvp) { pvp = null; setScreen('home'); } };
 }
 
-load();render('home');
-
+async function initApp() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) {
+    try {
+      const d = await api('/load');
+      const gd = d.game_data || {};
+      if (Object.keys(gd).length > 0) {
+        state = { ...initState(), ...gd };
+        for (const id of ['bomb','magician','intel','plusminus','glove','recycle'])
+          state.skills[id] = { copies: 3, uses: 0, ...(state.skills[id] || {}) };
+        state.chars.cowboy = { owned: true, lv: 1, shards: 0, ...(state.chars?.cowboy || {}) };
+      } else { state = initState(); }
+      if (d.total_games !== undefined) state.total = d.total_games;
+      if (d.wins !== undefined) state.wins = d.wins;
+      ensureDefaults(); save(); render('home'); pvpConnect();
+      return;
+    } catch(e) { localStorage.removeItem(TOKEN_KEY); }
+  }
+  load(); showAuthModal();
+}
+initApp();
 // === Chat functions ===
 function sendChat() {
   if (!socket || !socket.connected) { pvpConnect(); toast('连接中...'); return; }

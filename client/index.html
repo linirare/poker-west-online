@@ -633,7 +633,11 @@ let pvp = null;
 function pvpConnect() {
   if (socket && socket.connected) return;
   try { socket = io(); } catch(e) { setTimeout(pvpConnect, 2000); return; }
-  socket.on('connect', () => { if (pvp && pvp.phase === 'waiting') toast('已连接服务器'); });
+  socket.on('connect', () => {
+    const el = document.getElementById('pvpStatus');
+    if (el) el.innerHTML = '✅ 已连接';
+    toast('已连接服务器');
+  });
   socket.on('disconnect', () => { toast('与服务器断开'); });
   socket.on('room_created', (d) => {
     pvp = { roomId: d.roomId, phase: 'waiting', side: 'player', selected: [] };
@@ -669,7 +673,7 @@ function showPvPHome() {
   m.className = 'modal'; m.id = 'pvpHomeModal';
   m.innerHTML = `<div class="modalBox" style="text-align:center">
     <div class="title" style="color:#321707">🌐 联机对战</div>
-    <div style="margin:6px 0 14px;font-size:13px;color:#6b5540">${socket && socket.connected ? '✅ 已连接' : '🟡 连接中...'}</div>
+    <div id="pvpStatus" style="margin:6px 0 14px;font-size:13px;color:#6b5540">${socket && socket.connected ? '✅ 已连接' : '🟡 连接中...'}</div>
     <button class="btn" id="pvpCreateBtn" style="width:100%;margin-bottom:8px">🏠 创建房间</button>
     <div style="display:flex;gap:4px">
       <input id="pvpRoomInput" placeholder="输入房间号" style="flex:1;padding:10px;border:2px solid #8b7550;border-radius:12px;font-size:16px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center;letter-spacing:2px;font-weight:1000">

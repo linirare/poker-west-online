@@ -1,5 +1,0 @@
-{
-  "deploy": {
-    "startCommand": "cd server && node index.js"
-  }
-}

@@ -640,8 +640,8 @@ function pvpConnect() {
     showPvPWaiting();
   });
   socket.on('game_state', (d) => {
-    if (!pvp) pvp = { side: 'player', selected: [] };
-    pvp.phase = 'battle'; pvp.serverState = d; pvp.selected = [];
+    if (!pvp) pvp = { selected: [] };
+    pvp.side = d.side; pvp.phase = 'battle'; pvp.serverState = d; pvp.selected = [];
     pvp.mySubmitted = false; pvp.oppSubmitted = false;
     renderPvPBattle();
     const wm = q('#pvpWaitingModal'); if (wm) wm.remove();
@@ -713,8 +713,8 @@ function renderPvPBattle() {
   const need = Math.max(1, PLAY_COUNTS[s.round-1] + (me.playBonus||0) + (me.locked ? -1 : 0));
   const mySubmitted = s.submitted || pvp.mySubmitted;
   const oppSubmitted = s.opponentSubmitted || pvp.oppSubmitted;
-  const isSelect = s.phase === 'select' && !mySubmitted && !oppSubmitted;
-  const isWait = s.phase === 'select' && (mySubmitted || oppSubmitted);
+  const isSelect = s.phase === 'select' && !mySubmitted;
+  const isWait = s.phase === 'select' && mySubmitted;
   const isResult = s.phase === 'result';
   pvp.need = need;
   const sel = pvp.selected || [];

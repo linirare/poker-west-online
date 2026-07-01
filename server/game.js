@@ -466,6 +466,7 @@ function buildPlayerView(battle, forSide) {
   const isOwner = forSide === 'player';
 
   return {
+    side: forSide,
     roomId: battle.roomId,
     mode: battle.mode,
     round: battle.round,

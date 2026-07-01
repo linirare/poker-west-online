@@ -312,13 +312,16 @@ function resolvePvPRound(room, roomId) {
 }
 
 function finishGame(room, roomId) {
-  const win = room.battle.roundWins.player > room.battle.roundWins.opp || room.battle.opp.hp <= 0;
-  io.to(roomId).emit('game_over', {
-    win,
-    roundWins: { ...room.battle.roundWins },
-    playerHp: room.battle.player.hp,
-    oppHp: room.battle.opp.hp
-  });
+  const b = room.battle;
+  if (b.mode === 'pvp') {
+    const pWin = b.roundWins.player > b.roundWins.opp || b.opp.hp <= 0;
+    const oWin = b.roundWins.opp > b.roundWins.player || b.player.hp <= 0;
+    io.to(room.players[0].socketId).emit('game_over', { win: pWin, roundWins: { ...b.roundWins }, playerHp: b.player.hp, oppHp: b.opp.hp });
+    io.to(room.players[1].socketId).emit('game_over', { win: oWin, roundWins: { ...b.roundWins }, playerHp: b.opp.hp, oppHp: b.player.hp });
+  } else {
+    const win = b.roundWins.player > b.roundWins.opp || b.opp.hp <= 0;
+    io.to(roomId).emit('game_over', { win, roundWins: { ...b.roundWins }, playerHp: b.player.hp, oppHp: b.opp.hp });
+  }
 }
 
 server.listen(PORT, () => {

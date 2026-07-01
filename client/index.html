@@ -1,0 +1,995 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>代号001 · 精品HTML Demo</title>
+<style>
+:root{
+  --bg:#160b05;--panel:#2b160b;--panel2:#3d2110;--wood:#70421b;--gold:#f5c45a;--gold2:#ffe39a;--red:#d83d2c;--ink:#2b1607;--paper:#f2ddaf;--muted:#c59b67;--green:#4bd47d;--blue:#63b4ff;--purple:#c484ff;
+  --phoneW:min(100vw,430px);--safeB:env(safe-area-inset-bottom,0px)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;background:#070302;color:#ffe8b7;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Arial,sans-serif;overflow:hidden}.phone{width:var(--phoneW);height:100vh;margin:0 auto;position:relative;background:radial-gradient(circle at 50% -15%,#633314 0%,#211006 42%,#0d0502 100%);overflow:hidden;box-shadow:0 0 0 1px #351b0b,0 0 50px rgba(0,0,0,.75)}.phone:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,230,150,.03) 1px,transparent 1px),linear-gradient(0deg,rgba(255,230,150,.025) 1px,transparent 1px);background-size:24px 24px;opacity:.42;pointer-events:none}.screen{position:absolute;inset:0 0 calc(66px + var(--safeB)) 0;overflow-y:auto;padding:14px 12px 18px;scrollbar-width:none}.screen::-webkit-scrollbar{display:none}.nav{position:absolute;left:0;right:0;bottom:0;height:calc(66px + var(--safeB));padding:7px 8px calc(7px + var(--safeB));display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:linear-gradient(180deg,rgba(58,31,15,.92),#130803);border-top:1px solid #8d5621;z-index:20}.nav button{border:1px solid #7b4a1d;background:linear-gradient(180deg,#3f2411,#1b0d06);color:#d8b178;border-radius:13px;font-size:10px;font-weight:800}.nav button.active{color:#221006;background:linear-gradient(180deg,#ffe39a,#c9822d);border-color:#ffcf64}.nav b{display:block;font-size:18px;line-height:1.05}.hidden{display:none!important}.title{font-size:26px;font-weight:1000;color:var(--gold2);text-shadow:0 3px 0 #291004,0 0 18px rgba(245,196,90,.2);letter-spacing:1px}.sub{font-size:12px;color:#d3aa70}.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.res{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.pill{display:inline-flex;align-items:center;gap:4px;border:1px solid #7c4b1e;background:rgba(0,0,0,.24);border-radius:999px;padding:4px 8px;color:#ffdc82;font-size:12px;font-weight:900}.panel{background:linear-gradient(180deg,rgba(75,42,20,.92),rgba(30,13,6,.94));border:1px solid #805020;border-radius:18px;padding:12px;margin:10px 0;box-shadow:inset 0 1px 0 rgba(255,230,160,.08),0 10px 20px rgba(0,0,0,.22)}.paper{background:linear-gradient(180deg,#f3ddb0,#c9934e);color:#2a1607;border:2px solid #5a3215;border-radius:18px;padding:12px;margin:10px 0;box-shadow:0 7px 0 rgba(0,0,0,.25)}.btn{display:flex;align-items:center;justify-content:center;text-align:center;border:1px solid #5e3515;background:linear-gradient(180deg,#ffdf82,#c7842e);color:#221006;border-radius:15px;padding:10px 12px;min-height:44px;font-weight:1000;box-shadow:0 4px 0 #5a2c10;cursor:pointer;user-select:none}.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #5a2c10}.btn.dark{background:linear-gradient(180deg,#5a3318,#231006);color:#ffe2a0;border-color:#8d5621}.btn.red{background:linear-gradient(180deg,#e75b3f,#802717);color:#fff}.btn.disabled{opacity:.45;filter:grayscale(.4)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.muted{color:#a9885a}.small{font-size:11px}.hr{height:1px;background:linear-gradient(90deg,transparent,#865321,transparent);margin:10px 0}.heroArt{height:35vh;min-height:200px;max-height:380px;border-radius:22px;border:2px solid #8b5624;background:radial-gradient(circle at 50% 30%,rgba(255,210,91,.35),transparent 28%),linear-gradient(180deg,#1c0c05 0%,#4b2710 55%,#241006 100%);position:relative;overflow:hidden;margin:0 0 12px;display:flex;align-items:center;justify-content:center}.heroArt:before{content:"";position:absolute;left:-10%;right:-10%;bottom:0;height:48%;background:linear-gradient(180deg,transparent,#120704),repeating-linear-gradient(90deg,#3a1d0d 0 18px,#2b1409 18px 35px);transform:skewY(-3deg)}.heroContent{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;z-index:1;position:relative}.heroStar{font-size:64px;filter:drop-shadow(0 6px 4px rgba(0,0,0,.35));line-height:1;margin-bottom:2px}.saloonSign{padding:8px 22px;background:linear-gradient(180deg,#a15b22,#4a230e);border:2px solid #e5a33d;border-radius:14px;color:#ffe5a0;font-size:24px;font-weight:1000;text-shadow:0 2px 0 #2b1005;box-shadow:0 6px 0 rgba(0,0,0,.35)}.heroRankBox{width:100%;max-width:340px;display:flex;flex-direction:column;gap:6px;margin-top:8px;padding:11px 13px;border-radius:16px;background:rgba(0,0,0,.38);border:1px solid rgba(255,200,100,.18);box-shadow:inset 0 1px 0 rgba(255,230,170,.06),0 3px 0 rgba(0,0,0,.22)}.heroRankTop{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#ffdc82}.heroRankTitle{display:flex;align-items:center;gap:5px;font-size:12px;color:#d4a86a}.heroRankValue{font-size:14px;color:#ffe8a0;white-space:nowrap;font-weight:800}.heroRankBar{height:5px;background:rgba(0,0,0,.35);border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.3)}.heroRankBar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#f7c85d,#e35d38)}.heroRankMeta{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.heroRankMeta span{display:flex;align-items:center;justify-content:center;min-height:22px;border-radius:999px;background:rgba(0,0,0,.22);border:1px solid rgba(255,200,100,.1);color:#cba15e;font-size:10px;font-weight:800}.heroCards{position:absolute;right:20px;bottom:22px;display:flex;gap:0;transform:rotate(-8deg)}.homeCard{width:42px;height:58px;border-radius:8px;background:#fff1c8;border:2px solid #3b1b09;color:#bc2f20;font-size:22px;font-weight:1000;display:flex;align-items:center;justify-content:center;margin-left:-8px;box-shadow:0 5px 0 rgba(0,0,0,.35)}.homeLayout{width:100%}.mainBtns{display:flex;flex-direction:column;gap:16px;padding:0 2px;margin-top:12px}.funcCards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 2px;margin-top:clamp(78px,10vh,112px);margin-bottom:16px}.funcCard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:14px 12px;background:linear-gradient(180deg,#f3ddb0,#c9934e);color:#2a1607;border:2px solid #5a3215;border-radius:16px;cursor:pointer;user-select:none;min-height:130px;box-shadow:0 3px 0 rgba(0,0,0,.12);transition:transform .12s}.funcCard:active{transform:scale(.95)}.funcIcon{font-size:28px;line-height:1}.funcTitle{font-size:12px;font-weight:1000;text-align:center}.funcDesc{font-size:10px;color:#6b5540;text-align:center;line-height:1.3}
+/* cards */
+.playCard{width:47px;height:66px;border-radius:9px;background:linear-gradient(180deg,#fff9e7,#e1bf7d);border:2px solid #5c3313;color:#291407;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:5px 3px;box-shadow:0 5px 0 rgba(0,0,0,.30);font-weight:1000;position:relative;flex:0 0 auto;transition:.18s;animation:cardIn .24s ease both;transform-origin:50% 100%;overflow:visible}.playCard .rank{font-size:16px;line-height:1}.playCard .suit{font-size:22px;line-height:1}.playCard.redSuit{color:#bc2e22}.playCard.selected{z-index:6;transform:translateY(-28px) scale(1.08);border-color:#ffd772;box-shadow:0 16px 24px rgba(0,0,0,.36),0 7px 0 rgba(0,0,0,.28)}.playCard.selected:after{content:"";position:absolute;left:10%;right:10%;bottom:-10px;height:10px;border-radius:50%;background:rgba(0,0,0,.32);filter:blur(5px)}.playCard.used{outline:3px solid #ffdf6a}.playCard.dim{opacity:.48}.playCard.back{background:linear-gradient(135deg,#812c1d,#2a1008);color:#e9be63;border-color:#ca8b31}.playCard.back:before{content:"★";font-size:22px}.playCard.joker{background:linear-gradient(180deg,#fff0a6,#c46d25);color:#5a160a}.playCard.smallCard{width:39px;height:55px;border-radius:8px}.playCard.large{width:56px;height:78px;border-radius:11px}.playCard.thrust{transform:translateY(-10px) scale(1.06);box-shadow:0 14px 20px rgba(0,0,0,.40),0 8px 0 rgba(0,0,0,.26);animation:thrustOut .28s ease both}.cardRow{display:flex;align-items:center;justify-content:center;gap:7px;min-height:80px;overflow-x:auto;padding:8px 4px}.cardRow::-webkit-scrollbar{display:none}@keyframes cardIn{from{opacity:0;transform:translateY(12px) rotate(3deg)}to{opacity:1;transform:translateY(0)}}@keyframes thrustOut{0%{opacity:0;transform:translateY(24px) scale(.92)}100%{opacity:1;transform:translateY(-10px) scale(1.06)}}.flip{animation:flip .42s ease both}@keyframes flip{0%{transform:rotateY(90deg) scale(.9)}100%{transform:rotateY(0deg) scale(1)}}
+/* battle */
+.battleHeader{background:linear-gradient(180deg,#3a1d0d,#1b0d06);border:1px solid #814b1d;border-radius:18px;padding:9px;margin:0 0 8px}.fighter{display:flex;align-items:center;justify-content:space-between;gap:8px}.fighterInfo{display:flex;align-items:center;gap:8px;min-width:0}.avatar{width:58px;height:58px;border-radius:17px;background:linear-gradient(180deg,#d39748,#653113);display:flex;align-items:center;justify-content:center;font-size:36px;border:2px solid #c98a35;box-shadow:0 4px 0 rgba(0,0,0,.35);position:relative;overflow:hidden}.avatar.big{width:70px;height:70px;font-size:44px}.avatar:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18),transparent 42%);pointer-events:none}.fighterName{font-weight:1000;color:#ffe1a1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fighterMeta{font-size:11px;color:#c99c68;max-width:190px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.fighterSide{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}.hp{display:flex;gap:10px;white-space:nowrap;align-items:center}.heart{font-size:24px;color:#ff4b4b;text-shadow:0 2px 0 #000;line-height:1;display:inline-block}.heart.hit{animation:heartHit .55s ease}.heart.empty{color:#4e2a23;filter:grayscale(.5)}@keyframes heartHit{0%{transform:scale(1)}25%{transform:scale(1.45) rotate(-8deg)}50%{transform:scale(.7);opacity:.5}100%{transform:scale(1);opacity:1}}.badge{display:inline-flex;align-items:center;justify-content:center;min-width:24px;padding:3px 8px;border-radius:999px;background:#1a0d07;border:1px solid #754418;color:#ffd373;font-size:11px;font-weight:900}.tag{font-size:10px;border:1px solid #8a5a25;background:rgba(0,0,0,.22);border-radius:999px;padding:2px 6px;color:#ffe0a2}.roundBar{text-align:center;background:#120905;border:1px solid #72441a;border-radius:14px;padding:7px 8px;margin:8px 0 0;color:#ffcf62;font-size:13px;font-weight:1000}.battleTable{background:radial-gradient(circle at 50% 45%,#75451c 0%,#3a1f0f 52%,#1a0c06 100%);border:2px solid #8b5b24;border-radius:22px;padding:8px;margin:8px 0;box-shadow:inset 0 0 30px rgba(0,0,0,.35);position:relative;overflow:hidden}.battleTable:before{content:"";position:absolute;inset:10px;border:1px dashed rgba(255,221,138,.15);border-radius:17px;pointer-events:none}.zoneTitle{text-align:center;font-size:11px;color:#ddb678;font-weight:900;margin-top:2px}.community{margin:6px auto;padding:8px;border-radius:18px;background:rgba(0,0,0,.30);border:1px solid #a36b2d;box-shadow:0 0 0 2px rgba(255,205,88,.08)}.community .zoneTitle{color:#ffdc75}.handName{text-align:center;font-size:12px;font-weight:1000;color:#ffe2a0;min-height:18px}.revealNotice{text-align:center;margin:6px 0;padding:8px;border-radius:14px;background:rgba(255,206,93,.13);border:1px solid rgba(255,206,93,.42);color:#ffdc75;font-weight:1000;animation:pulseGlow 1s infinite alternate}.actionArea{background:linear-gradient(180deg,rgba(49,26,13,.94),rgba(20,9,5,.98));border:1px solid #74451b;border-radius:18px;padding:8px;margin-top:8px;z-index:5}.hint{font-size:13px;font-weight:1000;color:#ffdc75;text-align:center;margin-bottom:6px}.sortLabel{text-align:center;color:#d9b47c;font-size:11px;margin-top:-2px;margin-bottom:2px}.handScroll{display:flex;gap:0;overflow-x:auto;min-height:96px;align-items:flex-end;padding:26px 12px 8px;justify-content:flex-start}.handScroll .playCard{margin-left:-12px}.handScroll .playCard:first-child{margin-left:0}.handScroll::-webkit-scrollbar{display:none}.skillBar{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:6px;margin-top:6px}.skillBtn{background:linear-gradient(180deg,#5c3519,#281408);border:1px solid #8b5b24;border-radius:13px;color:#ffe0a0;padding:7px 4px;font-size:10px;min-height:46px;position:relative;overflow:hidden}.skillBtn:after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:30%;background:linear-gradient(90deg,transparent,rgba(255,235,180,.18),transparent);transform:skewX(-20deg)}.skillBtn:not(.used):active:after{animation:shine .5s}.skillBtn b{display:block;font-size:12px}.skillBtn.used{opacity:.45;filter:grayscale(.7)}.skillBtn.locked{opacity:.35}.charge{position:absolute;top:-6px;right:-5px;background:#e03a2b;color:#fff;border-radius:999px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;border:1px solid #fff}.duelPlayerPanel{background:linear-gradient(180deg,#3a1d0d,#160904);border:1px solid #814b1d;border-radius:18px;padding:8px;margin:8px 0;box-shadow:0 4px 14px rgba(0,0,0,.24)}
+.logFab{position:fixed;right:calc(50% - var(--phoneW)/2 + 10px);top:10px;z-index:70;width:38px;height:38px;border-radius:13px;border:1px solid #c78b35;background:linear-gradient(180deg,#5c3519,#241006);color:#ffd56a;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.35);cursor:pointer}.log{font-size:12px;line-height:1.55;color:#4d260e;max-height:60vh;overflow-y:auto}.log div{border-bottom:1px dashed rgba(70,34,12,.18);padding:6px 0}.reviewControls{z-index:8;background:linear-gradient(180deg,#f4dfb3,#c58a42);color:#2a1607;border:2px solid #5d3415;border-radius:18px;padding:10px;margin:8px 0;box-shadow:0 8px 24px rgba(0,0,0,.35)}.roundSummaryMini{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-size:12px;font-weight:900;margin-bottom:8px}.roundSideBox{background:rgba(255,255,255,.28);border:1px solid rgba(94,52,20,.35);border-radius:12px;padding:7px;text-align:center}.roundVS{font-size:18px;color:#8e2a18}.resultBanner{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:50;display:flex;align-items:center;justify-content:center;padding:18px}.resultBox{width:min(92vw,390px);max-height:86vh;overflow-y:auto;background:linear-gradient(180deg,#f5dfb1,#c99650);color:#2a1607;border:3px solid #5a3215;border-radius:20px;padding:16px;box-shadow:0 20px 40px rgba(0,0,0,.6);text-align:center}.resultTitle{font-size:28px;font-weight:1000;margin-bottom:8px}.shot{font-size:36px;animation:pop .4s ease both}.resultCompare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.resultHandBox{background:rgba(255,255,255,.28);border:1px solid rgba(87,49,22,.38);border-radius:14px;padding:9px;font-size:12px}.resultHandBox b{display:block;font-size:15px;margin-bottom:2px}.resultHandName{font-size:17px;font-weight:1000;color:#8c2015}.resultCards .playCard.smallCard{width:36px;height:52px;border-radius:7px;margin:0}.resultCards{font-size:12px;margin-top:4px;color:#43210c}.finalDeckGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.finalDeckBox{background:rgba(255,255,255,.26);border:1px solid rgba(87,49,22,.38);border-radius:14px;padding:9px;font-size:12px;text-align:left}.finalDeckBox b{display:block;text-align:center;font-size:14px;margin-bottom:5px}.deckSkillLine{display:flex;justify-content:space-between;gap:6px;border-bottom:1px dashed rgba(75,37,15,.18);padding:3px 0}.deckSkillLine:last-child{border-bottom:0}.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px}.modalBox{width:min(92vw,390px);max-height:82vh;overflow-y:auto;background:linear-gradient(180deg,#f2dfb8,#c8954d);color:#281507;border:3px solid #563113;border-radius:20px;padding:14px}.toast{position:fixed;left:50%;bottom:94px;transform:translateX(-50%);background:#140905;border:1px solid #e1a33e;color:#ffe4a0;border-radius:999px;padding:9px 14px;z-index:90;font-size:13px;font-weight:900;box-shadow:0 10px 20px rgba(0,0,0,.35);white-space:nowrap}.flashText{position:fixed;top:42%;left:50%;transform:translate(-50%,-50%);z-index:60;font-size:28px;font-weight:1000;color:#ffd45d;text-shadow:0 4px 0 #000,0 0 20px rgba(255,199,77,.6);animation:flash 5s ease both;pointer-events:none;white-space:nowrap}.bullet{position:fixed;z-index:65;font-size:26px;pointer-events:none;animation:bullet .7s ease both}.impact{position:fixed;z-index:66;font-size:36px;pointer-events:none;animation:impact .55s ease both}.skillBurstFx{position:fixed;left:50%;top:48%;transform:translate(-50%,-50%);z-index:64;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(255,216,100,.55),rgba(255,120,50,.12) 45%,transparent 70%);animation:burst .7s ease both;pointer-events:none}.screenShake{animation:shake .28s ease both}@keyframes shine{to{left:120%}}@keyframes pulseGlow{from{box-shadow:0 0 0 rgba(255,209,92,0)}to{box-shadow:0 0 16px rgba(255,209,92,.28)}}@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}@keyframes flash{0%{opacity:0;transform:translate(-50%,-40%) scale(.7)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}100%{opacity:0;transform:translate(-50%,-68%) scale(1)}}@keyframes bullet{from{transform:translate(var(--sx),var(--sy)) rotate(10deg);opacity:0}15%{opacity:1}to{transform:translate(var(--tx),var(--ty)) rotate(10deg);opacity:0}}@keyframes impact{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}40%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.5);opacity:0}}@keyframes burst{0%{opacity:0;transform:translate(-50%,-50%) scale(.25)}50%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.35)}}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+/* inventory */
+.skillCard,.charCard{background:linear-gradient(180deg,#4b2b14,#241107);border:1px solid #865322;border-radius:16px;padding:10px;min-height:126px;position:relative}.skillCard.equipped{outline:2px solid #ffce5d}.skillCard.tier-T0{border-color:#ffd15c;box-shadow:0 0 0 2px rgba(255,209,92,.18),0 8px 18px rgba(0,0,0,.22);background:linear-gradient(180deg,#6b4317,#281308)}.skillCard.tier-T1{border-color:#c986ff;box-shadow:0 0 0 2px rgba(201,134,255,.14);background:linear-gradient(180deg,#4e2b4f,#241107)}.skillCard.tier-T2{border-color:#6fc1ff;box-shadow:0 0 0 2px rgba(111,193,255,.12);background:linear-gradient(180deg,#254968,#1b1008)}.skillCard.tier-T3{border-color:#9b7650;background:linear-gradient(180deg,#4b2b14,#241107)}.tierHead{display:flex;align-items:center;justify-content:space-between;margin:12px 2px 6px;font-weight:1000}.tierHead span{font-size:12px;font-weight:1000;border:1px solid #8a5a25;background:rgba(0,0,0,.22);color:#ffe0a2;border-radius:999px;padding:2px 8px}.skillName{font-size:14px;font-weight:1000}.skillEffect{font-size:11px;color:#d9b47c;margin:5px 0;line-height:1.35}.countBadge{position:absolute;right:8px;top:8px;background:#df3e2c;color:#fff;border:1px solid #fff;border-radius:999px;padding:2px 7px;font-weight:1000;font-size:11px}.levelBar{height:6px;background:#1a0d07;border-radius:999px;overflow:hidden;margin:6px 0}.levelBar i{display:block;height:100%;background:linear-gradient(90deg,#f7c85d,#e35d38);border-radius:999px}.shopItem{display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(0,0,0,.18);border:1px solid rgba(115,68,26,.7);border-radius:14px;padding:10px;margin:8px 0}.drawGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.drawReveal{background:#fff4cd;border:2px solid #70451e;border-radius:14px;padding:10px;text-align:center;min-height:90px;display:flex;flex-direction:column;justify-content:center}.drawReveal .big{font-size:30px}.rankItem{display:grid;grid-template-columns:34px 1fr 70px;gap:8px;align-items:center;background:rgba(0,0,0,.18);border:1px solid #70451e;border-radius:12px;padding:8px;margin:6px 0}.rankItem.me{border-color:#ffd15c;background:rgba(255,209,92,.12)}.teachHand{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(87,49,22,.25);padding:8px 0;font-size:13px}
+@media(max-height:720px){.playCard{width:43px;height:60px}.playCard.large{width:51px;height:70px}.avatar.big{width:62px;height:62px;font-size:38px}.heart{font-size:22px}.heroArt{height:28vh;min-height:140px;max-height:220px}.heroStar{font-size:48px}.saloonSign{font-size:20px;padding:6px 16px}.heroRankBox{padding:8px 10px;gap:4px}.heroRankTitle{font-size:11px}.heroRankValue{font-size:12px}.heroRankMeta span{font-size:9px;min-height:20px}.funcCards{margin-top:clamp(44px,6vh,66px)}.funcCard{padding:10px 8px;min-height:100px}.funcIcon{font-size:24px}.funcTitle{font-size:11px}.funcDesc{font-size:9px}.screen{padding-top:8px}.panel{margin:7px 0}.battleTable{padding:6px}.cardRow{min-height:62px}.handScroll{min-height:80px}}
+.roomListItem{cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:8px 6px;border-bottom:1px solid rgba(0,0,0,.08);border-radius:8px;transition:background .15s;font-size:13px}.roomListItem:hover{background:rgba(0,0,0,.06)}.roomListItem:active{background:rgba(0,0,0,.12)}
+.scenePicker{display:flex;gap:4px;overflow-x:auto}.sceneOpt{cursor:pointer;text-align:center;padding:6px 8px;border-radius:12px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.35);font-size:20px;min-width:54px;transition:all .12s;flex-shrink:0}.sceneOpt.on{border-color:#c49430;background:rgba(255,215,100,.35);box-shadow:0 0 0 2px rgba(196,148,48,.25)}.sceneOpt:active{transform:scale(.92)}
+.dailyFab{position:fixed;right:calc(50% - var(--phoneW)/2 + 10px);top:calc(70px + var(--safeT,0px));z-index:10;width:48px;height:48px;border-radius:50%;background:linear-gradient(180deg,#5c3519,#241006);border:2px solid #c78b35;color:#ffd56a;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(0,0,0,.5);cursor:pointer;transition:transform .15s}.dailyFab:active{transform:scale(.88)}
+
+/* ===================== v1.2 Art / UI / Motion Upgrade ===================== */
+:root{
+  --ui-gold:#f3c15f;
+  --ui-gold2:#ffe39a;
+  --ui-bronze:#9a5a26;
+  --ui-leather:#3a1a0d;
+  --ui-dark:#0b0503;
+  --ui-red:#c0392b;
+}
+.phone{
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255,196,82,.18), transparent 28%),
+    radial-gradient(circle at 50% 60%, rgba(115,55,20,.55), transparent 48%),
+    linear-gradient(180deg,#170904 0%,#2b1409 42%,#080302 100%);
+}
+.phone:before{
+  background:
+    radial-gradient(circle at 50% 45%, transparent 0 42%, rgba(0,0,0,.28) 78%),
+    repeating-linear-gradient(88deg, rgba(255,226,150,.045) 0 1px, transparent 1px 38px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 14px);
+  background-size:auto, auto, auto;
+  opacity:.8;
+}
+.screen{padding:12px 10px 18px}
+.title{
+  font-size:28px;
+  color:#ffe6a3;
+  text-shadow:0 3px 0 #2b1005, 0 0 24px rgba(255,189,76,.28);
+}
+.panel{
+  border:1px solid rgba(238,174,74,.42);
+  background:
+    linear-gradient(180deg, rgba(91,50,22,.94), rgba(27,11,5,.97)),
+    repeating-linear-gradient(90deg, rgba(255,220,140,.04) 0 1px, transparent 1px 24px);
+  box-shadow:inset 0 1px 0 rgba(255,230,170,.12),0 12px 26px rgba(0,0,0,.28);
+}
+.paper{
+  background:
+    linear-gradient(180deg,#f7e3b9 0%,#d0a064 100%);
+  border-color:#4f2b12;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 5px 0 rgba(0,0,0,.22);
+}
+.btn{
+  background:
+    linear-gradient(180deg,#ffe797 0%,#e4a64d 45%,#ad6121 100%);
+  border:1px solid #653511;
+  color:#271105;
+  box-shadow:0 5px 0 #5a2b10, inset 0 1px 0 rgba(255,255,255,.36);
+  text-shadow:0 1px 0 rgba(255,255,255,.25);
+  transition:transform .12s ease, filter .12s ease;
+}
+.btn:not(.disabled):hover{filter:brightness(1.04)}
+.btn.dark{
+  background:linear-gradient(180deg,#6b3d1b,#241006);
+  color:#ffe0a0;
+  box-shadow:0 4px 0 #120704,inset 0 1px 0 rgba(255,226,160,.10);
+}
+.battleHeader,.duelPlayerPanel{
+  border:1px solid rgba(244,187,83,.48);
+  background:
+    linear-gradient(180deg, rgba(72,36,15,.98), rgba(20,8,4,.98));
+  box-shadow:0 8px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,230,170,.10);
+}
+.battleHeader{position:relative}
+.battleHeader:before,.duelPlayerPanel:before{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:14px;
+  border:1px solid rgba(255,221,145,.08);
+  pointer-events:none;
+}
+.fighter{position:relative;z-index:1}
+.avatar{
+  background:
+    radial-gradient(circle at 50% 30%,#f5c06a 0%,#b16027 48%,#562713 100%);
+  border:2px solid #f0bc61;
+  box-shadow:0 4px 0 rgba(0,0,0,.38),0 0 0 3px rgba(88,42,15,.75);
+}
+.avatar.big{
+  width:74px;height:74px;font-size:46px;
+}
+.fighterName{color:#ffe5a6;font-size:15px}
+.fighterMeta{color:#d7a76d}
+.badge{
+  background:linear-gradient(180deg,#2b1207,#0d0502);
+  border-color:#a76728;
+  color:#ffdd86;
+  box-shadow:inset 0 1px 0 rgba(255,220,150,.12);
+}
+.hp{gap:12px}
+.heart{
+  font-size:28px;
+  filter:drop-shadow(0 2px 0 #000);
+}
+.roundBar{
+  border-color:#95612c;
+  background:linear-gradient(180deg,#1c0b04,#0b0301);
+  color:#ffe093;
+  box-shadow:inset 0 0 18px rgba(255,193,80,.08);
+}
+.battleTable{
+  min-height:365px;
+  padding:10px 8px;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(182,104,39,.55) 0%, rgba(74,35,14,.98) 50%, rgba(18,7,3,.98) 100%),
+    repeating-linear-gradient(90deg, rgba(255,226,150,.035) 0 1px, transparent 1px 32px);
+  border:2px solid #a56a2a;
+  box-shadow:
+    inset 0 0 0 4px rgba(0,0,0,.22),
+    inset 0 0 48px rgba(0,0,0,.36),
+    0 12px 26px rgba(0,0,0,.25);
+}
+.battleTable:after{
+  content:"POKER DUEL";
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%) rotate(-8deg);
+  font-weight:1000;
+  font-size:34px;
+  letter-spacing:2px;
+  color:rgba(255,218,139,.055);
+  pointer-events:none;
+}
+.zoneTitle{
+  position:relative;
+  z-index:1;
+  color:#e7bc7c;
+  letter-spacing:.8px;
+}
+.community{
+  position:relative;
+  z-index:1;
+  margin:8px auto;
+  background:
+    linear-gradient(180deg,rgba(17,7,3,.72),rgba(10,4,2,.56));
+  border:1px solid #c08135;
+  box-shadow:
+    inset 0 0 22px rgba(255,190,77,.08),
+    0 0 0 2px rgba(255,210,110,.08);
+}
+.handName{
+  color:#ffe9b4;
+  text-shadow:0 2px 0 #000;
+}
+.playCard{
+  width:49px;height:70px;
+  border-radius:10px;
+  background:
+    linear-gradient(180deg,#fff8df,#ead09a 55%,#d4ad66);
+  border:2px solid #3d1c09;
+  box-shadow:
+    0 6px 0 rgba(0,0,0,.36),
+    inset 0 0 0 2px rgba(255,255,255,.28),
+    inset 0 -10px 18px rgba(104,48,14,.12);
+}
+.playCard:before{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:7px;
+  border:1px solid rgba(92,48,20,.20);
+  pointer-events:none;
+}
+.playCard .rank{font-size:17px}
+.playCard .suit{font-size:23px}
+.playCard.smallCard{
+  width:43px;height:61px;
+}
+.playCard.large{
+  width:60px;height:84px;
+}
+.cardRow{
+  position:relative;
+  z-index:1;
+  gap:8px;
+  min-height:80px;
+}
+.handScroll{
+  justify-content:center;
+  min-height:122px;
+  padding:50px 18px 6px;
+  overflow-x:auto;
+  perspective:600px;
+}
+.handScroll .playCard{
+  margin-left:-16px;
+  transform-origin:50% 110%;
+  transition:transform .18s cubic-bezier(.2,.9,.25,1.25), box-shadow .18s;
+}
+.handScroll .playCard:first-child{margin-left:0}
+.handScroll .playCard:nth-child(1){transform:rotate(-18deg) translateY(10px)}
+.handScroll .playCard:nth-child(2){transform:rotate(-14deg) translateY(5px)}
+.handScroll .playCard:nth-child(3){transform:rotate(-9deg) translateY(1px)}
+.handScroll .playCard:nth-child(4){transform:rotate(-4deg) translateY(0)}
+.handScroll .playCard:nth-child(5){transform:rotate(2deg) translateY(0)}
+.handScroll .playCard:nth-child(6){transform:rotate(7deg) translateY(2px)}
+.handScroll .playCard:nth-child(7){transform:rotate(12deg) translateY(6px)}
+.handScroll .playCard:nth-child(8){transform:rotate(16deg) translateY(10px)}
+.handScroll .playCard:nth-child(n+9){transform:rotate(20deg) translateY(13px)}
+.handScroll .playCard.selected{
+  z-index:20;
+  transform:translateY(-42px) rotate(0deg) scale(1.12)!important;
+  box-shadow:
+    0 22px 30px rgba(0,0,0,.45),
+    0 8px 0 rgba(0,0,0,.28),
+    inset 0 0 0 2px rgba(255,255,255,.32);
+  border-color:#f1bd5c;
+}
+.playCard.selected:after{
+  bottom:-13px;height:13px;
+  background:rgba(0,0,0,.42);
+}
+.playCard.thrust{
+  transform:translateY(-18px) scale(1.10)!important;
+  animation:cardThrust .34s cubic-bezier(.16,.95,.35,1.12) both;
+  box-shadow:0 20px 28px rgba(0,0,0,.44),0 8px 0 rgba(0,0,0,.28);
+}
+@keyframes cardThrust{
+  0%{opacity:0;transform:translateY(28px) scale(.88) rotate(5deg)}
+  70%{opacity:1;transform:translateY(-24px) scale(1.13) rotate(-1deg)}
+  100%{opacity:1;transform:translateY(-18px) scale(1.10) rotate(0)}
+}
+.actionArea{
+  border:1px solid rgba(232,173,75,.48);
+  background:
+    linear-gradient(180deg,rgba(65,34,15,.97),rgba(18,7,3,.99));
+  box-shadow:0 -8px 20px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,225,150,.08);
+}
+.skillBtn{
+  border-color:#9a662c;
+  background:
+    linear-gradient(180deg,#68401f,#2b1308);
+  box-shadow:inset 0 1px 0 rgba(255,222,150,.10),0 3px 0 rgba(0,0,0,.22);
+}
+.skillBtn b{color:#ffe5a6}
+.logFab{
+  background:
+    linear-gradient(180deg,#70411c,#1e0c04);
+  border-color:#d4933f;
+  box-shadow:0 5px 16px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,220,150,.13);
+}
+.revealNotice{
+  position:relative;
+  z-index:2;
+  background:linear-gradient(180deg,rgba(255,204,92,.18),rgba(0,0,0,.18));
+  border-color:rgba(255,218,133,.52);
+}
+.flashText{
+  font-size:31px!important;
+  color:#ffe18c!important;
+  text-shadow:0 4px 0 #000,0 0 26px rgba(255,192,70,.35)!important;
+}
+.resultBox{
+  background:
+    linear-gradient(180deg,#f9e7bb,#d6a05b 62%,#b97732);
+  border-color:#4e2810;
+  box-shadow:0 24px 60px rgba(0,0,0,.68), inset 0 1px 0 rgba(255,255,255,.42);
+}
+.resultTitle{
+  text-shadow:0 2px 0 rgba(255,255,255,.22);
+}
+.drawReveal,.skillCard,.charCard{
+  box-shadow:inset 0 1px 0 rgba(255,230,170,.10),0 8px 18px rgba(0,0,0,.22);
+}
+.shakeScreen{
+  animation:screenShake .32s ease both;
+}
+@keyframes screenShake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-5px)}
+  40%{transform:translateX(5px)}
+  60%{transform:translateX(-3px)}
+  80%{transform:translateX(3px)}
+}
+
+/* Casual theme removed */
+
+.bigHandCelebration{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;pointer-events:none;animation:bhFade 1.6s ease forwards}
+.bigHandText{font-size:38px;font-weight:1000;color:#ffd56a;text-shadow:0 4px 0 #3a1a08,0 0 40px rgba(255,200,80,.6),0 0 80px rgba(255,150,40,.3);animation:bhPop .45s cubic-bezier(.16,.95,.35,1.2) both;letter-spacing:3px}
+@keyframes bhPop{0%{transform:scale(.2);opacity:0}80%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes bhFade{0%,70%{opacity:1}100%{opacity:0}}
+
+
+/* tutorial */
+.tutorialOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:95;display:flex;align-items:flex-end;justify-content:center;padding:18px}
+.tutorialBox{width:min(390px,94vw);background:#fcf6e8;border:1px solid #d4c4a0;border-radius:22px;padding:16px;box-shadow:0 16px 48px rgba(0,0,0,.18);color:#2b1a0a}
+.tutorialBox h3{margin:0 0 8px;font-size:20px;color:#2b1a0a}
+.tutorialBox p{margin:0 0 12px;font-size:14px;line-height:1.7;color:#6b5540}
+.tutorialDots{font-size:12px;color:#c4a66a;margin-bottom:10px;letter-spacing:3px}
+.tutorialActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* tutorial bubble */
+.tutBubble{position:fixed;inset:0;z-index:90}
+.tutBubbleInner{position:absolute;left:50%;transform:translateX(-50%);width:min(88vw,340px);background:#fcf6e8;border:2px solid #d4a030;border-radius:18px;padding:14px 16px;box-shadow:0 12px 40px rgba(0,0,0,.25);pointer-events:auto;z-index:91}
+.tutBubbleInner.bottom{bottom:70px}
+.tutBubbleInner.top{top:10px}
+.tutBubbleInner.step1{top:350px}
+.tutBubbleInner.mid{top:120px}
+.tutBubbleInner.center{top:38%;transform:translate(-50%,-50%)}
+.tutBubbleInner .tutDots{font-size:12px;color:#c4a66a;margin-bottom:6px;letter-spacing:3px}
+.tutBubbleInner .tutTitle{font-size:18px;font-weight:1000;color:#2b1a0a;margin-bottom:6px}
+.tutBubbleInner .tutDesc{font-size:13px;line-height:1.7;color:#5a3f20;margin-bottom:10px}
+.tutBubbleInner .tutActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tutBubbleInner .tutActions .btn{padding:8px 0;font-size:13px;min-height:36px}
+/* ===================== Bright Version Override ===================== */
+html,body{background:#f3edd9!important;color:#2b1a0a!important}
+.phone{background:linear-gradient(180deg,#f8f0dc,#efe3c6)!important;box-shadow:0 0 0 1px #d4c4a0!important;font-size:14px!important}
+.phone:before{background:radial-gradient(circle at 50% 0%,rgba(200,170,120,.18),transparent 58%)!important;background-size:auto!important;opacity:1!important}
+.nav{background:rgba(248,240,220,.96)!important;border-top:1px solid #d4c4a0!important;box-shadow:0 -4px 12px rgba(0,0,0,.06)!important}
+.nav button{background:#f3edd9!important;color:#6b5540!important;border:1px solid #d4c4a0!important}
+.nav button.active{background:#efe3c6!important;color:#2b1a0a!important;border-color:#c4a66a!important}
+.title{color:#2b1a0a!important;text-shadow:none!important}
+.sub,.muted{color:#8b7550!important}
+.small{color:#8b7550!important}
+.pill{background:rgba(245,235,215,.7)!important;border-color:#c4b090!important;color:#2b1a0a!important}
+.panel{background:rgba(248,240,220,.85)!important;border:1px solid #d4c4a0!important;box-shadow:0 4px 12px rgba(0,0,0,.06)!important}
+.panel b{color:#2b1a0a!important}
+.paper{background:linear-gradient(180deg,#fcf6e8,#f0e4c8)!important;border-color:#c4b090!important;color:#2b1a0a!important;box-shadow:0 3px 0 #d4c4a0!important}
+.btn{background:linear-gradient(180deg,#f5d98a,#daa840)!important;color:#2b1a0a!important;border:1px solid #c49430!important;box-shadow:0 4px 0 #b08028,inset 0 1px 0 rgba(255,255,255,.4)!important}
+.btn.dark{background:linear-gradient(180deg,#f3edd9,#e3d4b8)!important;color:#2b1a0a!important;border:1px solid #d4c4a0!important;box-shadow:0 3px 0 #c4b090!important}
+.btn.mint{background:linear-gradient(180deg,#7ed6b2,#42b78e)!important;color:#fff!important;box-shadow:0 4px 0 #2a7a5e!important}
+.heroArt{background:linear-gradient(180deg,#fcf6e8,#efe3c6)!important;border:1px solid #d4c4a0!important;overflow:hidden!important}
+.heroArt:before{background:radial-gradient(ellipse at 50% 0%,rgba(220,190,140,.3),transparent 60%)!important}
+.saloonSign{background:linear-gradient(180deg,#efe3c6,#e3d4b8)!important;color:#2b1a0a!important;border:1px solid #c4b090!important;box-shadow:0 3px 0 #c4b090!important}
+.heroCards .homeCard{background:linear-gradient(180deg,#fffdf5,#f5e8cc)!important;border:2px solid #c4a66a!important;color:#2b1a0a!important}
+.battleHeader,.duelPlayerPanel{background:rgba(248,240,220,.95)!important;border:1px solid #d4c4a0!important;box-shadow:0 4px 12px rgba(0,0,0,.06)!important;padding:6px 8px!important}
+.battleHeader:before,.duelPlayerPanel:before{border-color:rgba(180,160,120,.15)!important}
+.avatar{background:radial-gradient(circle at 50% 30%,#f5d98a,#c4a66a)!important;border:2px solid #c4a66a!important;box-shadow:0 3px 0 #b89850!important}
+.fighterName{color:#2b1a0a!important}
+.fighterMeta{color:#8b7550!important}
+.badge{background:#f3edd9!important;border-color:#c4b090!important;color:#2b1a0a!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)!important}
+.heart{color:#d83d2c!important;filter:none!important}
+.heart.empty{color:#d4c4a0!important;filter:none!important}
+.roundBar{background:#f3edd9!important;border:1px solid #d4c4a0!important;color:#2b1a0a!important;box-shadow:none!important}
+.battleTable{background:radial-gradient(ellipse at 50% 48%,rgba(220,190,140,.5),rgba(240,230,210,.95) 50%,rgba(245,235,215,.95) 100%)!important;border:2px solid #c4a66a!important;box-shadow:inset 0 0 0 4px rgba(255,255,255,.3),0 8px 20px rgba(0,0,0,.08)!important;min-height:340px!important;padding:6px 6px!important;overflow:visible!important}
+.battleTable:after{color:rgba(180,160,120,.12)!important}
+.zoneTitle{color:#6b5540!important}
+.handName{color:#8b7550!important;text-shadow:none!important;min-height:14px!important}
+.cardRow{padding:10px 4px!important;min-height:90px!important;overflow-y:visible!important}
+.zoneSpacer{height:10px!important}
+.roundBar{padding:4px 8px!important;margin:6px 0 0!important}
+.community{background:rgba(255,255,255,.55)!important;border:1px solid #d4c4a0!important;margin:4px auto!important;padding:5px 8px!important}
+.playCard{background:linear-gradient(180deg,#fffdf5,#f0e4c8)!important;border:2px solid #b89850!important;box-shadow:0 5px 0 #c4a66a!important;color:#2b1a0a!important}
+.playCard.redSuit{color:#c0392b!important}
+.actionArea{background:rgba(248,240,220,.95)!important;border:1px solid #d4c4a0!important;box-shadow:0 -4px 12px rgba(0,0,0,.06)!important;padding:4px 6px!important}
+.skillBtn{background:linear-gradient(180deg,#f3edd9,#e3d4b8)!important;border-color:#c4b090!important;color:#6b5540!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 0 #c4b090!important}
+.skillBtn b{color:#2b1a0a!important}
+.skillBtn .charge{color:#8b7550!important}
+.skillInfo{width:22px;min-width:22px;border-radius:8px;border:1px solid #c4b090;background:linear-gradient(180deg,#f3edd9,#e3d4b8);color:#6b5540;font-weight:1000;font-size:14px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}.skillInfo:active{transform:scale(.9)}
+.revealNotice{background:linear-gradient(180deg,rgba(245,215,130,.25),rgba(255,255,255,.15))!important;border-color:rgba(200,170,100,.5)!important}
+.logFab{background:linear-gradient(180deg,#f3edd9,#e3d4b8)!important;border-color:#c4a66a!important;color:#2b1a0a!important;box-shadow:0 3px 8px rgba(0,0,0,.1)!important}
+.flashText{color:#d4a030!important;text-shadow:0 2px 0 rgba(255,255,255,.4),0 0 20px rgba(200,160,60,.3)!important}
+.resultBox,.reviewControls{background:linear-gradient(180deg,#fcf6e8,#f0e4c8)!important;border-color:#b89850!important;color:#2b1a0a!important}
+.resultTitle{text-shadow:0 1px 0 rgba(255,255,255,.3)!important}
+.resultHandName{color:#8b4015!important}
+.resultCards{color:#6b5540!important}
+.skillCard,.charCard{background:linear-gradient(180deg,#f8f0dc,#efe3c6)!important;border-color:#c4b090!important}
+.skillName{color:#2b1a0a!important}
+.skillEffect{color:#8b7550!important}
+.tierHead span{background:#f3edd9!important;border-color:#c4b090!important;color:#2b1a0a!important}
+.shopItem,.rankItem{background:#f8f0dc!important;border-color:#d4c4a0!important}
+.tutorialOverlay{background:rgba(0,0,0,.25)!important}
+.tutorialBox{background:#fcf6e8!important;border:1px solid #d4c4a0!important;color:#2b1a0a!important;box-shadow:0 16px 48px rgba(0,0,0,.15)!important}
+.tutorialBox p{color:#6b5540!important}
+.ladderHero{background:linear-gradient(180deg,#fcf6e8,#f0e4c8)!important;border:1px solid #d4c4a0!important}
+.ladderName{color:#2b1a0a!important}
+.ladderTrack{background:#e3d4b8!important}
+.foldBox{background:linear-gradient(180deg,#fcf6e8,#f0e4c8)!important;border-color:#b89850!important;color:#2b1a0a!important}
+.foldBox .sub{color:#6b5540!important}
+.hr{background:linear-gradient(90deg,transparent,#d4c4a0,transparent)!important}
+.ladderIcon{filter:none!important}
+.drawReveal,.modalBox{background:#fcf6e8!important;border-color:#b89850!important;color:#2b1a0a!important}
+.betPanel .betLabel{color:#2b1a0a!important;text-shadow:none!important}
+.betBtn.normal{background:linear-gradient(180deg,#f3edd9,#e3d4b8)!important;color:#2b1a0a!important}
+.betBtn.raise{background:linear-gradient(180deg,#f5d98a,#daa840)!important;color:#2b1a0a!important;border-color:#c49430!important}
+.betBtn.fold{background:linear-gradient(180deg,#f0e0d0,#e0c8b8)!important;color:#6b5540!important;border-color:#b8a090!important}
+.bigHandText{text-shadow:0 3px 0 #8b7040,0 0 40px rgba(200,160,60,.5)!important}
+.betSub{color:#8b7550!important}
+.rankItem.me{background:rgba(230,200,130,.2)!important;border-color:#c4a66a!important}
+
+.oppSkillNotice{position:fixed;top:15%;left:50%;transform:translateX(-50%);z-index:75;background:linear-gradient(180deg,#e83d2c,#9a1a0a);color:#fff;border:2px solid #ff6b4a;border-radius:16px;padding:12px 18px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25);font-weight:1000;animation:oppSkillIn .35s ease both;max-width:300px}.oppSkillNotice b{font-size:16px;display:block;margin-bottom:4px}.oppSkillNotice span{font-size:12px;opacity:.85;font-weight:600}@keyframes oppSkillIn{0%{transform:translateX(-50%) translateY(-20px) scale(.85);opacity:0}100%{transform:translateX(-50%) translateY(0) scale(1);opacity:1}}
+.autoBtn{font-size:10px;font-weight:1000;border:1px solid #b89850;border-radius:10px;padding:4px 8px;background:linear-gradient(180deg,#f3edd9,#e3d4b8);color:#6b5540;cursor:pointer;white-space:nowrap;transition:.12s;flex:0 0 auto}.autoBtn.on{background:linear-gradient(180deg,#7ed6b2,#42b78e);color:#fff;border-color:#2a7a5e}.autoBtn:active{transform:scale(.95)}
+.difficultyRow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.diffBtn{padding:10px 0;border-radius:12px;border:2px solid #d4c4a0;background:#f3edd9;color:#6b5540;font-weight:1000;font-size:13px;cursor:pointer;transition:.12s}.diffBtn.active{border-color:#c4a66a;background:linear-gradient(180deg,#f5d98a,#daa840);color:#2b1a0a;box-shadow:0 2px 0 #b08028}.diffBtn:active{transform:scale(.95)}
+.skillCard.compact{min-height:80px!important;padding:6px!important}.skillCard.compact .skillName{font-size:12px!important}.skillCard.compact .skillEffect{font-size:10px!important;margin:3px 0!important}.skillCard.compact .countBadge{font-size:10px!important;padding:1px 5px!important}
+
+/* glow effect - module container pulsing with flash */
+.tutGlow{position:relative!important;z-index:80!important;animation:tutGlowPulse .7s ease-in-out infinite!important;border:3px solid!important;border-radius:18px!important}
+.tutGlow1{border-color:#4da6ff!important;box-shadow:0 0 12px 4px rgba(77,166,255,.4),0 0 35px 10px rgba(77,166,255,.2)!important;animation-name:tutGlowPulse1!important}
+.tutGlow2{border-color:#ffd700!important;box-shadow:0 0 12px 4px rgba(255,215,0,.5),0 0 35px 10px rgba(255,215,0,.25)!important;animation-name:tutGlowPulse2!important}
+.tutGlow3{border-color:#4bd47d!important;box-shadow:0 0 12px 4px rgba(75,212,125,.4),0 0 35px 10px rgba(75,212,125,.2)!important;animation-name:tutGlowPulse3!important}
+.tutGlow4{border-color:#c484ff!important;box-shadow:0 0 12px 4px rgba(196,132,255,.4),0 0 35px 10px rgba(196,132,255,.2)!important;animation-name:tutGlowPulse4!important}
+@keyframes tutGlowPulse1{0%,100%{opacity:1;box-shadow:0 0 12px 4px rgba(77,166,255,.4),0 0 35px 10px rgba(77,166,255,.2)!important}50%{opacity:1;box-shadow:0 0 20px 8px rgba(77,166,255,.8),0 0 55px 20px rgba(77,166,255,.4)!important}}
+@keyframes tutGlowPulse2{0%,100%{opacity:1;box-shadow:0 0 12px 4px rgba(255,215,0,.5),0 0 35px 10px rgba(255,215,0,.25)!important}50%{opacity:1;box-shadow:0 0 20px 8px rgba(255,215,0,.9),0 0 55px 20px rgba(255,215,0,.45)!important}}
+@keyframes tutGlowPulse3{0%,100%{opacity:1;box-shadow:0 0 12px 4px rgba(75,212,125,.4),0 0 35px 10px rgba(75,212,125,.2)!important}50%{opacity:1;box-shadow:0 0 20px 8px rgba(75,212,125,.8),0 0 55px 20px rgba(75,212,125,.4)!important}}
+@keyframes tutGlowPulse4{0%,100%{opacity:1;box-shadow:0 0 12px 4px rgba(196,132,255,.4),0 0 35px 10px rgba(196,132,255,.2)!important}50%{opacity:1;box-shadow:0 0 20px 8px rgba(196,132,255,.8),0 0 55px 20px rgba(196,132,255,.4)!important}}
+/* bubble glow */
+.tutBubbleInner{animation:bubbleGlow 1s ease-in-out infinite}
+@keyframes bubbleGlow{0%,100%{border-color:#d4a030;box-shadow:0 8px 30px rgba(0,0,0,.2)}50%{border-color:#ffd700;box-shadow:0 8px 30px rgba(0,0,0,.2),0 0 25px 8px rgba(255,215,0,.5)}}
+
+
+/* result screen vertical layout */
+.resultVLayout{display:flex;flex-direction:column;gap:3px;margin:6px 0}
+.resultSide{border:2px solid rgba(87,49,22,.25);border-radius:14px;padding:8px;background:rgba(255,255,255,.2)}
+.resultSide.resultWin{border-color:#ffd700!important;box-shadow:0 0 10px 3px rgba(255,215,0,.3),inset 0 0 8px rgba(255,215,0,.1);animation:resultGlow 1s ease-in-out infinite alternate}
+.resultSide .resultHandName{font-size:16px;font-weight:1000;color:#8c2015;margin-bottom:4px;text-align:center}
+.resultSide .resultCardRow{display:flex;gap:3px;justify-content:center;flex-wrap:wrap}
+.resultSide .resultCardRow .playCard{width:40px;height:56px;border-radius:7px;margin:0}
+.resultDmg{text-align:center;font-weight:1000;font-size:15px;margin:3px 0;color:#2b1a0a}
+@keyframes resultGlow{from{box-shadow:0 0 8px 2px rgba(255,215,0,.2),inset 0 0 6px rgba(255,215,0,.08)}to{box-shadow:0 0 16px 6px rgba(255,215,0,.4),inset 0 0 12px rgba(255,215,0,.18)}}
+
+.finalScore{font-size:42px;font-weight:1000;color:#2b1a0a;margin:4px 0;letter-spacing:4px}
+
+.cardPopup{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);z-index:75;animation:cardPopIn .3s ease both;pointer-events:none}
+.cardPopupInner{display:flex;flex-direction:column;align-items:center;gap:6px}
+.cardPopupText{margin-top:2px;font-size:14px;font-weight:1000;color:#ffe8b7;text-shadow:0 2px 4px #000,0 0 12px rgba(0,0,0,.6);text-align:center;white-space:nowrap}
+@keyframes cardPopIn{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}60%{transform:translate(-50%,-50%) scale(1.12)}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+
+.drawT0{background:linear-gradient(180deg,#8b1a1a,#4a0a0a)!important;border-color:#ffd700!important;color:#fff!important;box-shadow:0 0 12px 3px rgba(255,215,0,.3),inset 0 0 8px rgba(255,215,0,.1)!important}
+.drawT0 b{color:#ffd700!important}
+.drawT0 .big{text-shadow:0 0 10px rgba(255,215,0,.5)}
+.drawT1{background:linear-gradient(180deg,#3a1a5a,#1a0a2a)!important;border-color:#c986ff!important;color:#e0c0ff!important}
+.drawT1 b{color:#c986ff!important}
+.drawT2{background:linear-gradient(180deg,#1a3a5a,#0a1a2a)!important;border-color:#6fc1ff!important;color:#a0d0ff!important}
+.drawT2 b{color:#6fc1ff!important}
+.drawT3{background:linear-gradient(180deg,#3a2a1a,#1a1008)!important;border-color:#9b7650!important;color:#d0b080!important}
+.drawT3 b{color:#c0a070!important}
+.hpFloat{position:fixed;top:42%;z-index:70;font-size:42px;font-weight:1000;color:#ff3b3b;text-shadow:0 3px 0 #600,0 0 20px rgba(255,50,50,.5);pointer-events:none;animation:hpFloatUp .9s ease both}@keyframes hpFloatUp{0%{opacity:1;transform:translateY(0) scale(.8)}30%{opacity:1;transform:translateY(-18px) scale(1.15)}100%{opacity:0;transform:translateY(-50px) scale(1)}}
+
+.helpBtn{width:24px;height:24px;border-radius:50%;border:2px solid #c4a66a;background:rgba(255,255,255,.2);color:#c4a66a;font-weight:1000;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}.helpBtn:active{transform:scale(.9)}
+
+/* PvP */
+.pvpBtn{background:linear-gradient(135deg,#667eea,#764ba2)!important;color:#fff!important;border-color:#5a3a8a!important}.pvpBtn:active{transform:translateY(2px)}
+/* v9 hero merge - dark theme adapt */
+.heroArt{height:min(42vh,370px)!important;min-height:320px!important;margin:0 0 16px!important;border-radius:26px!important;background:radial-gradient(circle at 50% 17%,rgba(255,210,91,.32),transparent 34%),linear-gradient(180deg,#2a1409 0%,#4b2710 54%,#1c0c05 100%)!important;border-color:#8b5624!important;box-shadow:inset 0 2px 0 rgba(255,230,150,.08),inset 0 -22px 44px rgba(0,0,0,.28),0 6px 0 rgba(60,30,10,.35),0 14px 24px rgba(0,0,0,.18)!important}.heroArt:before{background:linear-gradient(90deg,transparent,rgba(255,220,130,.12) 48%,rgba(255,220,130,.12) 52%,transparent),radial-gradient(ellipse at 50% 18%,rgba(255,200,80,.08),transparent 58%)!important}.heroArt:after{content:"";position:absolute;inset:13px;border-radius:22px;border:1px solid rgba(255,200,100,.18);pointer-events:none}.heroContent{gap:14px!important;padding:20px 18px 18px!important}.heroLogoBadge{width:150px;height:128px;position:relative;display:flex;align-items:center;justify-content:center;margin-top:-2px}.badgeCard{position:absolute;bottom:11px;width:48px;height:66px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:1000;background:linear-gradient(180deg,#f3ddb0,#c9934e);border:1px solid #5a3215;color:rgba(42,22,7,.5);box-shadow:0 5px 9px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.4)}.badgeCardLeft{left:17px;transform:rotate(-13deg)}.badgeCardRight{right:17px;transform:rotate(13deg);color:rgba(180,50,30,.35)}.heroStarSvg{position:relative;z-index:2;width:128px;height:128px;overflow:visible}.heroStar{display:none!important}.saloonSign{min-width:210px!important;font-size:26px!important;padding:10px 30px!important;border-radius:18px!important;background:linear-gradient(180deg,#8a4d1e,#3e1b0b)!important;border:2px solid #e5a33d!important;color:#ffe5a0!important;text-shadow:0 2px 0 #2b1005!important;box-shadow:inset 0 1px 0 rgba(255,230,150,.12),inset 0 -8px 16px rgba(0,0,0,.15),0 4px 0 rgba(60,30,10,.4),0 8px 15px rgba(0,0,0,.2)!important;position:relative}.saloonSign:before,.saloonSign:after{content:"";position:absolute;top:50%;width:7px;height:7px;transform:translateY(-50%);border-radius:50%;background:linear-gradient(180deg,#e5a33d,#7a4218);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}.saloonSign:before{left:14px}.saloonSign:after{right:14px}.heroRankBox{max-width:350px!important;padding:12px 15px!important;border-radius:18px!important;background:rgba(0,0,0,.42)!important;border-color:rgba(255,200,100,.22)!important;box-shadow:inset 0 1px 0 rgba(255,230,170,.08),0 4px 0 rgba(0,0,0,.25),0 8px 16px rgba(0,0,0,.12)!important}.heroRankBar{height:7px!important;background:rgba(0,0,0,.4)!important}.heroRankBar i{background:linear-gradient(90deg,#ffd86a,#d99b2c,#b87416)!important}.heroRankMeta span{background:rgba(0,0,0,.28)!important;border-color:rgba(255,200,100,.12)!important;min-height:24px!important;font-size:11px!important}.mainBtns{margin-top:22px!important;gap:20px!important}.mainBtns .btn,.homeMainBtn{min-height:60px!important;height:60px!important;padding:0!important;font-size:20px!important;font-weight:1000!important;line-height:1!important;border-radius:16px!important}.funcCards{margin-top:28px!important;gap:12px!important}.funcCard{min-height:120px!important;padding:13px 8px!important}.funcIcon{font-size:28px!important}.funcTitle{font-size:13px!important}.funcDesc{font-size:10px!important}@media(max-height:820px){.heroArt{height:290px!important;min-height:280px!important}.heroContent{gap:11px!important;padding:16px!important}.heroLogoBadge{width:128px;height:104px}.badgeCard{width:40px;height:56px;font-size:23px;bottom:6px}.badgeCardLeft{left:14px}.badgeCardRight{right:14px}.heroStarSvg{width:104px;height:104px}.saloonSign{font-size:23px!important;min-width:198px!important;padding:8px 26px!important}.mainBtns{margin-top:18px!important;gap:16px!important}.mainBtns .btn,.homeMainBtn{min-height:56px!important;height:56px!important;font-size:18px!important}.funcCards{margin-top:20px!important}.funcCard{min-height:100px!important}}@media(max-height:720px){.heroArt{height:230px!important;min-height:220px!important}.heroContent{gap:8px!important;padding:12px!important}.heroLogoBadge{width:86px;height:70px}.badgeCard{display:none}.heroStarSvg{width:70px;height:70px}.saloonSign{font-size:20px!important;min-width:166px!important;padding:7px 20px!important}.mainBtns{margin-top:14px!important;gap:12px!important}.mainBtns .btn,.homeMainBtn{min-height:50px!important;height:50px!important;font-size:16px!important}.funcCards{margin-top:14px!important;gap:10px!important}.funcCard{min-height:85px!important;padding:9px 6px!important}.funcIcon{font-size:22px!important}}
+.chatBox{position:fixed;bottom:calc(66px + var(--safeB));left:50%;transform:translateX(-50%);width:var(--phoneW);z-index:10;background:transparent;pointer-events:none;display:flex;flex-direction:column}.chatBox>*{pointer-events:auto}.chatHeader{display:flex;align-items:center;gap:6px;padding:7px 14px;cursor:pointer;font-size:13px;font-weight:1000;color:#cba15e;user-select:none;background:rgba(0,0,0,.22);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:14px 14px 0 0;border:1px solid rgba(255,200,100,.1);border-bottom:none}.chatHeader:active{background:rgba(255,255,255,.05)}.chatBadge{background:#e03a2b;color:#fff;border-radius:999px;padding:1px 6px;font-size:10px;min-width:18px;text-align:center}.chatToggle{margin-left:auto;font-size:11px;color:#8a7050;transition:transform .2s}.chatBody{max-height:320px;overflow:hidden;transition:max-height .22s ease;background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:1px solid rgba(255,200,100,.08);border-right:1px solid rgba(255,200,100,.08)}.chatBody.collapsed{max-height:0!important}.chatMsgs{height:240px;overflow-y:auto;padding:4px 10px;font-size:13px;scrollbar-width:none}.chatMsgs::-webkit-scrollbar{display:none}.chatMsg{padding:3px 0;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;border-bottom:1px solid rgba(255,200,100,.05)}.chatName{font-weight:800;color:#ffd56a;white-space:nowrap;font-size:13px}.chatText{color:#ffffff;word-break:break-word;flex:1;text-shadow:0 1px 3px rgba(0,0,0,.5);font-size:14px}.chatTime{font-size:9px;color:#8a7560;white-space:nowrap}.chatInputRow{display:flex;gap:6px;padding:6px 10px 10px;border-top:1px solid rgba(255,200,100,.1);background:rgba(0,0,0,.08)}.chatInput{flex:1;min-height:34px;border-radius:10px;border:1px solid rgba(123,74,29,.5);background:rgba(0,0,0,.3);color:#ffe8b7;font-size:13px;padding:4px 10px;outline:none}.chatInput::placeholder{color:#6a5540}.chatSend{min-height:34px!important;padding:4px 14px!important;font-size:12px!important;border-radius:10px!important}
+</style>
+</head>
+<body>
+<div class="phone"><div id="app" class="screen"></div><div id="nav" class="nav"></div></div>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" onerror="this.remove();var s=document.createElement('script');s.src='/socket.io/socket.io.js';document.body.appendChild(s)"></script>
+<script>
+const LS='wild_poker_h5_v1';
+const SUITS=['♠','♥','♦','♣'];let uid=1;let battle=null;
+const PLAY_COUNTS=[3,3,3,4,5], HAND_LIMIT=7;
+const TIERS=['T0','T1','T2','T3'];
+const SKILLS=[
+{id:'fivejoker',tier:'T0',icon:'🃏',name:'5-Joker',type:'策略',effect:'前4回合抽1张；第5回合抽Joker百搭'},
+{id:'magician',tier:'T0',icon:'🎩',name:'魔术师',type:'复制',effect:'复制一张自己手牌'},
+{id:'thief',tier:'T0',icon:'🕵️',name:'神偷',type:'偷取',effect:'偷一张对方手牌'},
+{id:'fate',tier:'T0',icon:'✨',name:'命运一击',type:'转化',effect:'弃一张牌，获得同花色A'},
+{id:'hacker',tier:'T0',icon:'💻',name:'黑客',type:'复制',effect:'复制对手一张手牌'},
+{id:'lucky',tier:'T1',icon:'🍀',name:'幸运日',type:'增幅',effect:'本回合若打出顺子，视为同花顺'},
+{id:'destroyer',tier:'T1',icon:'🧩',name:'破坏专家',type:'干扰',effect:'随机弃掉对手2张手牌'},
+{id:'glove',tier:'T1',icon:'🧤',name:'白手套',type:'复制',effect:'复制一张公共牌到手牌'},
+{id:'burst',tier:'T1',icon:'⏫',name:'提前爆发',type:'额外',effect:'本回合可以多打1张牌'},
+{id:'god',tier:'T1',icon:'🎲',name:'赌神',type:'抽牌',effect:'随机获得A/K/Q一张'},
+{id:'plusminus',tier:'T2',icon:'➕',name:'加一减一',type:'调整',effect:'选择一张手牌点数+1或-1'},
+{id:'intel',tier:'T2',icon:'📋',name:'情报员',type:'选抽',effect:'额外抽2张，选1张加入手牌'},
+{id:'inspect',tier:'T2',icon:'🔍',name:'我要验牌',type:'信息',effect:'查看对方当前全部手牌'},
+{id:'recycle',tier:'T2',icon:'♻️',name:'回收',type:'回收',effect:'从弃牌记录取回1张曾打出的牌'},
+{id:'lock',tier:'T2',icon:'🔒',name:'封锁',type:'干扰',effect:'对手本回合少打一张牌'},
+{id:'shuffle',tier:'T3',icon:'🔀',name:'洗牌师',type:'置换',effect:'弃1张手牌，抽2张新牌'},
+{id:'rogue',tier:'T3',icon:'🔁',name:'交换师',type:'交换',effect:'选1张手牌与对方随机1张交换'},
+{id:'gambler',tier:'T2',icon:'🎲',name:'幸运赌徒',type:'随机',effect:'60%额外抽3张，否则弃1张手牌'},
+{id:'flushbeliever',tier:'T2',icon:'♠️',name:'同花信徒',type:'预支',effect:'本回合若打出同花组合，下回合额外抽2张'},
+{id:'delay',tier:'T2',icon:'⏳',name:'拖延',type:'干扰',effect:'令对手下回合少抽1张牌'},
+{id:'bomb',tier:'T2',icon:'🌀',name:'扰乱',type:'干扰',effect:'随机弃掉对方1张手牌'},
+{id:'charge',tier:'T3',icon:'⚡',name:'蓄力',type:'策略',effect:'本回合少打一张，下回合多打一张'}
+];
+const SM=Object.fromEntries(SKILLS.map(s=>[s.id,s]));
+const CHARS=[
+{id:'cowboy',icon:'🌟',name:'星光旅人',rarity:'普通',effect:'金币收益 +5%起，每级额外+2%'},
+{id:'sheriff',icon:'🛡️',name:'守护队长',rarity:'稀有',effect:'胜利额外钻石 +2💎起，每级+1💎'},
+{id:'lily',icon:'🎀',name:'幸运莉莉',rarity:'史诗',effect:'宝箱进度加速，每级+1进度'},
+{id:'miner',icon:'💎',name:'宝石收藏家',rarity:'传说',effect:'抽卡折扣 5%起，每级折扣+3%'}
+];
+const CM=Object.fromEntries(CHARS.map(c=>[c.id,c]));
+const CHARS_BY_NAME=Object.fromEntries(CHARS.map(c=>[c.name,c]));
+const RANK_CONFIG=[
+{name:'新手局',icon:'◇',stars:0,desc:'前3场保护，不掉星'},
+{name:'青铜',icon:'◆',stars:3,desc:'赢+1星，输不掉星'},
+{name:'白银',icon:'◆',stars:3,desc:'赢+1星，输-1星'},
+{name:'黄金',icon:'★',stars:4,desc:'赢+1星，输-1星'},
+{name:'铂金',icon:'★',stars:4,desc:'赢+1星，输-1星'},
+{name:'大师',icon:'♛',stars:0,desc:'积分制，胜+25 / 负-15'},
+{name:'传奇',icon:'♛',stars:0,desc:'1500分以上进入传奇'}
+];
+let state={};
+function q(s){return document.querySelector(s)}function qa(s){return [...document.querySelectorAll(s)]}
+function initState(){return{coins:2600,gems:460,rank:820,rankIdx:0,stars:0,points:1000,newbieGames:0,total:0,wins:0,streak:0,maxStreak:0,chest:0,autoPlay:false,difficulty:1,handCounts:[0,0,0,0,0,0,0,0,0,0],activeChar:'cowboy',equipped:['bomb','magician'],skills:{bomb:{copies:6,uses:0},magician:{copies:4,uses:0},intel:{copies:4,uses:0},plusminus:{copies:4,uses:0},lock:{copies:3,uses:0},god:{copies:2,uses:0},glove:{copies:3,uses:0},recycle:{copies:3,uses:0}},chars:{cowboy:{owned:true,lv:1,shards:0},sheriff:{owned:true,lv:1,shards:0},lily:{owned:false,lv:1,shards:0},miner:{owned:false,lv:1,shards:0}},tasks:{play:0,useSkill:0,winRound:0,straight:0},history:[]}}
+function load(){try{state=JSON.parse(localStorage.getItem(LS))||initState()}catch(e){state=initState()}for(const id of ['bomb','magician','intel','plusminus','glove','recycle'])state.skills[id]??={copies:3,uses:0};state.chars.cowboy??={owned:true,lv:1,shards:0};state.autoPlay??=false;state.difficulty??=1;state.handCounts??=[0,0,0,0,0,0,0,0,0,0];state.rankIdx??=0;state.stars??=0;state.points??=1000;state.newbieGames??=0;state.streak??=0;state.maxStreak??=state.streak||0;save()}
+function save(){localStorage.setItem(LS,JSON.stringify(state))}
+function rankCfg(){return RANK_CONFIG[Math.min(state.rankIdx||0,RANK_CONFIG.length-1)]}
+function rankProgressText(){const c=rankCfg();if((state.rankIdx||0)===0)return `${state.newbieGames||0}/3 场保护期`;if((state.rankIdx||0)>=5)return `${state.points||1000} 分`;return `${state.stars||0}/${c.stars} 星`}
+function setScreen(s){if(pvp&&(pvp.phase==='lobby'||pvp.phase==='battle')){socket.emit('leave_room');pvp=null}render(s)}
+function render(screen='home'){renderNav(screen);if(screen==='home')renderHome();if(screen==='deck')renderDeck();if(screen==='chars')renderChars();if(screen==='shop')renderShop();if(screen==='rank')renderRank();if(screen==='teach')renderTeach()}
+function renderNav(active){const items=[['home','🏠','主页'],['deck','🃏','功能牌'],['chars','🌟','角色'],['shop','🎁','抽卡'],['rank','🏆','排行']];q('#nav').innerHTML=items.map(i=>`<button class="${active===i[0]?'active':''}" onclick="setScreen('${i[0]}')"><b>${i[1]}</b>${i[2]}</button>`).join('')}
+function topbar(title,sub=''){return `<div class="topbar"><div><div class="title">${title}</div>${sub?`<div class="sub">${sub}</div>`:''}</div><div class="res"><span class="pill">🪙 ${state.coins}</span><span class="pill">💎 ${state.gems}</span></div></div>`}
+function renderHome(){const rc=rankCfg();const rankText=rankProgressText();q('#app').innerHTML=`${topbar('代号001')}
+<div class="homeLayout">
+  <div class="heroArt">
+    <div class="heroContent">
+      <div class="heroLogoBadge" aria-hidden="true">
+        <div class="badgeCard badgeCardLeft">♠</div>
+        <div class="badgeCard badgeCardRight">♦</div>
+        <svg class="heroStarSvg" viewBox="0 0 180 180" role="img" aria-label="star badge">
+          <defs>
+            <radialGradient id="badgeGlow" cx="38%" cy="28%" r="72%">
+              <stop offset="0%" stop-color="#fff7bf"/>
+              <stop offset="42%" stop-color="#f7c944"/>
+              <stop offset="72%" stop-color="#d58a18"/>
+              <stop offset="100%" stop-color="#8c4b0d"/>
+            </radialGradient>
+            <linearGradient id="badgeRing" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#fff1ac"/>
+              <stop offset="45%" stop-color="#d89926"/>
+              <stop offset="100%" stop-color="#7d3f0a"/>
+            </linearGradient>
+            <filter id="badgeShadow" x="-30%" y="-30%" width="160%" height="170%">
+              <feDropShadow dx="0" dy="9" stdDeviation="5" flood-color="#5a3510" flood-opacity="0.35"/>
+            </filter>
+          </defs>
+          <circle cx="90" cy="88" r="67" fill="url(#badgeRing)" filter="url(#badgeShadow)"/>
+          <circle cx="90" cy="88" r="57" fill="#f7d46a" opacity="0.95"/>
+          <circle cx="90" cy="88" r="45" fill="#f0b42f" opacity="0.35"/>
+          <g opacity="0.82">
+            <path d="M90 8 L96 42 L90 58 L84 42 Z" fill="#f0aa28"/>
+            <path d="M144 31 L123 59 L106 65 L118 49 Z" fill="#e7a224"/>
+            <path d="M171 88 L136 96 L119 90 L136 82 Z" fill="#dc9220"/>
+            <path d="M144 145 L118 124 L106 110 L123 117 Z" fill="#c77c17"/>
+            <path d="M90 171 L84 136 L90 119 L96 136 Z" fill="#b86c12"/>
+            <path d="M36 145 L57 117 L74 110 L62 124 Z" fill="#c77c17"/>
+            <path d="M9 88 L44 82 L61 90 L44 96 Z" fill="#dc9220"/>
+            <path d="M36 31 L62 49 L74 65 L57 59 Z" fill="#e7a224"/>
+          </g>
+          <path d="M90 29 L105 69 L148 71 L113 96 L126 138 L90 113 L54 138 L67 96 L32 71 L75 69 Z" fill="url(#badgeGlow)" stroke="#8a4a0d" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M90 29 L105 69 L90 81 L75 69 Z" fill="#fff3a8" opacity="0.78"/>
+          <path d="M105 69 L148 71 L113 96 L90 81 Z" fill="#f8c63f" opacity="0.58"/>
+          <path d="M90 81 L113 96 L126 138 L90 113 Z" fill="#c97914" opacity="0.42"/>
+          <path d="M90 81 L90 113 L54 138 L67 96 Z" fill="#e59d1d" opacity="0.52"/>
+          <path d="M90 81 L67 96 L32 71 L75 69 Z" fill="#ffd85a" opacity="0.48"/>
+          <circle cx="67" cy="56" r="5" fill="#fff4b5" opacity="0.9"/>
+          <path d="M123 43 L134 36 M129 52 L145 50" stroke="#fff0a8" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="saloonSign">CODE 001</div>
+      <div class="heroRankBox">
+        <div class="heroRankTop">
+          <div class="heroRankTitle">🏆 当前段位</div>
+          <div class="heroRankValue">${rc.icon} ${rc.name} · ${rankText}</div>
+        </div>
+        <div class="heroRankBar"><i style="width:${(state.rankIdx||0)===0?Math.min(100,(state.newbieGames||0)/3*100):(state.rankIdx||0)<5?Math.min(100,(state.stars||0)/rc.stars*100):Math.min(100,(state.points||1000)/1500*100)}%"></i></div>
+        <div class="heroRankMeta">
+          <span>⚔️ ${state.total||0} 场</span>
+          <span>🔥 ${state.streak||0} 连胜</span>
+          <span>🎁 ${state.chest||0}/10</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mainBtns">
+    <div class="btn homeMainBtn" onclick="quickBattle()">🃏 开始对战</div>
+    <div class="btn homeMainBtn" onclick="showPvPHome()">🌐 联机对战</div>
+  </div>
+  <div class="funcCards">
+    <div class="funcCard" onclick="startTutorial()">
+      <span class="funcIcon">📖</span>
+      <span class="funcTitle">新手引导</span>
+      <span class="funcDesc">从零开始学规则</span>
+    </div>
+    <div class="funcCard" onclick="setScreen('teach')">
+      <span class="funcIcon">🏆</span>
+      <span class="funcTitle">牌型</span>
+      <span class="funcDesc">查看牌型排行榜</span>
+    </div>
+    <div class="funcCard" onclick="showAchievements()">
+      <span class="funcIcon">📊</span>
+      <span class="funcTitle">成就</span>
+      <span class="funcDesc">查看战斗记录</span>
+    </div>
+  </div>
+</div>
+<div class="chatBox">
+  <div class="chatHeader" onclick="toggleChat()">
+    <span>💬 聊天</span>
+    <span class="chatBadge hidden" id="chatBadge">0</span>
+    <span id="onlineCount" style="margin-left:auto;font-size:10px;color:#8daa7a">🟢 0</span>
+    <span class="chatToggle" id="chatToggle">▸</span>
+  </div>
+  <div class="chatBody collapsed" id="chatBody">
+    <div class="chatMsgs" id="chatMsgs">
+      <div class="chatMsg" style="color:#d0b890;font-size:13px;padding:6px 0;border:0">连接后可聊天...</div>
+    </div>
+    <div class="chatInputRow">
+      <input class="chatInput" id="chatInput" placeholder="说点什么..." maxlength="200" onkeydown="if(event.key==='Enter')sendChat()">
+      <div class="btn chatSend" onclick="sendChat()">发送</div>
+    </div>
+  </div>
+</div>
+<div class="dailyFab" onclick="showDailyProgress()">📋</div>`}
+var TASK_REWARDS=[['play',15],['useSkill',15],['winRound',15],['straight',25]]
+function taskLine(t,v,max,i){const done=v>=max;return `<div class="shopItem"><div>${done?'✅':'⬜'} ${t}<br><span class="small muted">进度 ${Math.min(v,max)}/${max}</span></div><span class="pill" style="${done?'background:#c9822d;color:#fff':''}" onclick="${done?'claimTask('+i+')':''}">${done?'可领奖':'进行中'}</span></div>`}
+function ownedSkills(){return Object.keys(state.skills).filter(id=>(state.skills[id].copies||0)>0).sort((a,b)=>TIERS.indexOf(SM[a].tier)-TIERS.indexOf(SM[b].tier)||SM[a].name.localeCompare(SM[b].name,'zh'))}
+function renderDeck(){const owned=ownedSkills();const equipped=state.equipped.filter(id=>(state.skills[id]?.copies||0)>0);state.equipped=equipped;save();let html=`${topbar('功能牌仓库','功能牌为消耗品：带入一局就消耗1张，不走升级')}
+<div class="panel"><b>当前带入：${equipped.length}/2</b><div class="hr"></div><div class="grid3">${equipped.map(id=>skillCard(id,true,true,'toggleEquip')).join('')||'<div class="paper">暂无带入牌</div>'}</div></div>`;
+for(const tier of TIERS){const list=owned.filter(id=>SM[id].tier===tier);if(!list.length)continue;html+=`<div class="tierHead ${tier}">${tier}<span>${tier==='T0'?'最强级别':tier==='T1'?'高级':tier==='T2'?'中级':'普通'}</span></div><div class="grid3">${list.map(id=>skillCard(id,equipped.includes(id),true,'toggleEquip')).join('')}</div>`}
+html+=`<div class="paper small">未抽到或库存为0的功能牌不展示。去抽卡页可获得更多库存。</div>`;q('#app').innerHTML=html}
+function skillCard(id,equipped,compact,toggleFn){var s=SM[id],n=state.skills[id]?.copies||0;var fn=toggleFn||'toggleEquip';var btn=compact?'':'<div class="btn dark" style="min-height:30px;padding:4px 0;font-size:11px">'+(equipped?'已带入':'选择带入')+'</div>';var cls='skillCard tier-'+s.tier+(equipped?' equipped':'')+(compact?' compact':'');return '<div class="'+cls+'" onclick="'+fn+'(\''+id+'\')"><span class="countBadge">×'+n+'</span><div class="skillName '+(s.tier==='T0'?'rarity-T0':'')+'">'+s.icon+' '+s.name+'</div><div class="small muted">'+s.tier+' · '+s.type+'</div><div class="skillEffect">'+s.effect+'</div>'+btn+'</div>'}
+
+function claimTask(i){var k=['play','useSkill','winRound','straight'][i],m=[3,5,6,1][i];if(state.tasks[k]<m)return;if(state.tasks[k]===-1)return toast('\u5DF2\u9886\u53D6');state.tasks[k]=-1;state.gems+=TASK_REWARDS[i][1];save();toast('+'+TASK_REWARDS[i][1]+'\u{1F48E}');renderHome()}
+function toggleEquip(id){if(!state.skills[id]||state.skills[id].copies<=0)return;let e=state.equipped||[];if(e.includes(id))e=e.filter(x=>x!==id);else{if(e.length>=2)return toast('每局只能带入2张功能牌');e.push(id)}state.equipped=e;save();renderDeck()}
+function toggleEquipBattle(id){if(!state.skills[id]||state.skills[id].copies<=0)return;let e=state.equipped||[];if(e.includes(id))e=e.filter(x=>x!==id);else{if(e.length>=2)return toast('每局只能带入2张功能牌');e.push(id)}state.equipped=e;save();renderBattleSelect()}
+function renderBattleSelect(){const e=(state.equipped||[]).filter(id=>state.skills[id]?.copies>0);const all=ownedSkills().filter(id=>!e.includes(id));q('#app').innerHTML=`${topbar(state.mode==='ranked'?'天梯准备':'对战准备','直接在此选择2张功能牌带入对局')}
+<div class="btn ${e.length===2?'':'disabled'}" onclick="startBattle()">${e.length===2?'🃏 开始对战':'还需选择'+(2-e.length)+'张功能牌'}</div>
+<div class="panel"><b>已选功能牌（点击取消）</b><div class="hr"></div><div class="grid3">${e.length?e.map(id=>skillCard(id,true,true,'toggleEquipBattle')).join(''):'<div class="paper" style="text-align:center;color:#8b7550">请选择2张功能牌</div>'}</div></div>
+${all.length?`<div class="panel"><b>可用功能牌（点击选择）</b><div class="hr"></div>${TIERS.map(function(t){var tierSkills=all.filter(function(id){return SM[id].tier===t});if(!tierSkills.length)return '';return '<div class="tierHead '+t+'">'+t+'<span>'+(t==='T0'?'最强':t==='T1'?'高级':t==='T2'?'中级':'普通')+'</span></div><div class="grid3">'+tierSkills.map(function(id){return skillCard(id,false,true,'toggleEquipBattle')}).join('')+'</div>'}).join('')}</div></div>`:''}
+<div class="panel"><b>对手难度</b><div class="hr"></div><div class="difficultyRow"><button class="diffBtn ${state.difficulty===0?'active':''}" onclick="setDifficulty(0)">😴 简单</button><button class="diffBtn ${state.difficulty===1?'active':''}" onclick="setDifficulty(1)">🎯 中等</button><button class="diffBtn ${state.difficulty===2?'active':''}" onclick="setDifficulty(2)">🔥 困难</button></div></div>`;qa('.skillCard').forEach(function(el){el.onclick=function(){var id=el.getAttribute('onclick');if(id){var m=id.match(/'(.*?)'/);if(m)toggleEquipBattle(m[1])}}})}
+function renderChars(){let html=`${topbar('角色','角色正常升级，主要影响局外收益和轻量对局保护')}`;for(const c of CHARS){const cs=state.chars[c.id]||{owned:false,lv:1,shards:0};if(!cs.owned&&cs.shards<=0)continue;html+=`<div class="charCard"><div style="display:flex;gap:10px;align-items:center"><div class="avatar">${c.icon}</div><div style="flex:1"><div class="skillName">${c.name} <span class="pill">Lv.${cs.lv}</span></div><div class="small muted">${c.rarity}</div><div class="skillEffect">${c.effect}</div><div class="levelBar"><i style="width:${Math.min(100,cs.shards/charNeed(cs.lv)*100)}%"></i></div><div class="small muted">碎片 ${cs.shards}/${charNeed(cs.lv)}</div></div></div><div class="grid2" style="margin-top:8px"><div class="btn dark" onclick="activeChar('${c.id}')">${state.activeChar===c.id?'已上阵':'上阵'}</div><div class="btn ${cs.shards>=charNeed(cs.lv)?'':'disabled'}" onclick="upChar('${c.id}')">升级</div></div></div>`}q('#app').innerHTML=html}
+function charNeed(lv){return 8+lv*4}function charLv(id){return state.chars[id]?.lv||1}function activeChar(id){if(!state.chars[id]?.owned)return;state.activeChar=id;save();renderChars()}function upChar(id){const c=state.chars[id];const need=charNeed(c.lv);if(c.shards<need||state.coins<need*80)return toast('碎片或金币不足');c.shards-=need;state.coins-=need*80;c.lv++;save();renderChars();toast('角色升级成功')}
+function renderShop(){q('#app').innerHTML=`${topbar('抽卡商店','获得功能牌库存与角色碎片')}
+<div class="panel"><b>功能牌卡包</b><div class="hr"></div><div class="shopItem"><div>单抽功能牌<br><span class="small muted">随机获得1张功能牌库存</span></div><div class="btn" onclick="drawSkills(1)">💎60</div></div><div class="shopItem"><div>十连功能牌<br><span class="small muted">至少1张T1以上</span></div><div class="btn" onclick="drawSkills(10)">💎540</div></div></div>
+<div class="panel"><b>角色招募</b><div class="hr"></div><div class="shopItem"><div>单抽角色<br><span class="small muted">获得角色或碎片</span></div><div class="btn" onclick="drawChars(1)">💎90</div></div><div class="shopItem"><div>十连角色<br><span class="small muted">额外碎片奖励</span></div><div class="btn" onclick="drawChars(10)">💎810</div></div></div>
+<div class="panel"><b>测试入口</b><div class="hr"></div><div class="grid2"><div class="btn dark" onclick="state.gems+=500;save();renderShop()">+500钻石</div><div class="btn dark" onclick="state.coins+=3000;save();renderShop()">+3000金币</div></div></div>`}
+function drawSkills(n){var disc=state.activeChar==='miner'?Math.min(0.3,0.05+(charLv(state.activeChar)-1)*0.03):0;const cost=Math.floor((n===10?540:60)*(1-disc));if(state.gems<cost)return toast('钻石不足');state.gems-=cost;let results=[];for(let i=0;i<n;i++){let pool=SKILLS;let r=Math.random();let tier=r<.06?'T0':r<.23?'T1':r<.55?'T2':'T3';let p=pool.filter(s=>s.tier===tier);let s=p[Math.floor(Math.random()*p.length)];state.skills[s.id]??={copies:0,uses:0};state.skills[s.id].copies++;results.push({icon:s.icon,name:s.name,sub:s.tier})}results.sort((a,b)=>{var o=['T0','T1','T2','T3'];return o.indexOf(a.sub)-o.indexOf(b.sub)});save();showDraw(results,'功能牌抽取')}
+function drawChars(n){var disc=state.activeChar==='miner'?Math.min(0.3,0.05+(charLv(state.activeChar)-1)*0.03):0;const cost=Math.floor((n===10?810:90)*(1-disc));if(state.gems<cost)return toast('钻石不足');state.gems-=cost;let results=[];for(let i=0;i<n;i++){let c=CHARS[Math.floor(Math.random()*CHARS.length)],cs=state.chars[c.id]??{owned:false,lv:1,shards:0};if(cs.owned){cs.shards+=3;results.push({icon:c.icon,name:c.name,sub:'重复 +3碎片'})}else{cs.owned=true;results.push({icon:c.icon,name:c.name,sub:'新角色'})}state.chars[c.id]=cs}save();showDraw(results,'角色招募')}
+function showDraw(arr,title){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="modalBox"><div class="title" style="color:#321707">${title}</div><div class="drawGrid">${arr.map(x=>{var tc='';if(x.sub==='T0')tc='drawT0';else if(x.sub==='T1')tc='drawT1';else if(x.sub==='T2')tc='drawT2';else if(x.sub==='T3')tc='drawT3';return '<div class="drawReveal '+tc+'"><div class="big">'+x.icon+'</div><b>'+x.name+'</b><span class="small muted">'+x.sub+'</span></div>'}).join('')}</div><div class="btn" id="okDraw">确定</div></div>`;document.body.appendChild(m);q('#okDraw').onclick=()=>{m.remove();renderShop()}}
+function updateLadder(won){state.total++;if(won){state.wins++;state.streak++;state.maxStreak=Math.max(state.maxStreak||0,state.streak||0)}else state.streak=0;if((state.rankIdx||0)===0){state.newbieGames=(state.newbieGames||0)+1;if(state.newbieGames>=3){state.rankIdx=1;state.stars=0}return won?'新手保护 +1场':'新手保护，不掉星'}const cfg=rankCfg();if((state.rankIdx||0)<=4){if(won){state.stars=(state.stars||0)+1;if(state.streak>=3&&state.rankIdx<4)state.stars++;if(state.stars>=cfg.stars&&state.rankIdx<5){state.rankIdx++;state.stars=0;return '升段！'}}else if(state.rankIdx>1){state.stars--;if(state.stars<0){state.rankIdx--;state.stars=RANK_CONFIG[state.rankIdx].stars-1;return '降段'}}return won?'天梯 +1星':'天梯 -1星'}state.points=Math.max(0,(state.points||1000)+(won?25:-15));if(state.rankIdx===5&&state.points>=1500)state.rankIdx=6;return won?'天梯 +25分':'天梯 -15分'}
+function renderRank(){const cfg=rankCfg(),winrate=state.total?Math.round(state.wins/state.total*100):0;let fake=[['Nova',1480,31],['Mint Queen',1360,28],['Card Pilot',1270,22],['你',state.points||state.rank,state.wins],['Sunny',820,12],['Lily Pop',740,9]].sort((a,b)=>b[1]-a[1]);q('#app').innerHTML=`${topbar('天梯','新手保护 + 星级段位 + 高段积分')}
+<div class="ladderHero"><div class="ladderIcon">${cfg.icon}</div><div class="ladderName">${cfg.name}</div><div class="ladderStars">${(state.rankIdx||0)>0&&(state.rankIdx||0)<5?'★'.repeat(state.stars||0)+'☆'.repeat(Math.max(0,cfg.stars-(state.stars||0))):rankProgressText()}</div><div class="small muted">${cfg.desc}</div><div class="ladderTrack"><i style="width:${(state.rankIdx||0)===0?Math.min(100,(state.newbieGames||0)/3*100):(state.rankIdx||0)<5?Math.min(100,(state.stars||0)/cfg.stars*100):Math.min(100,(state.points||1000)/1500*100)}%"></i></div></div>
+<div class="grid2"><div class="panel" style="text-align:center"><b>${state.total}</b><br><span class="small muted">总场次</span></div><div class="panel" style="text-align:center"><b>${state.wins}</b><br><span class="small muted">胜场</span></div><div class="panel" style="text-align:center"><b>${winrate}%</b><br><span class="small muted">胜率</span></div><div class="panel" style="text-align:center"><b>${state.streak||0}</b><br><span class="small muted">连胜</span></div></div>
+<div class="btn" onclick="quickBattle()">开始对战</div>
+<div class="panel"><b>段位路径</b><div class="hr"></div>${RANK_CONFIG.map((r,i)=>`<div class="rankItem ${i===(state.rankIdx||0)?'me':''}"><b>${r.icon}</b><div><b>${r.name}</b><br><span class="small muted">${r.desc}</span></div>${i===(state.rankIdx||0)?'<span class="pill">当前</span>':''}</div>`).join('')}</div>
+<div class="panel"><b>模拟排行榜</b><div class="hr"></div>${fake.map((x,i)=>`<div class="rankItem ${x[0]==='你'?'me':''}"><b>#${i+1}</b><div><b>${x[0]}</b><br><span class="small muted">胜场 ${x[2]}</span></div><span class="pill">${x[1]}</span></div>`).join('')}</div>`}
+var HANDS_EX=[
+{name:'皇家同花顺',emoji:'👑',cards:[{rank:14,suit:'♠'},{rank:13,suit:'♠'},{rank:12,suit:'♠'},{rank:11,suit:'♠'},{rank:10,suit:'♠'}]},
+{name:'同花顺',emoji:'🔥',cards:[{rank:9,suit:'♥'},{rank:8,suit:'♥'},{rank:7,suit:'♥'},{rank:6,suit:'♥'},{rank:5,suit:'♥'}]},
+{name:'四条',emoji:'💪',cards:[{rank:4,suit:'♠'},{rank:4,suit:'♥'},{rank:4,suit:'♣'},{rank:4,suit:'♦'},{rank:9,suit:'♠'}]},
+{name:'葫芦',emoji:'🏠',cards:[{rank:7,suit:'♥'},{rank:7,suit:'♠'},{rank:7,suit:'♦'},{rank:3,suit:'♣'},{rank:3,suit:'♥'}]},
+{name:'同花',emoji:'🌸',cards:[{rank:13,suit:'♠'},{rank:10,suit:'♠'},{rank:7,suit:'♠'},{rank:5,suit:'♠'},{rank:2,suit:'♠'}]},
+{name:'顺子',emoji:'📏',cards:[{rank:9,suit:'♥'},{rank:8,suit:'♠'},{rank:7,suit:'♦'},{rank:6,suit:'♣'},{rank:5,suit:'♥'}]},
+{name:'三条',emoji:'🎯',cards:[{rank:11,suit:'♠'},{rank:11,suit:'♥'},{rank:11,suit:'♦'},{rank:4,suit:'♣'},{rank:2,suit:'♠'}]},
+{name:'两对',emoji:'✌',cards:[{rank:14,suit:'♠'},{rank:14,suit:'♥'},{rank:9,suit:'♣'},{rank:9,suit:'♦'},{rank:3,suit:'♠'}]},
+{name:'一对',emoji:'🥢',cards:[{rank:13,suit:'♠'},{rank:13,suit:'♥'},{rank:7,suit:'♣'},{rank:5,suit:'♦'},{rank:2,suit:'♠'}]},
+{name:'高牌',emoji:'📄',cards:[{rank:14,suit:'♠'},{rank:13,suit:'♥'},{rank:7,suit:'♣'},{rank:5,suit:'♦'},{rank:2,suit:'♠'}]}
+];
+function showAchievements(){if(!state.handCounts||state.handCounts.length<10)state.handCounts=[0,0,0,0,0,0,0,0,0,0];var h=['皇家同花顺','同花顺','四条','葫芦','同花','顺子','三条','两对','一对','高牌'];var totalHands=state.handCounts.reduce(function(a,b){return a+b},0);var bestIdx=0;state.handCounts.forEach(function(n,i){if(n>state.handCounts[bestIdx])bestIdx=i});var skData=Object.entries(state.skills).filter(function(e){return e[1].uses>0}).sort(function(a,b){return b[1].uses-a[1].uses});var m=document.createElement('div');m.className='modal';m.innerHTML='<div class="modalBox"><div class="title" style="color:#321707">📊 成就</div><div style="max-height:65vh;overflow-y:auto"><div class="panel" style="margin:6px 0"><b>📈 总览</b><div style="margin-top:4px">🏆 总场次: '+state.total+'</div><div>🎯 胜率: '+state.wins+'/'+state.total+' ('+(state.total?Math.round(state.wins/state.total*100):0)+'%)</div><div>🔥 最大连胜: '+state.maxStreak+'</div><div>💰 金币: '+state.coins+'</div><div>💎 钻石: '+state.gems+'</div></div><div class="panel" style="margin:6px 0"><b>🃏 牌型记录（从大到小）</b>'+h.map(function(n,i){return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px;border-bottom:1px solid rgba(100,60,20,.08)"><span>'+h[i]+'</span><span>'+(state.handCounts[9-i]||0)+'次</span></div>'}).join('')+'<div style="margin-top:4px;font-size:12px;color:#8b7550">共计 '+totalHands+' 次牌型</div></div><div class="panel" style="margin:6px 0"><b>⚡ 功能牌使用</b>'+(skData.length?skData.map(function(e){return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px;border-bottom:1px solid rgba(100,60,20,.08)"><span>'+SM[e[0]].icon+' '+SM[e[0]].name+'</span><span>'+e[1].uses+'次</span></div>'}).join(''):'<div class="muted" style="padding:4px 0">暂无使用记录</div>')+'</div></div><div class="btn" style="margin-top:8px" id="closeAch">知道了</div></div>';document.body.appendChild(m);q('#closeAch').onclick=function(){m.remove()};m.onclick=function(e){if(e.target===m)m.remove()}}
+function renderTeach(){q('#app').innerHTML=`${topbar('牌型教学','新手先看这个，再去决斗')}
+<div class="paper"><b>核心规则</b><br>开局3张公共牌整局固定。每回合只用"本回合打出的牌 + 3张公共牌"组成最多5张最大牌型。未打出的手牌不参与比牌。</div>
+<div class="panel"><b>回合出牌</b><div class="hr"></div><div class="grid3"><div class="paper">1局<br><b>打3</b></div><div class="paper">2局<br><b>打3</b></div><div class="paper">3局<br><b>打3</b></div><div class="paper">4局<br><b>打4</b></div><div class="paper">5局<br><b>打5</b></div><div class="paper">胜负<br><b>5盘3胜</b></div></div></div>
+<div class="paper"><b>牌型从高到低（卡牌举例）</b><div style="max-height:50vh;overflow-y:auto">${HANDS_EX.map(function(h,i){var s='';h.cards.forEach(function(c){s+='<div class="playCard smallCard'+(c.suit=="♥"||c.suit=="♦"?' redSuit':'')+'" style="width:38px;height:52px;font-size:11px;display:inline-flex;margin:0 -4px"><div class="rank" style="font-size:13px">'+({14:'A',13:'K',12:'Q',11:'J',10:'10'}[c.rank]||String(c.rank))+'</div><div class="suit" style="font-size:18px">'+c.suit+'</div></div>'});return '<div style="padding:6px 0;border-bottom:1px solid rgba(100,60,20,.12)"><div style="font-size:14px;font-weight:1000;margin-bottom:4px">'+(i+1)+'. '+h.emoji+' '+h.name+'</div><div style="display:flex;gap:0;justify-content:center">'+s+'</div></div>'}).join('')}</div></div><div class="btn" onclick="setScreen('home')" style="margin-top:12px">← 返回主页</div>`}function newDeck(){let d=[];for(const s of SUITS)for(let r=2;r<=14;r++)d.push({id:'c'+uid++,rank:r,suit:s});return shuffle(d)}function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}function draw(deck,n){let out=[];while(n-- >0){if(!deck.length)deck.push(...newDeck());out.push(deck.pop())}return out}function clone(c){return {...c,id:'c'+uid++}}
+function toggleAuto(){state.autoPlay=!state.autoPlay;save();renderBattle();if(state.autoPlay)setTimeout(autoPlayTurn,500)}
+function autoPlayTurn(){if(!battle||!state.autoPlay)return;if(battle.phase==='select'){var p=battle.player,need=roundNeed('player');battle.selected=[];var best=chooseBest(p.hand,need,p.buff);battle.selected=best.map(function(c){return c.id});renderBattle();setTimeout(function(){if(state.autoPlay&&battle&&battle.phase==='select')submitPlay()},500)}}
+function setDifficulty(n){state.difficulty=n;save();renderBattleSelect()}
+function startTutorial(){state.mode='tutorial';showTutorialIntro()}
+// startRankedBattle removed - use unified battle entry
+function showTutorialIntro(){const m=document.createElement('div');m.className='tutorialOverlay';m.innerHTML=`<div class="tutorialBox" style="text-align:center"><div class="tutorialDots">● ○ ○ ○ ○</div><h3>🎯 新手教学</h3><p style="font-size:15px;line-height:1.7">会用你手上的牌给你演示一遍怎么玩。<br>教学不消耗任何道具，放心点开始。</p><div class="tutorialActions"><button class="btn dark" id="skipTut">跳过</button><button class="btn" id="goTut">开始教学</button></div></div>`;document.body.appendChild(m);q('#skipTut').onclick=()=>{m.remove();state.mode='normal';setScreen('home')};q('#goTut').onclick=()=>{m.remove();startBattle(true)}}
+function startBattle(tutorial=false){let eq=tutorial?['glove','recycle']:(state.equipped||[]).filter(id=>state.skills[id]?.copies>0).slice(0,2);if(eq.length<2)return toast('需要带入2张功能牌');if(!tutorial){for(const id of eq)state.skills[id].copies--;state.equipped=state.equipped.filter(id=>state.skills[id]?.copies>0).slice(0,2)}let deck=newDeck();let diff=Math.min(2,Math.max(0,state.difficulty||1));var oppPool=diff>=2?SKILLS.filter(function(s){return s.tier!=='T3'}):diff<=0?SKILLS.filter(function(s){return s.tier!=='T0'}):SKILLS;let oppSkills=shuffle(oppPool).slice(0,2).map(s=>s.id);battle={round:1,phase:'select',deck,community:draw(deck,3),selected:[],logs:[],last:null,roundWins:{player:0,opp:0},mode:state.mode,player:makeFighter('你',CM[state.activeChar],eq,draw(deck,7)),opp:makeFighter('对手',CM[shuffle(CHARS)[0].id],oppSkills,draw(deck,7))};if(tutorial)setupTutorialBattle();log(`${tutorial?'教学':'对战'}开始：发出3张公共牌，整局固定。`);save();renderBattle();if(tutorial)setTimeout(()=>showTutorialStep(1),250);else setTimeout(aiStartSkill,500)}
+function quickBattle(){const eq=(state.equipped||[]).filter(id=>state.skills[id]?.copies>0);if(eq.length<2){toast('请先设置2张功能牌');setScreen('deck');return}state.mode='ranked';startBattle()}
+function showDailyProgress(){const rc=rankCfg();const winrate=state.total?Math.round(state.wins/state.total*100):0;const m=document.createElement('div');m.className='modal';m.innerHTML='<div class="modalBox"><div class="title" style="color:#321707;font-size:22px">📋 今日进度</div><div class="hr"></div><div class="grid2"><div class="paper" style="padding:8px;margin:4px"><b>段位</b><br>'+rc.icon+' '+rc.name+' · '+rankProgressText()+'</div><div class="paper" style="padding:8px;margin:4px"><b>胜率</b><br>'+state.wins+'/'+state.total+' · '+winrate+'%</div></div><div class="paper" style="padding:8px;margin:6px 0;cursor:'+(state.chest>=10?'pointer':'default')+'" onclick="'+(state.chest>=10?'openChest();this.closest(\'.modal\').remove()':'')+'"><div style="display:flex;justify-content:space-between;align-items:center"><b>🎁 宝箱进度</b><span style="font-weight:1000">'+(state.chest>=10?'✨ 点击开启!':state.chest+'/10')+'</span></div><div class="levelBar"><i style="width:'+(state.chest*10)+'%"></i></div></div><div style="display:flex;flex-direction:column;gap:4px">'+taskLine('完成3局对战',state.tasks.play,3,0)+taskLine('使用5次功能牌',state.tasks.useSkill,5,1)+taskLine('赢下6个回合',state.tasks.winRound,6,2)+taskLine('打出顺子或以上',state.tasks.straight,1,3)+'</div><div class="btn" onclick="this.parentElement.parentElement.remove()" style="margin-top:8px">关闭</div></div>';document.body.appendChild(m);m.onclick=function(e){if(e.target===m)m.remove()}}
+function makeFighter(name,char,skills,hand){return{name,char,hp:3,hand,played:[],discard:[],skillDeck:skills.map(id=>SM[id]),skills:Object.fromEntries(skills.map(id=>[id,{id,charge:1,used:false}])),skillUses:0,buff:{},playBonus:0,nextPlayBonus:0,nextDrawBonus:0,nextDrawPenalty:0,locked:false,revealed:false}}
+function tutorialCard(rank,suit){return{id:'t'+uid++,rank,suit}}
+function setupTutorialBattle(){battle.community=[tutorialCard(11,'♠'),tutorialCard(12,'♦'),tutorialCard(13,'♣')];battle.player.hand=[tutorialCard(14,'♥'),tutorialCard(14,'♦'),tutorialCard(5,'♠'),tutorialCard(8,'♣'),tutorialCard(3,'♦'),tutorialCard(6,'♥'),tutorialCard(9,'♠')];battle.opp.hand=[tutorialCard(2,'♠'),tutorialCard(4,'♠'),tutorialCard(5,'♣'),tutorialCard(7,'♦'),tutorialCard(8,'♥'),tutorialCard(10,'♠'),tutorialCard(3,'♣')];battle.logs=[];battle.tutorialStep=1}
+
+
+
+function openChest(){if(state.chest<10)return;state.chest=0;state.gems+=50;save();toast('🎁 宝箱已开启！获得 50💎');renderHome()}
+function showCardPopup(card,text){if(!card)return;var d=document.createElement('div');d.className='cardPopup';d.innerHTML='<div class="cardPopupInner">'+cardHtml(card,'large')+'<div class="cardPopupText">'+text+'</div></div>';document.body.appendChild(d);setTimeout(function(){d.remove()},1800)}
+
+function showHandChart(){var m=document.createElement('div');m.className='modal';m.innerHTML='<div class="modalBox"><div class="title" style="color:#321707;margin-bottom:6px">📖 牌型表（从大到小）</div><div style="max-height:65vh;overflow-y:auto">'+HANDS_EX.map(function(h,i){var s='';h.cards.forEach(function(c){s+='<div class="playCard smallCard'+(c.suit=="♥"||c.suit=="♦"?' redSuit':'')+'" style="width:32px;height:45px;font-size:10px;display:inline-flex;margin:0 -3px"><div class="rank" style="font-size:11px">'+({14:'A',13:'K',12:'Q',11:'J',10:'10'}[c.rank]||String(c.rank))+'</div><div class="suit" style="font-size:15px">'+c.suit+'</div></div>'});return '<div style="padding:5px 0;border-bottom:1px solid rgba(100,60,20,.1)"><div style="font-size:13px;font-weight:1000;margin-bottom:3px">'+(i+1)+'. '+h.emoji+' '+h.name+'</div><div style="display:flex;gap:0;justify-content:center">'+s+'</div></div>'
+}).join('')+'</div><div class="btn" style="margin-top:10px" id="closeChart">知道了</div></div>';document.body.appendChild(m);q('#closeChart').onclick=function(){m.remove()};m.onclick=function(e){if(e.target===m)m.remove()}}
+function showSkillDetail(id){var s=SM[id];if(!s)return;var m=document.createElement('div');m.className='modal';m.innerHTML='<div class="modalBox"><div class="title" style="color:#321707;margin-bottom:8px">'+s.icon+' '+s.name+'</div><div class="small muted" style="margin-bottom:6px">'+s.tier+' · '+s.type+'</div><div style="font-size:14px;line-height:1.6;color:#2a1607">'+s.effect+'</div><div class="btn" style="margin-top:12px" id="closeDetail">知道了</div></div>';document.body.appendChild(m);q('#closeDetail').onclick=function(){m.remove()};m.onclick=function(e){if(e.target===m)m.remove()}}
+function showTutorialStep(step){if(!battle||battle.mode!=='tutorial')return;var data=[['🎯 怎么出牌','从下面手牌里点牌选中（会弹起来），选满3张后点蓝色的"出牌"按钮。\n\n💡 点错了再点一下就能取消。','我试试'],['🃏 公共牌','桌面中间3张是公共牌，你和对手共用，打完5局都不会变。\n\n你出的牌+公共牌=你的牌型。出牌前想想怎么跟它们搭。','懂了'],['🏆 怎么赢','每人3颗❤️，赢一局对手掉1颗❤️，3颗全掉光就赢。\n\n5局里先赢3局也算赢。','记住了'],['⚡ 功能牌','下方2个功能牌每场只能用一次。试试点一下看看效果。\n\n💡 教学不消耗库存，放心点。\n\n点击牌上的"详情"可以看技能说明。','试试看'],['🏁 毕业了','该教的都教了！去准备页选2张功能牌，打一场正式对战吧。\n\n💡 功能牌仓库能抽更多牌，天梯赢了能升段。','去准备页']][step-1];if(!data)return;clearTutGlow();if(step<=4)addTutGlow(step);var m=document.createElement('div');m.className='tutBubble';m.innerHTML='<div class="tutBubbleInner '+(step===1?'step1':step===3?'mid':'top')+'"><div class="tutDots">'+[1,2,3,4,5].map(function(i){return i<=step?'●':'○'}).join(' ')+'</div><div class="tutTitle">'+data[0]+'</div><div class="tutDesc">'+data[1].replace(/\\n/g,'<br>')+'</div><div class="tutActions"><button class="btn dark" id="endTut">结束</button><button class="btn" id="nextTut">'+data[2]+'</button></div></div>';document.body.appendChild(m);q('#endTut').onclick=function(){clearTutGlow();m.remove();battle=null;state.mode='normal';setScreen('home')};q('#nextTut').onclick=function(){clearTutGlow();m.remove();if(step>=5){battle=null;state.mode='normal';setScreen('home')}};if(step===3){var hands=[{name:'同花顺',cards:[{rank:14,suit:'♠'},{rank:13,suit:'♠'},{rank:12,suit:'♠'},{rank:11,suit:'♠'},{rank:10,suit:'♠'}]},{name:'四条',cards:[{rank:4,suit:'♠'},{rank:4,suit:'♥'},{rank:4,suit:'♣'},{rank:4,suit:'♦'},{rank:9,suit:'♠'}]},{name:'葫芦',cards:[{rank:7,suit:'♥'},{rank:7,suit:'♠'},{rank:7,suit:'♦'},{rank:3,suit:'♣'},{rank:3,suit:'♥'}]},{name:'同花',cards:[{rank:13,suit:'♠'},{rank:10,suit:'♠'},{rank:7,suit:'♠'},{rank:5,suit:'♠'},{rank:2,suit:'♠'}]},{name:'顺子',cards:[{rank:9,suit:'♥'},{rank:8,suit:'♠'},{rank:7,suit:'♦'},{rank:6,suit:'♣'},{rank:5,suit:'♥'}]}];var exHtml='';hands.forEach(function(h){exHtml+='<div style="display:flex;gap:2px;justify-content:center;margin:3px 0">';h.cards.forEach(function(c){exHtml+=cardHtml(c,'smallCard')});exHtml+='</div><div style="text-align:center;font-size:10px;color:#6b5540;margin-bottom:2px">'+h.name+'</div>'});document.querySelector('.tutBubbleInner .tutDesc').insertAdjacentHTML('beforeend','<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(100,60,20,.15)"><div style="font-size:12px;font-weight:1000;color:#2b1a0a;margin-bottom:4px">📊 牌型举例（前5）</div>'+exHtml+'</div>')}}
+function clearTutGlow(){qa('[class*=tutGlow]').forEach(function(e){e.className=e.className.replace(/tutGlow\w*/g,'').trim()})}
+function addTutGlow(step){clearTutGlow();var sel=['.actionArea','.community','.hp','.skillBar'][step-1];qa(sel).forEach(function(e){e.classList.add('tutGlow');e.classList.add('tutGlow'+step)})}
+function roundNeed(side){let f=battle[side];return Math.max(1,PLAY_COUNTS[battle.round-1]+(f.playBonus||0))}
+function sortCards(arr){return [...arr].sort((a,b)=>(b.rank-a.rank)||SUITS.indexOf(a.suit)-SUITS.indexOf(b.suit))}
+function renderBattle(){renderNav('');const p=battle.player,o=battle.opp;let pNeed=roundNeed('player'),ok=battle.phase==='select'&&battle.selected.length===pNeed;let reveal=battle.phase==='reveal';let last=battle.last;let hint=battle.phase==='select'?(p.locked?'你被封锁：本局少打一张牌。':'请选择 '+pNeed+' 张手牌'):battle.phase==='reveal'?'双方亮牌中，先观察出牌，再结算':'本局已结算';let oppText=last&&battle.phase==='result'?`牌型：${last.oEval.name}`:(reveal?'对手已出牌':'');let pText=last&&battle.phase==='result'?`牌型：${last.pEval.name}`:(reveal?'我方已出牌':'');let review=battle.phase==='result'&&last?`<div class="reviewControls"><div class="roundSummaryMini"><div class="roundSideBox">我方牌型<br><b>${last.pEval.name}</b></div><div class="roundVS">VS</div><div class="roundSideBox">对手牌型<br><b>${last.oEval.name}</b></div></div><button class="btn" id="continueBtn">${isOver()?'进入结算':'继续下一局'}</button></div>`:'';var autoLabel=state.autoPlay?'⏹ 关闭自动':'🤖 自动';let action=battle.phase==='result'?review:`<div class="actionArea"><div style="display:flex;gap:4px;align-items:center;margin-bottom:2px"><div class="hint" style="flex:1;margin:0">${hint}　已选 ${battle.selected.length}/${pNeed}</div><button class="autoBtn ${state.autoPlay?'on':''}" onclick="toggleAuto()">${autoLabel}</button></div><div class="sortLabel">手牌按点数从大到小排列</div><div class="handScroll">${sortCards(p.hand).map(c=>cardHtml(c,battle.selected.includes(c.id)?'selected':'' )).join('')}</div><div class="skillBar">${Object.values(p.skills).map(sk=>skillButton(sk,battle.phase!=='select')).join('')}<button class="btn ${ok?'':'disabled'}" id="playBtn">出牌</button></div></div>`;
+q('#app').innerHTML=`<button class="logFab" id="logFab">📜</button><div class="battleHeader">${fighterHtml(o,false)}<div class="roundBar">第 ${battle.round}/5 局｜基础出牌 ${PLAY_COUNTS[battle.round-1]} 张｜我方需出 ${pNeed} 张</div></div>
+<div class="battleTable">${reveal?'<div class="revealNotice">对手亮牌展示：请先看3-5秒</div>':''}${battle.phase==='result'&&last?`<div class="revealNotice">本局已结算：${last.winner==='player'?'我方胜利':last.winner==='opp'?'对手胜利':'平局'}</div>`:''}<div class="zoneTitle">对手出牌区</div><div class="zoneSpacer"></div><div class="cardRow">${o.played.length?o.played.map(c=>cardHtml(c,'smallCard thrust')).join(''):'<span class="muted">等待对手出牌</span>'}</div><div class="handName">${oppText}</div><div class="community"><div style="display:flex;align-items:center;justify-content:center;gap:6px"><div class="zoneTitle" style="margin:0">公共牌 · 双方共用</div><button class="helpBtn" onclick="showHandChart()">?</button></div><div class="cardRow">${battle.community.map(c=>cardHtml(c,'large')).join('')}</div></div><div class="zoneTitle">我方出牌区</div><div class="zoneSpacer"></div><div class="cardRow">${p.played.length?p.played.map(c=>cardHtml(c,'smallCard thrust')).join(''):'<span class="muted">请选择手牌</span>'}</div><div class="handName">${pText}</div></div>${action}<div class="duelPlayerPanel">${fighterHtml(p,true)}</div>`;
+q('#logFab').onclick=showLog;let cont=q('#continueBtn');if(cont)cont.onclick=()=>nextRound();qa('.handScroll .playCard[data-id]').forEach(el=>el.onclick=()=>toggleSelect(el.dataset.id));qa('.skillBtn').forEach(b=>b.onclick=()=>useSkill('player',b.dataset.id));let play=q('#playBtn');if(play)play.onclick=submitPlay}
+function fighterHtml(f,isPlayer){let icons=Object.values(f.skills).map(sk=>`<span class="tag ${sk.used?'muted':''}">${SM[sk.id].icon}${sk.used?'×':''}</span>`).join('');return `<div class="fighter"><div class="fighterInfo"><div class="avatar ${isPlayer?'':'big'}">${f.char.icon}</div><div><div class="fighterName">${isPlayer?'我方 · ':''}${f.char.name||f.name}</div><div class="fighterMeta">${isPlayer?'上阵功能牌':'对手功能牌'}：${icons||'无'} ${f.locked?'<span class="tag">封锁中</span>':''}</div></div></div><div class="fighterSide"><div class="badge">手牌 ${f.hand.length}</div><div class="hp">${[0,1,2].map(i=>`<span class="heart ${i<f.hp?'':'empty'}">♥</span>`).join('')}</div></div></div>`}
+function cardHtml(c,cls=''){if(!c)return '';let red=c.suit==='♥'||c.suit==='♦';return `<div class="playCard ${red?'redSuit':''} ${c.joker?'joker':''} ${cls}" data-id="${c.id}"><div class="rank">${c.joker?'JOKER':rankText(c.rank)}</div><div class="suit">${c.suit}</div></div>`}function rankText(r){return r===14?'A':r===13?'K':r===12?'Q':r===11?'J':r===10?'10':String(r)}function needsCardSelected(id){return['fate','plusminus','shuffle','rogue','magician'].includes(id)}function skillButton(sk,locked){let s=SM[sk.id];return `<div style="display:flex;gap:2px;flex:1;max-width:120px"><button class="skillBtn ${sk.used?'used':''} ${locked?'locked':''}" data-id="${sk.id}" style="flex:1"><span class="charge">${sk.charge}</span><b>${s.icon} ${s.name}</b><span>${s.type}</span></button><button class="skillInfo" data-id="${sk.id}" onclick="event.stopPropagation();showSkillDetail('${sk.id}')">?</button></div>`}
+function toggleSelect(id){if(battle.phase!=='select')return;let need=roundNeed('player');let i=battle.selected.indexOf(id);if(i>=0)battle.selected.splice(i,1);else{if(battle.selected.length>=need)return toast('本局只能出 '+need+' 张');battle.selected.push(id)}renderBattle()}
+function useSkill(side,id){let a=battle[side],e=battle[side==='player'?'opp':'player'];if(battle.phase!=='select')return;let sk=a.skills[id];if(!sk||sk.used)return toast('该功能牌已用过');if(a.skillUses>=2)return toast('每回合最多使用2张功能牌');a.skillUses++;sk.used=true;sk.charge=0;if(side==='player'){state.tasks.useSkill++;state.skills[id].uses=(state.skills[id].uses||0)+1}if(side==='player'&&needsCardSelected(id)){var selCards=a.hand.filter(function(c){return battle.selected.includes(c.id)});if(!selCards.length){sk.used=false;a.skillUses--;return toast('请先选一张手牌再使用此技能')}}log(`${side==='player'?'我方':'对手'}发动【${SM[id].name}】`);flash(`${side==='player'?'我方':'对手'}发动 ${SM[id].icon}${SM[id].name}`);skillBurst();if(side==='opp'){var ntf=document.createElement('div');ntf.className='oppSkillNotice';ntf.innerHTML='<b>⚡ 对手发动 '+SM[id].icon+SM[id].name+'</b><br><span>'+SM[id].effect+'</span>';document.body.appendChild(ntf);setTimeout(function(){ntf.remove()},2200)}applySkill(side,id);save();renderBattle()}
+function applySkill(side,id){let a=battle[side],e=battle[side==='player'?'opp':'player'];let own=side==='player'?'我方':'对手',opp=side==='player'?'对手':'我方';let selected=side==='player'?a.hand.filter(c=>battle.selected.includes(c.id)):[];let low=sortCards(a.hand).slice(-1)[0],high=sortCards(a.hand)[0];function add(c){a.hand.push(c)}function discard(target,cards){for(const c of cards){let i=target.hand.indexOf(c);if(i>=0){target.hand.splice(i,1);target.discard.push(c)}}}
+switch(id){case'fivejoker':if(battle.round===5){var jk={id:'c'+uid++,rank:15,suit:'★',joker:true};add(jk);if(side==='player')showCardPopup(jk,'获得Joker百搭牌');log(`${own}获得Joker百搭牌`)}else{var dr=draw(battle.deck,1);add(...dr);if(side==='player'&&dr.length)showCardPopup(dr[0],'抽1张牌');log(`${own}抽1张牌`)}break;case'magician':if(side==='player'&&(!selected||!selected.length))return toast('请先选择要复制的牌');if(high){let t=selected[0]||high;var mc=clone(t);add(mc);if(side==='player')showCardPopup(mc,'复制 '+rankText(t.rank)+t.suit);log(`${own}复制 ${rankText(t.rank)}${t.suit}`)}break;case'thief':if(e.hand.length){let c=e.hand.splice(Math.floor(Math.random()*e.hand.length),1)[0];add(c);if(side==='player')showCardPopup(c,'偷走 '+rankText(c.rank)+c.suit);log(`${own}偷走${opp}1张手牌`)}break;case'fate':if(side==='player'&&(!selected||!selected.length))return toast('请先选择要献祭的手牌');{let c=selected[0]||low;if(c){discard(a,[c]);battle.selected=battle.selected.filter(function(id){return id!==c.id});var fa={id:'c'+uid++,rank:14,suit:c.suit};add(fa);if(side==='player')showCardPopup(fa,'转化A'+c.suit);log(`${own}将 ${rankText(c.rank)}${c.suit} 转化为A${c.suit}`)}}break;case'hacker':if(e.hand.length){let c=e.hand[Math.floor(Math.random()*e.hand.length)];var hc=clone(c);add(hc);if(side==='player')showCardPopup(hc,'复制 '+rankText(c.rank)+c.suit);log(`${own}复制${opp}1张手牌`)}break;case'lucky':a.buff.lucky=true;log(`${own}本回合顺子将视为同花顺`);break;case'destroyer':{let ds=shuffle(e.hand).slice(0,2);discard(e,ds);if(side==='player'&&ds.length)showCardPopup(ds[0],'弃掉对手 '+rankText(ds[0].rank)+ds[0].suit+(ds.length>1?' 等'+ds.length+'张':''));log(`${own}随机弃掉${opp}${ds.length}张手牌`)}break;case'glove':{let c=clone(battle.community[Math.floor(Math.random()*battle.community.length)]);add(c);if(side==='player')showCardPopup(c,'复制公牌 '+rankText(c.rank)+c.suit);log(`${own}复制公共牌 ${rankText(c.rank)}${c.suit}`)}break;case'burst':a.playBonus+=1;log(`${own}本回合可以多打1张牌`);break;case'god':{let r=[12,13,14][Math.floor(Math.random()*3)],s=SUITS[Math.floor(Math.random()*4)];var gc={id:'c'+uid++,rank:r,suit:s};add(gc);if(side==='player')showCardPopup(gc,'获得 '+rankText(r)+s);log(`${own}获得 ${rankText(r)}${s}`)}break;case'plusminus':if(side==='player'&&(!selected||!selected.length))return toast('请先选择要调整的手牌');{let c=selected[0]||low;if(c){let old=c.rank;c.rank=c.rank<14?c.rank+1:c.rank-1;if(side==='player')showCardPopup(c,rankText(old)+c.suit+' → '+rankText(c.rank)+c.suit);log(`${own}调整 ${rankText(old)}${c.suit} → ${rankText(c.rank)}${c.suit}`)}}break;case'intel':{let cards=draw(battle.deck,2),keep=sortCards(cards)[0];add(keep);if(side==='player')showCardPopup(keep,'抽2选1，保留 '+rankText(keep.rank)+keep.suit);log(`${own}抽2选1，保留 ${rankText(keep.rank)}${keep.suit}`)}break;case'inspect':e.revealed=true;log(`${own}查看了${opp}全部手牌`);if(side==='player')showInspect(e.hand);break;case'recycle':{let pile=a.discard.filter(c=>!a.played.includes(c));let c=sortCards(pile)[0];if(c){var rc=clone(c);add(rc);if(side==='player')showCardPopup(rc,'回收 '+rankText(c.rank)+c.suit);log(`${own}回收 ${rankText(c.rank)}${c.suit}`)}else{var rd=draw(battle.deck,1);add(...rd);if(side==='player'&&rd.length)showCardPopup(rd[0],'抽1张');log(`${own}无牌可回收，改为抽1张`)}}break;case'lock':e.locked=true;e.playBonus-=1;log(`${opp}本回合少打一张牌`);break;case'shuffle':if(side==='player'&&(!selected||!selected.length))return toast('请先选择要弃掉的手牌');{let c=selected[0]||low;if(c){discard(a,[c]);var sd=draw(battle.deck,2);add(...sd);if(side==='player'){showCardPopup(c,'弃掉');setTimeout(function(){if(sd.length)showCardPopup(sd[0],'抽到 '+rankText(sd[0].rank)+sd[0].suit)},600)}log(`${own}弃 ${rankText(c.rank)}${c.suit}，抽2张`)}}break;case'rogue':if(side==='player'&&(!selected||!selected.length))return toast('请先选择要交换的手牌');if(a.hand.length&&e.hand.length){let c1=selected[0]||a.hand[0],c2=e.hand[Math.floor(Math.random()*e.hand.length)];a.hand[a.hand.indexOf(c1)]=c2;e.hand[e.hand.indexOf(c2)]=c1;if(side==='player'){showCardPopup(c1,'交出 '+rankText(c1.rank)+c1.suit);setTimeout(function(){showCardPopup(c2,'获得 '+rankText(c2.rank)+c2.suit)},600)}log(`${own}与${opp}交换1张牌`)}break;case'gambler':if(Math.random()<.60){var gw=draw(battle.deck,3);add(...gw);if(side==='player'&&gw.length)showCardPopup(gw[0],'幸运！抽3张');log(`${own}幸运赌徒成功，抽3张`)}else if(a.hand.length){let c=a.hand[Math.floor(Math.random()*a.hand.length)];discard(a,[c]);if(side==='player')showCardPopup(c,'运气不佳，弃掉');log(`${own}幸运赌徒失败，弃1张`)}break;case'flushbeliever':a.buff.flushBeliever=true;log(`${own}激活同花信徒`);break;case'delay':e.nextDrawPenalty=(e.nextDrawPenalty||0)+1;log(`${opp}下回合少抽1张`);break;case'bomb':if(e.hand.length){let c=e.hand[Math.floor(Math.random()*e.hand.length)];discard(e,[c]);if(side==='player')showCardPopup(c,'扰乱对手 '+rankText(c.rank)+c.suit);log(`${own}扰乱${opp}1张手牌`)}break;case'charge':a.playBonus-=1;a.nextPlayBonus=(a.nextPlayBonus||0)+1;log(`${own}蓄力：本回合少打1张，下回合多打1张`);break;}}
+function submitPlay(){if(battle.phase!=='select')return;let p=battle.player,o=battle.opp,need=roundNeed('player');if(battle.selected.length!==need)return toast('需要选择 '+need+' 张');p.played=p.hand.filter(c=>battle.selected.includes(c.id));p.hand=p.hand.filter(c=>!battle.selected.includes(c.id));p.discard.push(...p.played);aiUseSkills();let on=roundNeed('opp');while(o.hand.length<on)o.hand.push(...draw(battle.deck,1));o.played=chooseBest(o.hand,on,o.buff);o.hand=o.hand.filter(c=>!o.played.includes(c));o.discard.push(...o.played);battle.phase='reveal';battle.selected=[];log('双方亮牌：展示4秒后结算。');renderBattle();flash('对手亮牌');setTimeout(()=>{if(battle&&battle.phase==='reveal')resolveRound()},4000)}
+function chooseBest(hand,n,buff){let best=null,score=null;for(const cb of combos(hand,n)){let ev=evaluate([...cb,...battle.community],{...buff,played:cb});if(!score||compare(ev.score,score)>0){best=cb;score=ev.score}}return best||hand.slice(0,n)}
+function aiStartSkill(){if(!battle||battle.phase!=='select')return;var diff=Math.min(2,Math.max(0,state.difficulty||1));var rates=[0.25,0.55,0.85];var rate=rates[diff];var pri=(diff>=2)?['lock','delay','destroyer','thief','intel','god','glove','fivejoker','magician']:['lock','delay','intel','god','glove','fivejoker'];for(const id of pri){let sk=battle.opp.skills[id];if(sk&&!sk.used&&Math.random()<rate){useSkill('opp',id);break}}}
+function aiUseSkills(){let o=battle.opp;let c=Object.values(o.skills).filter(s=>!s.used);if(!c.length)return;var diff=Math.min(2,Math.max(0,state.difficulty||1));var rates=[0.35,0.75,0.9];if(Math.random()<rates[diff]){var pri=(diff>=2)?['destroyer','bomb','thief','hacker','lucky','magician','burst','gambler','god','fivejoker']:['destroyer','bomb','thief','hacker','lucky','magician','burst','gambler'];var id=(pri.find(x=>o.skills[x]&&!o.skills[x].used)||c[0].id);useSkill('opp',id)}}
+function resolveRound(){let p=battle.player,o=battle.opp;p.buff.played=p.played;o.buff.played=o.played;let pe=evaluate([...p.played,...battle.community],p.buff),oe=evaluate([...o.played,...battle.community],o.buff);let cmp=compare(pe.score,oe.score);let winner=cmp>0?'player':cmp<0?'opp':'tie',dmg=winner==='tie'?0:1;battle.last={winner,pEval:pe,oEval:oe,dmg};if(winner==='player'){o.hp=Math.max(0,o.hp-dmg);hpHitFx('opp',dmg);battle.roundWins.player++;state.tasks.winRound++;state.handCounts[pe.cat]=(state.handCounts[pe.cat]||0)+1;if(pe.cat>=4)state.tasks.straight=1;if(pe.cat>=7)bigHandCelebration(pe.name)}else if(winner==='opp'){p.hp=Math.max(0,p.hp-dmg);hpHitFx('player',dmg);battle.roundWins.opp++;state.handCounts[oe.cat]=(state.handCounts[oe.cat]||0)+1;if(oe.cat>=7)bigHandCelebration(oe.name)}for(const f of [p,o]){if(f.buff.flushBeliever&&f.played.length>0){var suits={};[...f.played,...battle.community].forEach(function(c){suits[c.suit]=(suits[c.suit]||0)+1});var hasFlush=Object.values(suits).some(function(n){return n>=3});if(hasFlush){f.nextDrawBonus=(f.nextDrawBonus||0)+2;log(`${f===p?'我方':'对手'}同花信徒触发，下回合额外抽2张`)}}}battle.phase='result';log(`本局结果：我方【${pe.name}】 vs 对手【${oe.name}】`);showRoundResult(winner,pe,oe,dmg);save()}
+function showRoundResult(winner,pe,oe,dmg){let title=winner==='player'?'本局胜利':winner==='opp'?'本局失败':'本局平局';if(winner!=='tie')softHitFx(winner);let m=document.createElement('div');m.className='resultBanner';var pWin=winner==='player',oWin=winner==='opp';var pCards=cardsHtml(pe.cards||battle.player.played,'smallCard');var oCards=cardsHtml(oe.cards||battle.opp.played,'smallCard');m.innerHTML=`<div class="resultBox"><div class="resultTitle" style="font-size:22px;margin-bottom:6px">${pWin?'🎉 本局胜利':oWin?'💔 本局失败':'🤝 本局平局'}</div><div class="resultVLayout"><div class="resultSide ${oWin?'resultWin':''}"><div class="resultHandName">${oe.name}</div><div class="resultCardRow">${oCards}</div></div><div class="resultVS" style="margin:3px auto">⚔️</div><div class="resultSide ${pWin?'resultWin':''}"><div class="resultHandName">${pe.name}</div><div class="resultCardRow">${pCards}</div></div></div><div class="resultDmg">${winner==='tie'?'双方牌型相同，本局不扣血':(pWin?'对手':'你')+' -'+dmg+'❤️'}</div><div style="font-size:12px;color:#6b5540;margin-top:2px">${pe.name} vs ${oe.name}${winner!=='tie'?' — '+(pWin?'高':'低')+Math.abs(pe.cat-oe.cat)+'级':''}</div><div class="grid2" style="margin-top:8px"><div class="btn dark" onclick="this.parentElement.parentElement.parentElement.remove();renderBattle()">再看一下</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();nextRound()">${isOver()?'进入结算':'下一局'}</div></div></div>`;document.body.appendChild(m)}
+function isOver(){return battle.player.hp<=0||battle.opp.hp<=0||battle.round>=5||battle.roundWins.player>=3||battle.roundWins.opp>=3}
+function nextRound(){if(isOver())return finishBattle();battle.round++;for(const key of ['player','opp']){let f=battle[key];let target=HAND_LIMIT+(f.nextDrawBonus||0)-(f.nextDrawPenalty||0);let n=Math.max(0,target-f.hand.length);f.hand.push(...draw(battle.deck,n));f.played=[];f.buff={};f.skillUses=0;f.playBonus=f.nextPlayBonus||0;f.nextPlayBonus=0;f.nextDrawBonus=0;f.nextDrawPenalty=0;f.locked=false}battle.selected=[];battle.phase='select';log(`进入第${battle.round}局：手牌补到${HAND_LIMIT}张，基础打${PLAY_COUNTS[battle.round-1]}张`);renderBattle();if(battle.mode==='tutorial'){battle.tutorialStep=Math.min(5,(battle.tutorialStep||1)+1);setTimeout(()=>showTutorialStep(battle.tutorialStep),250)}else{setTimeout(aiStartSkill,500);if(state.autoPlay)setTimeout(autoPlayTurn,800)}}
+function deckLines(deck){return deck.map(s=>`<div class="deckSkillLine"><span>${s.icon} ${s.name}</span><b>${s.tier}</b></div>`).join('')||'<div class="muted">无</div>'}
+function finishBattle(){let win=battle.roundWins.player>battle.roundWins.opp||battle.opp.hp<=0;let lose=battle.roundWins.opp>battle.roundWins.player||battle.player.hp<=0;state.tasks.play++;let ladderText='快速对战不计天梯';if(battle.mode==='ranked')ladderText=updateLadder(win);else{state.total++;if(win)state.wins++}let base=win?320:lose?90:150;let lv=charLv(state.activeChar);if(state.activeChar==='cowboy')base+=Math.floor(base*(0.05+(lv-1)*.02));state.coins+=base;var bonusGems=0;if(state.activeChar==='sheriff'){bonusGems=2+(lv-1)*1}state.gems+=(win?12:5)+bonusGems;state.rank=Math.max(0,(state.rank||820)+(win?30:lose?-10:0));var oldChest=state.chest;var chestAdd=win?2:1;if(state.activeChar==='lily')chestAdd+=1+(lv-1)*1;state.chest=Math.min(10,state.chest+chestAdd);state.history.unshift({win,score:`${battle.roundWins.player}:${battle.roundWins.opp}`,time:Date.now(),mode:battle.mode||'normal'});save();let m=document.createElement('div');m.className='resultBanner';m.innerHTML=`<div class="resultBox"><div class="resultTitle" style="font-size:26px">${win?'🎉 对战胜利':lose?'💔 对战失败':'🤝 对战平局'}</div><div class="finalScore">${battle.roundWins.player} : ${battle.roundWins.opp}</div><div style="margin:8px 0;font-size:15px;font-weight:1000">获得：🪙${base} 💎${win?12:5}</div><div class="grid2" style="margin-top:10px"><div class="btn dark" onclick="this.parentElement.parentElement.parentElement.remove();battle=null;state.mode='normal';setScreen('rank')">查看天梯</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();battle=null;state.mode='normal';setScreen('home')">回到主页</div></div></div>`;document.body.appendChild(m)}
+/* poker eval */
+function combos(arr,k){let out=[];function rec(start,cur){if(cur.length===k){out.push(cur.slice());return}for(let i=start;i<arr.length;i++)rec(i+1,cur.concat(arr[i]))}rec(0,[]);return out}
+function evaluate(cards,buff={}){let js=cards.filter(c=>c.joker);if(js.length){let best=null;for(const r of [14,13,12,11,10,9,8,7,6,5,4,3,2])for(const s of SUITS){let rep=cards.map(c=>c.joker?{...c,rank:r,suit:s,joker:false}:c);let ev=evaluate(rep,buff);if(!best||compare(ev.score,best.score)>0)best=ev}return best}let best=null;for(const cb of combos(cards,5)){let ev=evaluateNoJoker(cb,buff);if(!best||compare(ev.score,best.score)>0)best=ev}return best||evaluateNoJoker(cards,buff)}
+function evaluateNoJoker(cs,buff={}){cs=[...cs].sort((a,b)=>b.rank-a.rank);let ranks=cs.map(c=>c.rank),counts={};for(const r of ranks)counts[r]=(counts[r]||0)+1;let groups=Object.entries(counts).map(([r,n])=>({r:+r,n})).sort((a,b)=>b.n-a.n||b.r-a.r);let flush=cs.length>=5&&cs.every(c=>c.suit===cs[0].suit);let uniq=[...new Set(ranks)].sort((a,b)=>b-a);if(uniq.includes(14))uniq.push(1);let straightHigh=0;for(let i=0;i<=uniq.length-5;i++){let seq=uniq.slice(i,i+5);if(seq[0]-seq[4]===4){straightHigh=seq[0];break}}let straight=!!straightHigh;if(buff.lucky&&straight){return{name:'同花顺（幸运日）',cat:8,score:[8,straightHigh],cards:cs}}if(flush&&straight&&straightHigh===14)return{name:'皇家同花顺',cat:9,score:[9,14],cards:cs};if(flush&&straight)return{name:'同花顺',cat:8,score:[8,straightHigh],cards:cs};if(groups[0]?.n===4)return{name:'四条',cat:7,score:[7,groups[0].r,...ranks.filter(r=>r!==groups[0].r)],cards:cs};if(groups[0]?.n===3&&groups[1]?.n>=2)return{name:'葫芦',cat:6,score:[6,groups[0].r,groups[1].r],cards:cs};if(flush)return{name:'同花',cat:5,score:[5,...ranks],cards:cs};if(straight)return{name:'顺子',cat:4,score:[4,straightHigh],cards:cs};if(groups[0]?.n===3)return{name:'三条',cat:3,score:[3,groups[0].r,...ranks.filter(r=>r!==groups[0].r)],cards:cs};if(groups[0]?.n===2&&groups[1]?.n===2){let ps=groups.filter(g=>g.n===2).map(g=>g.r).sort((a,b)=>b-a);return{name:'两对',cat:2,score:[2,...ps,...ranks.filter(r=>!ps.includes(r))],cards:cs}}if(groups[0]?.n===2)return{name:'一对',cat:1,score:[1,groups[0].r,...ranks.filter(r=>r!==groups[0].r)],cards:cs};return{name:'高牌',cat:0,score:[0,...ranks],cards:cs}}
+function compare(a,b){for(let i=0;i<Math.max(a.length,b.length);i++){let d=(a[i]||0)-(b[i]||0);if(d)return d}return 0}
+function cardsText(a){return (a||[]).map(c=>`${rankText(c.rank)}${c.suit}`).join('、')||'无'}
+function cardsHtml(a,cls){return (a||[]).map(function(c){return cardHtml(c,cls||'smallCard')}).join('')}function log(t){if(!battle)return;battle.logs.unshift(`<div>${new Date().toLocaleTimeString().slice(0,8)} · ${t}</div>`)}function showLog(){let m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="modalBox"><div class="title" style="color:#321707">📜 战斗日志</div><div class="log">${battle.logs.join('')||'<div>暂无日志。</div>'}</div><div class="btn" id="closeLog" style="margin-top:12px">关闭</div></div>`;document.body.appendChild(m);q('#closeLog').onclick=()=>m.remove();m.onclick=e=>{if(e.target===m)m.remove()}}
+function showInspect(hand){let m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="modalBox"><div class="title" style="color:#321707">🔍 对手手牌</div><div class="cardRow">${sortCards(hand).map(c=>cardHtml(c,'smallCard')).join('')}</div><div class="btn" id="closeInsp">知道了</div></div>`;document.body.appendChild(m);q('#closeInsp').onclick=()=>m.remove()}
+function flash(t){let d=document.createElement('div');d.className='flashText';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),5000)}function skillBurst(){let d=document.createElement('div');d.className='skillBurstFx';document.body.appendChild(d);setTimeout(()=>d.remove(),700);navigator.vibrate&&navigator.vibrate(20)}
+function bigHandCelebration(name){var d=document.createElement('div');d.className='bigHandCelebration';d.innerHTML='<div class="bigHandText">\u{1F525} '+name+' \u{1F525}</div>';document.body.appendChild(d);setTimeout(function(){d.remove()},1600);navigator.vibrate&&navigator.vibrate([30,50,30])}
+function hpHitFx(side,dmg){var el=document.querySelector('.phone');if(el)el.classList.add('shakeScreen');setTimeout(function(){if(el)el.classList.remove('shakeScreen')},350);var ft=document.createElement('div');ft.className='hpFloat';ft.textContent='-'+dmg+'❤️';ft.style.left=side==='player'?'35%':'65%';document.body.appendChild(ft);setTimeout(function(){ft.remove()},900)}
+function softHitFx(winner){let i=document.createElement('div');i.className='impact';i.textContent='✨';i.style.left=winner==='player'?'58%':'42%';i.style.top=winner==='player'?'22%':'78%';document.body.appendChild(i);setTimeout(()=>i.remove(),650)}
+function toast(t){let old=q('.toast');if(old)old.remove();let d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1800)}
+
+// === 联机对战 PvP ===
+let socket = null;
+let pvp = null;
+let chatName = '玩家' + Math.floor(Math.random() * 900 + 100);
+
+function pvpConnect() {
+  if (socket && socket.connected) return;
+  try { socket = io(); } catch(e) { setTimeout(pvpConnect, 2000); return; }
+  socket.on('connect', () => { toast('已连接服务器'); });
+  socket.on('disconnect', () => { toast('与服务器断开'); });
+  socket.on('online_count', (n) => {
+    const el = q('#onlineCount');
+    if (el) el.textContent = '🟢 ' + n;
+  });
+  socket.on('room_list', (rooms) => {
+    const list = q('#pvpRoomList');
+    if (list) {
+      list.innerHTML = rooms.length ? rooms.map(function(r){ return '<div class="roomListItem" onclick="joinRoom(\''+r.roomId+'\')"><span><b>'+r.roomName+'</b><br><span class="small muted">'+r.hostName+'</span></span><span class="muted" style="font-weight:1000">'+r.playerCount+'/'+r.maxPlayers+'</span></div>'; }).join('') : '<div class="muted" style="padding:12px;text-align:center">暂无可用房间</div>';
+    }
+  });
+  socket.on('room_created', (d) => { pvp = { roomId: d.roomId, phase: 'lobby', side: 'player', selected: [], isHost: true, roomName: d.roomName, players: [{ name: d.hostName, socketId: socket.id }] }; showPvPLobby(); });
+  socket.on('player_joined', (d) => { if (pvp && pvp.phase === 'lobby') { pvp.players = d.players; showPvPLobby(); } });
+  socket.on('room_info', (d) => { pvp = { roomId: d.roomId, phase: 'lobby', side: 'opp', selected: [], isHost: false, hostId: d.hostId, roomName: d.roomName, players: d.players }; showPvPLobby(); });
+  socket.on('room_confirm', (d) => { if (pvp) showPvPConfirm(d); });
+  socket.on('confirm_progress', (d) => { toast('准备中 '+d.readyCount+'/'+d.total); });
+  socket.on('kicked', () => { toast('你已被房主踢出'); pvp = null; setScreen('home'); });
+  socket.on('left_room', () => { pvp = null; setScreen('home'); });
+  socket.on('game_state', (d) => {
+    if (!pvp) pvp = { selected: [] };
+    pvp.side = d.side; pvp.phase = 'battle'; pvp.serverState = d; pvp.selected = [];
+    pvp.mySubmitted = false; pvp.oppSubmitted = false;
+    renderPvPBattle();
+    if (d.opponent && d.opponent.hand) showPvPInspect(d.opponent.hand);
+    const wm = q('#pvpWaitingModal'); if (wm) wm.remove();
+    const hm = q('#pvpHomeModal'); if (hm) hm.remove();
+    const lm = q('#pvpLobbyModal'); if (lm) lm.remove();
+    const cm = q('#pvpConfirmModal'); if (cm) cm.remove();
+  });
+  socket.on('round_result', (d) => { pvp.phase = 'result'; showPvPResult(d); });
+  socket.on('game_over', (d) => { if (!pvp) return; showPvPGameOver(d); });
+  socket.on('room_rematch', (d) => { pvp = { roomId: d.roomId, phase: 'lobby', side: pvp?.side || 'player', selected: [], isHost: d.hostId === socket.id, hostId: d.hostId, roomName: d.roomName, players: d.players }; showPvPLobby(); });
+  socket.on('error', (d) => { toast('错误: ' + (d.msg || '')); });
+  socket.on('opponent_left', () => { toast('对手已离开'); pvp = null; setScreen('home'); });
+  socket.on('chat_history', (msgs) => {
+    const el = q('#chatMsgs'); if (!el) return;
+    el.innerHTML = msgs.map(m => chatMsgHtml(m)).join('');
+    const placeholder = el.querySelector('.chatMsg[style*="color:#d0b890"]');
+    if (placeholder) placeholder.remove();
+    scrollChat();
+  });
+  socket.on('new_chat_message', (m) => {
+    const el = q('#chatMsgs'); if (!el) return;
+    const placeholder = el.querySelector('.chatMsg[style*="color:#d0b890"]');
+    if (placeholder) placeholder.remove();
+    const badge = q('#chatBadge');
+    const body = q('#chatBody');
+    if (body && body.classList.contains('collapsed') && badge) {
+      badge.classList.remove('hidden');
+      badge.textContent = (parseInt(badge.textContent || '0') + 1).toString();
+    }
+    el.insertAdjacentHTML('beforeend', chatMsgHtml(m));
+    scrollChat();
+  });
+  socket.on('opponent_submitted', () => {
+    if (pvp) { pvp.oppSubmitted = true; renderPvPBattle(); }
+    toast('对手已出牌');
+  });
+  socket.on('submitted', () => { if (pvp) { pvp.mySubmitted = true; renderPvPBattle(); } });
+  socket.on('skill_used', (d) => { const who = d.side === (pvp?.side || 'player') ? '我方' : '对手'; let msg = who + ' 发动 ' + (d.name || '技能'); if (d.lostCard) msg += '，弃掉' + d.lostCard.rank + d.lostCard.suit; flash(msg); });
+}
+
+function showPvPHome() {
+  pvpConnect();
+  const m = document.createElement('div');
+  m.className = 'modal'; m.id = 'pvpHomeModal';
+  m.innerHTML = '<div class="modalBox" style="text-align:center"><div class="title" style="color:#321707">🌐 联机对战</div><div style="margin:6px 0 12px;font-size:13px;color:#6b5540">'+(socket&&socket.connected?'✅ 已连接':'🟡 连接中...')+'</div><div style="text-align:left;margin-bottom:10px"><div style="font-weight:1000;margin-bottom:4px;font-size:14px">可用房间</div><div id="pvpRoomList" style="max-height:180px;overflow-y:auto;border:1px solid rgba(0,0,0,.1);border-radius:10px;padding:4px"></div></div><div style="display:flex;gap:4px;margin-bottom:8px"><input id="pvpRoomNameInput" placeholder="输入房间名称" style="flex:1;padding:10px;border:2px solid #8b7550;border-radius:12px;font-size:14px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center"><button class="btn" id="pvpCreateBtn" style="flex-shrink:0">创建</button></div><div style="display:flex;gap:4px"><input id="pvpRoomInput" placeholder="输入房间号" style="flex:1;padding:10px;border:2px solid #8b7550;border-radius:12px;font-size:16px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center;letter-spacing:2px;font-weight:1000"><button class="btn" id="pvpJoinBtn" style="flex-shrink:0">加入</button></div><div class="btn dark" onclick="this.parentElement.parentElement.remove();pvp=null" style="margin-top:10px">返回</div></div>';
+  document.body.appendChild(m);
+  q('#pvpCreateBtn').onclick = () => { const eq=(state.equipped||[]).filter(function(id){return state.skills[id]?.copies>0}); if(eq.length<2) return toast('请先在仓库准备2张功能牌'); const rn=q('#pvpRoomNameInput').value.trim()||undefined; socket.emit('pvp_create_room',{skills:eq,name:CM[state.activeChar]?.name||'玩家',roomName:rn}); m.remove(); };
+  q('#pvpJoinBtn').onclick = () => { const rid=q('#pvpRoomInput').value.trim().toUpperCase(); if(!rid||rid.length<4) return toast('输入有效房间号'); const eq=(state.equipped||[]).filter(function(id){return state.skills[id]?.copies>0}); if(eq.length<2) return toast('请先在仓库准备2张功能牌'); socket.emit('pvp_join_room',{roomId:rid,skills:eq,name:CM[state.activeChar]?.name||'玩家'}); m.remove(); };
+  socket.emit('pvp_list_rooms');
+}
+
+function showPvPLobby() {
+  if (!pvp || !pvp.roomId) return;
+  const isHost = pvp.isHost;
+  const players = pvp.players || [];
+  pvp.hostId = pvp.hostId || (players.length > 0 ? players[0].socketId : null);
+  const p1 = players[0] || null;
+  const p2 = players[1] || null;
+  const charIcon1 = p1 ? (CHARS_BY_NAME[p1.name]?.icon || '🌟') : '?';
+  const charIcon2 = p2 ? (CHARS_BY_NAME[p2.name]?.icon || '🌟') : '?';
+  const p1Name = p1 ? p1.name : '等待加入...';
+  const p2Name = p2 ? p2.name : '等待加入...';
+  const hostId = pvp.hostId;
+  const navHtml = '<div class="topbar" style="margin-bottom:4px"><div style="display:flex;align-items:center;gap:6px"><span class="btn dark" onclick="leavePvPLobby()" style="padding:6px 10px;min-height:30px;font-size:12px">← 退出</span></div><div style="font-size:18px;font-weight:1000;color:#321707">'+pvp.roomId+'</div><div></div></div>';
+  var p1extra='', p2extra='';
+  if (p1 && isHost && p1.socketId!==socket.id) p1extra='<div class="btn red" onclick="kickPlayer(\''+p1.socketId+'\')" style="padding:6px 0;min-height:32px;font-size:12px">踢出</div>';
+  if (p2 && isHost && p2.socketId!==socket.id) p2extra='<div class="btn red" onclick="kickPlayer(\''+p2.socketId+'\')" style="padding:6px 0;min-height:32px;font-size:12px">踢出</div>';
+  q('#app').innerHTML =
+    '<div class="panel" style="text-align:center;margin:0">'+navHtml+'<div style="font-size:13px;color:#6b5540;margin-bottom:12px">'+ (pvp.roomName||'房间') +'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'+
+      '<div class="paper" style="padding:14px;text-align:center;min-height:120px"><div style="font-size:34px;margin-bottom:4px">'+(p1&&p1.socketId===hostId?'👑':'')+charIcon1+'</div><div style="font-weight:1000;font-size:15px">'+p1Name+'</div><div style="font-size:11px;color:#6b5540;margin-top:3px">'+(p1&&p1.socketId===hostId?'房主':'')+'</div>'+p1extra+'</div>'+
+      '<div class="paper" style="padding:14px;text-align:center;min-height:120px"><div style="font-size:34px;margin-bottom:4px">'+(p2&&p2.socketId===hostId?'👑':'')+charIcon2+'</div><div style="font-weight:1000;font-size:15px">'+p2Name+'</div><div style="font-size:11px;color:#6b5540;margin-top:3px">'+(p2&&p2.socketId===hostId?'房主':'')+'</div>'+p2extra+'</div>'+
+    '</div>'+
+    (isHost ? (players.length>=2?'<button class="btn" id="pvpStartBtn" style="margin-bottom:8px;padding:14px 0">开始对局</button>':'<div class="btn disabled" style="margin-bottom:8px;padding:14px 0">等待玩家加入...</div>') : '<div style="text-align:center;color:#6b5540;font-size:14px;margin:8px 0">⏳ 等待房主开始对局...</div>')+
+    '</div>';
+  if (isHost) { const sb = q('#pvpStartBtn'); if (sb) sb.onclick = function(){ hostStartGame(); }; }
+}
+function leavePvPLobby() {
+  socket.emit('leave_room'); pvp = null; setScreen('home');
+}
+function hostStartGame() {
+  socket.emit('pvp_host_start');
+  q('#pvpStartBtn').innerHTML = '等待确认...';
+  q('#pvpStartBtn').className = 'btn disabled';
+}
+function joinRoom(roomId) {
+  const eq = (state.equipped||[]).filter(function(id){ return state.skills[id]?.copies > 0; });
+  if (eq.length < 2) return toast('请先在仓库准备2张功能牌');
+  socket.emit('pvp_join_room', { roomId: roomId, skills: eq, name: CM[state.activeChar]?.name||'玩家' });
+  const hm = q('#pvpHomeModal'); if (hm) hm.remove();
+}
+function kickPlayer(socketId) {
+  socket.emit('pvp_kick_player', { roomId: pvp.roomId, targetSocketId: socketId });
+}
+
+function renderPvPBattle() {
+  if (!pvp || !pvp.serverState) return;
+  const s = pvp.serverState, me = s.player, opp = s.opponent;
+  const need = Math.max(1, PLAY_COUNTS[s.round-1] + (me.playBonus||0));
+  const mySubmitted = s.submitted || pvp.mySubmitted;
+  const oppSubmitted = s.opponentSubmitted || pvp.oppSubmitted;
+  const isSelect = s.phase === 'select' && !mySubmitted;
+  const isWait = s.phase === 'select' && mySubmitted;
+  const isResult = s.phase === 'result';
+  pvp.need = need;
+  const sel = pvp.selected || [];
+  let actionHtml = "";
+  if (isSelect) {
+    actionHtml = '<div class="actionArea"><div class="hint" style="margin:0 0 2px">请选择 '+need+' 张手牌　已选 '+sel.length+'/'+need+'</div><div class="handScroll">'+sortCards(me.hand).map(function(c){return cardHtml(c,sel.includes(c.id)?'selected':'')}).join('')+'</div><div class="skillBar">'+Object.values(me.skills).map(function(sk){return skillButton(sk,false)}).join('')+'<button class="btn '+(sel.length===need?'':'disabled')+'" id="pvpPlayBtn">出牌</button></div></div>';
+  } else if (isWait) {
+    actionHtml = '<div class="actionArea" style="text-align:center;padding:20px;color:#6b5540">⏳ 等待对手出牌...</div>';
+  } else if (isResult) {
+    actionHtml = '<div class="actionArea" style="text-align:center"><div class="btn" id="pvpNextBtn" style="margin:6px auto">'+(s.isOver?'查看结果':'下一局')+'</div></div>';
+  }
+  q('#app').innerHTML = '<div class="battleHeader">'+fighterHtml({...opp,hand:new Array(opp.handCount||0)},false)+'<div class="roundBar">第 '+s.round+'/5 局 🤠 联机对战</div></div><div class="battleTable">'+(isResult&&s.last?'<div class="revealNotice">'+(s.last.winner==='tie'?'🤝 平局':(s.last.winner===pvp.side?'🎉 胜利':'💔 失败'))+'</div>':'')+'<div class="zoneTitle">对手出牌区</div><div class="cardRow">'+(opp.played&&opp.played.length?opp.played.map(function(c){return cardHtml(c,'smallCard thrust')}).join(''):'<span class="muted">'+(oppSubmitted?'对手已出牌':'等待出牌')+'</span>')+'</div><div class="community"><div class="cardRow">'+s.community.map(function(c){return cardHtml(c,'large')}).join('')+'</div></div><div class="zoneTitle">我方出牌区</div><div class="cardRow">'+(me.played&&me.played.length?me.played.map(function(c){return cardHtml(c,'smallCard thrust')}).join(''):'<span class="muted">请选择手牌</span>')+'</div></div>'+actionHtml+'<div class="duelPlayerPanel">'+fighterHtml({...me,hand:me.hand},true)+'</div>';
+  qa('.handScroll .playCard[data-id]').forEach(function(el){el.onclick=function(){pvpToggleSelect(el.dataset.id)}});
+  qa('.skillBtn').forEach(function(b){b.onclick=function(){pvpUseSkill(b.dataset.id)}});
+  const pb = q('#pvpPlayBtn'); if (pb) pb.onclick = pvpSubmitPlay;
+  const nb = q('#pvpNextBtn'); if (nb) nb.onclick = function(){if(s.isOver){showPvPGameOver(s);return}socket.emit('next_round');toast('等待对手确认...')};
+}
+
+function pvpToggleSelect(id) {
+  const s = pvp?.serverState;
+  if (!s) return;
+  if (s.phase !== 'select') return toast('当前不是出牌阶段');
+  if (s.submitted || pvp.mySubmitted) return;
+  const need = pvp.need || Math.max(1, PLAY_COUNTS[s.round-1] + (s.player.playBonus||0));
+  const i = pvp.selected.indexOf(id);
+  if (i >= 0) pvp.selected.splice(i, 1);
+  else { if (pvp.selected.length >= need) return toast('只能出 '+need+' 张'); pvp.selected.push(id); }
+  renderPvPBattle();
+}
+
+function pvpSubmitPlay() {
+  const s = pvp?.serverState;
+  if (!s) return toast('游戏状态未就绪');
+  if (s.phase !== 'select') return toast('当前不是出牌阶段');
+  if (pvp.mySubmitted) return toast('已出牌，等待对手...');
+  const need = pvp.need;
+  if (!pvp.selected || pvp.selected.length !== need) return toast('需要选择 '+need+' 张');
+  socket.emit('submit_play', { selected: pvp.selected });
+  pvp.mySubmitted = true; toast('已出牌，等待对手...');
+}
+
+function pvpUseSkill(id) {
+  const s = pvp?.serverState;
+  if (!s || s.phase !== 'select') return toast('当前不能使用');
+  const me = s.player, sk = me.skills[id];
+  if (!sk || sk.used) return toast('已使用');
+  if (me.skillUses >= 2) return toast('每回合最多2张');
+  if (needsCardSelected(id)) {
+    if (!pvp.selected || pvp.selected.length < 1) return toast('请先选一张手牌再使用此技能');
+    socket.emit('use_skill', { skillId: id, selected: pvp.selected });
+  } else {
+    socket.emit('use_skill', { skillId: id });
+  }
+}
+
+function showPvPResult(d) {
+  const m = document.createElement('div'); m.className = 'resultBanner';
+  const pWin = d.winner === pvp?.side;
+  const title = d.winner === 'tie' ? '🤝 平局' : (pWin ? '🎉 本局胜利' : '💔 本局失败');
+  m.innerHTML = '<div class="resultBox"><div class="resultTitle" style="font-size:22px;margin-bottom:6px">'+title+'</div><div class="resultVLayout"><div class="resultSide'+(d.winner==='opp'?' resultWin':'')+'"><div class="resultHandName">'+(d.oe?.name||'未知')+'</div><div class="resultCardRow">'+cardsHtml(d.oe?.cards||[],'smallCard')+'</div></div><div class="resultVS" style="margin:3px auto">⚔️</div><div class="resultSide'+(d.winner==='player'?' resultWin':'')+'"><div class="resultHandName">'+(d.pe?.name||'未知')+'</div><div class="resultCardRow">'+cardsHtml(d.pe?.cards||[],'smallCard')+'</div></div></div><div class="resultDmg">'+(d.winner==='tie'?'平局不扣血':(pWin?'对手 -1❤️':'你 -1❤️'))+'</div><div class="grid2" style="margin-top:8px"><div class="btn dark" onclick="this.parentElement.parentElement.parentElement.remove();renderPvPBattle()">再看一下</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();socket.emit(\'next_round\');toast(\'等待对手确认...\')">'+(d.isOver?'结算':'下一局')+'</div></div></div>';
+  document.body.appendChild(m);
+}
+
+function showPvPInspect(hand) {
+  let m = document.createElement('div'); m.className = 'modal';
+  m.innerHTML = '<div class="modalBox"><div class="title" style="color:#321707">🔍 对手手牌</div><div class="cardRow">'+sortCards(hand).map(function(c){return cardHtml(c,'smallCard')}).join('')+'</div><div class="btn" id="closePvpInsp" style="margin-top:10px">知道了</div></div>';
+  document.body.appendChild(m);
+  q('#closePvpInsp').onclick = function(){ m.remove(); };
+  m.onclick = function(e){ if (e.target === m) m.remove(); };
+}
+function showPvPGameOver(d) {
+  pvp = null;
+  const win = d.win;
+  state.total = (state.total || 0) + 1;
+  if (win) state.wins = (state.wins || 0) + 1;
+  state.coins = (state.coins || 0) + (win ? 200 : 60);
+  state.gems = (state.gems || 0) + (win ? 8 : 3);
+  state.chest = Math.min(10, (state.chest || 0) + (win ? 2 : 1));
+  state.history = state.history || [];
+  state.history.unshift({ win: win, score: (d.roundWins?.player||0)+':'+(d.roundWins?.opp||0), time: Date.now(), mode: 'pvp' });
+  save();
+  const m = document.createElement('div'); m.className = 'resultBanner';
+  m.innerHTML = '<div class="resultBox"><div class="resultTitle" style="font-size:26px">'+(win?'🏆 对战胜利':'💔 对战失败')+'</div><div class="finalScore">'+(d.roundWins?.player||0)+' : '+(d.roundWins?.opp||0)+'</div><div style="margin:8px 0;font-size:15px;font-weight:1000">获得：🪙'+(win?200:60)+' 💎'+(win?8:3)+'</div><div class="grid2" style="margin-top:12px"><div class="btn" onclick="this.closest(\'.resultBanner\').remove();socket.emit(\'pvp_rematch\');">再来一把</div><div class="btn dark" onclick="this.closest(\'.resultBanner\').remove();socket.emit(\'leave_room\');setScreen(\'home\')">回到主页</div></div></div>';
+  document.body.appendChild(m);
+}
+function showPvPConfirm(d) {
+  if (!pvp) return;
+  const old = q('#pvpConfirmModal'); if (old) old.remove();
+  const m = document.createElement('div'); m.className = 'modal'; m.id = 'pvpConfirmModal';
+  m.innerHTML = '<div class="modalBox" style="text-align:center"><div class="title" style="color:#321707">⚔️ 准备开战</div><p style="color:#6b5540;margin:10px 0">房主已发起开战，是否确认？</p><div class="grid2"><button class="btn" id="pvpConfirmBtn">确认</button><button class="btn red" id="pvpDeclineBtn">退出</button></div></div>';
+  document.body.appendChild(m);
+  q('#pvpConfirmBtn').onclick = function(){ socket.emit('pvp_confirm_ready'); q('#pvpConfirmBtn').innerHTML = '已确认'; q('#pvpConfirmBtn').className = 'btn disabled'; };
+  q('#pvpDeclineBtn').onclick = function(){ socket.emit('pvp_decline'); m.remove(); if (pvp) { pvp = null; setScreen('home'); } };
+}
+
+load();render('home');
+
+// === Chat functions ===
+function sendChat() {
+  if (!socket || !socket.connected) { pvpConnect(); toast('连接中...'); return; }
+  const input = q('#chatInput'); if (!input) return;
+  const text = input.value.trim(); if (!text) return;
+  socket.emit('chat_message', { name: chatName, text });
+  input.value = '';
+}
+function toggleChat() {
+  const body = q('#chatBody'); const badge = q('#chatBadge');
+  if (!body) return;
+  body.classList.toggle('collapsed');
+  const toggle = q('#chatToggle');
+  if (toggle) toggle.textContent = body.classList.contains('collapsed') ? '▸' : '▾';
+  if (badge) badge.classList.add('hidden');
+}
+function scrollChat() {
+  const el = q('#chatMsgs'); if (el) el.scrollTop = el.scrollHeight;
+}
+function chatMsgHtml(m) {
+  const t = m.time ? new Date(m.time).toLocaleTimeString().slice(0,5) : '';
+  return '<div class="chatMsg"><span class="chatName">' + esc(m.name) + '</span><span class="chatText">' + esc(m.text) + '</span><span class="chatTime">' + t + '</span></div>';
+}
+function esc(s) { return (s || '').replace(/[<>&]/g, function(c) { return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; }); }
+
+// auto-connect for chat
+setTimeout(pvpConnect, 500);
+</script>
+</body>
+</html>

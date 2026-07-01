@@ -19,9 +19,13 @@ const PORT = process.env.PORT || 3000;
 
 const chatMessages = [];
 const MAX_CHAT = 50;
+let onlineCount = 0;
 
 io.on('connection', (socket) => {
-  console.log(`[connect] ${socket.id}`);
+  onlineCount++;
+  io.emit('online_count', onlineCount);
+  console.log(`[connect] ${socket.id} (online: ${onlineCount})`);
+  socket.emit('online_count', onlineCount);
   socket.emit('chat_history', chatMessages.slice(-30));
 
   // === PvE: Create solo game vs AI ===
@@ -341,7 +345,9 @@ io.on('connection', (socket) => {
 
   // === Disconnect ===
   socket.on('disconnect', () => {
-    console.log(`[disconnect] ${socket.id}`);
+    onlineCount = Math.max(0, onlineCount - 1);
+    io.emit('online_count', onlineCount);
+    console.log(`[disconnect] ${socket.id} (online: ${onlineCount})`);
     const roomId = rooms.leaveRoom(socket.id);
     if (roomId) {
       const room = rooms.getRoom(roomId);

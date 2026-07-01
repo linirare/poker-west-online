@@ -608,6 +608,7 @@ function renderHome(){const rc=rankCfg();const rankText=rankProgressText();q('#a
   <div class="chatHeader" onclick="toggleChat()">
     <span>💬 聊天</span>
     <span class="chatBadge hidden" id="chatBadge">0</span>
+    <span id="onlineCount" style="margin-left:auto;font-size:10px;color:#8daa7a">🟢 0</span>
     <span class="chatToggle" id="chatToggle">▸</span>
   </div>
   <div class="chatBody collapsed" id="chatBody">
@@ -741,6 +742,10 @@ function pvpConnect() {
   try { socket = io(); } catch(e) { setTimeout(pvpConnect, 2000); return; }
   socket.on('connect', () => { toast('已连接服务器'); });
   socket.on('disconnect', () => { toast('与服务器断开'); });
+  socket.on('online_count', (n) => {
+    const el = q('#onlineCount');
+    if (el) el.textContent = '🟢 ' + n;
+  });
   socket.on('room_list', (rooms) => {
     const list = q('#pvpRoomList');
     if (list) {

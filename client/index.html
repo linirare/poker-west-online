@@ -515,8 +515,8 @@ function renderNav(active){const items=[['home','🏠','主页'],['deck','🃏',
 function topbar(title,sub=''){return `<div class="topbar"><div><div class="title">${title}</div>${sub?`<div class="sub">${sub}</div>`:''}</div><div class="res"><span class="pill">🪙 ${state.coins}</span><span class="pill">💎 ${state.gems}</span></div></div>`}
 function renderHome(){const winrate=state.total?Math.round(state.wins/state.total*100):0;const rc=rankCfg();q('#app').innerHTML=`${topbar('代号001')}
 <div class="heroArt" style="min-height:140px;height:140px"><div class="saloonSign">CODE 001</div><div class="heroCowboy"></div></div>
-<div class="btn mint" onclick="state.mode='ranked';setScreen('battleSelect')" style="padding:16px 0;font-size:18px;margin:10px 0">🃏 开始对战</div>
-<div class="btn pvpBtn" onclick="showPvPHome()" style="padding:16px 0;font-size:18px;margin:10px 0">🌐 联机对战</div>
+<div class="btn mint" onclick="state.mode='ranked';setScreen('battleSelect')" style="padding:16px 0;font-size:18px;margin:6px 0">🃏 开始对战</div>
+    <div class="btn pvpBtn" onclick="showPvPHome()" style="padding:14px 0;font-size:16px;margin:6px 0">🌐 联机对战</div>
 <div class="grid3"><div class="btn dark" onclick="startTutorial()" style="padding:10px 0;font-size:12px">📖 新手引导</div><div class="btn dark" onclick="setScreen('teach')" style="padding:10px 0;font-size:12px">🏆 牌型</div><div class="btn dark" onclick="showAchievements()" style="padding:10px 0;font-size:12px">📊 成就</div><div class="btn dark" onclick="setScreen('rank')" style="padding:10px 0;font-size:12px">📊 天梯</div></div>
 <div class="panel"><b>今日进度</b><div class="hr"></div><div class="grid2"><div class="paper" style="padding:6px"><b>段位</b><br>${rc.icon} ${rc.name} · ${rankProgressText()}</div><div class="paper" style="padding:6px"><b>胜率</b><br>${state.wins}/${state.total} · ${winrate}%</div></div><div class="paper" style="padding:6px;margin:4px 0;cursor:${state.chest>=10?'pointer':'default'}" onclick="${state.chest>=10?'openChest()':''}"><div style="display:flex;justify-content:space-between;align-items:center"><b>🎁 宝箱进度</b><span style="font-size:13px;font-weight:1000">${state.chest>=10?'✨ 点击开启!':state.chest+'/10'}</span></div><div class="levelBar"><i style="width:${state.chest*10}%"></i></div></div><div class="hr"></div><div style="display:flex;flex-direction:column;gap:4px">${taskLine('完成3局对战',state.tasks.play,3,0)}${taskLine('使用5次功能牌',state.tasks.useSkill,5,1)}${taskLine('赢下6个回合',state.tasks.winRound,6,2)}${taskLine('打出顺子或以上',state.tasks.straight,1,3)}</div></div>`}
 var TASK_REWARDS=[['play',15],['useSkill',15],['winRound',15],['straight',25]]
@@ -626,6 +626,7 @@ function bigHandCelebration(name){var d=document.createElement('div');d.classNam
 function hpHitFx(side,dmg){var el=document.querySelector('.phone');if(el)el.classList.add('shakeScreen');setTimeout(function(){if(el)el.classList.remove('shakeScreen')},350);var ft=document.createElement('div');ft.className='hpFloat';ft.textContent='-'+dmg+'❤️';ft.style.left=side==='player'?'35%':'65%';document.body.appendChild(ft);setTimeout(function(){ft.remove()},900)}
 function softHitFx(winner){let i=document.createElement('div');i.className='impact';i.textContent='✨';i.style.left=winner==='player'?'58%':'42%';i.style.top=winner==='player'?'22%':'78%';document.body.appendChild(i);setTimeout(()=>i.remove(),650)}
 function toast(t){let old=q('.toast');if(old)old.remove();let d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1800)}
+
 // === 联机对战 PvP ===
 let socket = null;
 let pvp = null;
@@ -633,16 +634,9 @@ let pvp = null;
 function pvpConnect() {
   if (socket && socket.connected) return;
   try { socket = io(); } catch(e) { setTimeout(pvpConnect, 2000); return; }
-  socket.on('connect', () => {
-    const el = document.getElementById('pvpStatus');
-    if (el) el.innerHTML = '✅ 已连接';
-    toast('已连接服务器');
-  });
+  socket.on('connect', () => { toast('已连接服务器'); });
   socket.on('disconnect', () => { toast('与服务器断开'); });
-  socket.on('room_created', (d) => {
-    pvp = { roomId: d.roomId, phase: 'waiting', side: 'player', selected: [] };
-    showPvPWaiting();
-  });
+  socket.on('room_created', (d) => { pvp = { roomId: d.roomId, phase: 'waiting', side: 'player', selected: [] }; showPvPWaiting(); });
   socket.on('game_state', (d) => {
     if (!pvp) pvp = { selected: [] };
     pvp.side = d.side; pvp.phase = 'battle'; pvp.serverState = d; pvp.selected = [];
@@ -661,52 +655,23 @@ function pvpConnect() {
     toast('对手已出牌');
   });
   socket.on('submitted', () => { if (pvp) { pvp.mySubmitted = true; renderPvPBattle(); } });
-  socket.on('skill_used', (d) => {
-    const who = d.side === (pvp?.side || 'player') ? '我方' : '对手';
-    flash(who + ' 发动 ' + (d.name || '技能'));
-  });
+  socket.on('skill_used', (d) => { const who = d.side === (pvp?.side || 'player') ? '我方' : '对手'; flash(who + ' 发动 ' + (d.name || '技能')); });
 }
 
 function showPvPHome() {
   pvpConnect();
   const m = document.createElement('div');
   m.className = 'modal'; m.id = 'pvpHomeModal';
-  m.innerHTML = `<div class="modalBox" style="text-align:center">
-    <div class="title" style="color:#321707">🌐 联机对战</div>
-    <div id="pvpStatus" style="margin:6px 0 14px;font-size:13px;color:#6b5540">${socket && socket.connected ? '✅ 已连接' : '🟡 连接中...'}</div>
-    <button class="btn" id="pvpCreateBtn" style="width:100%;margin-bottom:8px">🏠 创建房间</button>
-    <div style="display:flex;gap:4px">
-      <input id="pvpRoomInput" placeholder="输入房间号" style="flex:1;padding:10px;border:2px solid #8b7550;border-radius:12px;font-size:16px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center;letter-spacing:2px;font-weight:1000">
-      <button class="btn" id="pvpJoinBtn">🔑 加入</button>
-    </div>
-    <div class="btn dark" onclick="this.parentElement.parentElement.remove()" style="margin-top:10px">返回</div>
-  </div>`;
+  m.innerHTML = '<div class="modalBox" style="text-align:center"><div class="title" style="color:#321707">🌐 联机对战</div><div style="margin:6px 0 14px;font-size:13px;color:#6b5540">'+(socket&&socket.connected?'✅ 已连接':'🟡 连接中...')+'</div><button class="btn" id="pvpCreateBtn" style="width:100%;margin-bottom:8px">🏠 创建房间</button><div style="display:flex;gap:4px"><input id="pvpRoomInput" placeholder="输入房间号" style="flex:1;padding:10px;border:2px solid #8b7550;border-radius:12px;font-size:16px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center;letter-spacing:2px;font-weight:1000"><button class="btn" id="pvpJoinBtn" style="flex-shrink:0">🔑 加入</button></div><div class="btn dark" onclick="this.parentElement.parentElement.remove()" style="margin-top:10px">返回</div></div>';
   document.body.appendChild(m);
-  q('#pvpCreateBtn').onclick = () => {
-    const eq = (state.equipped||[]).filter(id => state.skills[id]?.copies > 0);
-    if (eq.length < 2) return toast('请先在功能牌仓库准备2张');
-    socket.emit('pvp_create_room', { skills: eq, name: CM[state.activeChar]?.name || '玩家' });
-    m.remove();
-  };
-  q('#pvpJoinBtn').onclick = () => {
-    const rid = q('#pvpRoomInput').value.trim().toUpperCase();
-    if (!rid || rid.length < 4) return toast('输入有效房间号');
-    const eq = (state.equipped||[]).filter(id => state.skills[id]?.copies > 0);
-    if (eq.length < 2) return toast('请先在功能牌仓库准备2张');
-    socket.emit('pvp_join_room', { roomId: rid, skills: eq, name: CM[state.activeChar]?.name || '玩家' });
-    m.remove();
-  };
+  q('#pvpCreateBtn').onclick = () => { const eq=(state.equipped||[]).filter(function(id){return state.skills[id]?.copies>0}); if(eq.length<2) return toast('请先在仓库准备2张功能牌'); socket.emit('pvp_create_room',{skills:eq,name:CM[state.activeChar]?.name||'玩家'}); m.remove(); };
+  q('#pvpJoinBtn').onclick = () => { const rid=q('#pvpRoomInput').value.trim().toUpperCase(); if(!rid||rid.length<4) return toast('输入有效房间号'); const eq=(state.equipped||[]).filter(function(id){return state.skills[id]?.copies>0}); if(eq.length<2) return toast('请先在仓库准备2张功能牌'); socket.emit('pvp_join_room',{roomId:rid,skills:eq,name:CM[state.activeChar]?.name||'玩家'}); m.remove(); };
 }
 
 function showPvPWaiting() {
   const old = q('#pvpWaitingModal'); if (old) old.remove();
   const m = document.createElement('div'); m.className = 'modal'; m.id = 'pvpWaitingModal';
-  m.innerHTML = `<div class="modalBox" style="text-align:center">
-    <div class="title" style="color:#321707">⏳ 等待对手</div>
-    <div style="font-size:48px;margin:16px 0;letter-spacing:8px;font-weight:1000;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${pvp.roomId}</div>
-    <div style="font-size:14px;color:#6b5540;margin-bottom:12px">把房间号发给朋友</div>
-    <button class="btn red" id="pvpCancelWait">取消等待</button>
-  </div>`;
+  m.innerHTML = '<div class="modalBox" style="text-align:center"><div class="title" style="color:#321707">⏳ 等待对手</div><div style="font-size:48px;margin:16px 0;letter-spacing:8px;font-weight:1000;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+pvp.roomId+'</div><div style="font-size:14px;color:#6b5540;margin-bottom:12px">把房间号发给朋友</div><button class="btn red" id="pvpCancelWait">取消等待</button></div>';
   document.body.appendChild(m);
   q('#pvpCancelWait').onclick = () => { socket.emit('leave_room'); pvp = null; m.remove(); setScreen('home'); };
 }
@@ -722,24 +687,19 @@ function renderPvPBattle() {
   const isResult = s.phase === 'result';
   pvp.need = need;
   const sel = pvp.selected || [];
-  let actionHtml = '';
+  let actionHtml = "";
   if (isSelect) {
-    actionHtml = `<div class="actionArea"><div class="hint" style="margin:0 0 2px">请选择 ${need} 张手牌　已选 ${sel.length}/${need}</div><div class="handScroll">${sortCards(me.hand).map(c=>cardHtml(c,sel.includes(c.id)?'selected':'')).join('')}</div><div class="skillBar">${Object.values(me.skills).map(sk=>skillButton(sk,false)).join('')}<button class="btn ${sel.length===need?'':'disabled'}" id="pvpPlayBtn">出牌</button></div></div>`;
+    actionHtml = '<div class="actionArea"><div class="hint" style="margin:0 0 2px">请选择 '+need+' 张手牌　已选 '+sel.length+'/'+need+'</div><div class="handScroll">'+sortCards(me.hand).map(function(c){return cardHtml(c,sel.includes(c.id)?'selected':'')}).join('')+'</div><div class="skillBar">'+Object.values(me.skills).map(function(sk){return skillButton(sk,false)}).join('')+'<button class="btn '+(sel.length===need?'':'disabled')+'" id="pvpPlayBtn">出牌</button></div></div>';
   } else if (isWait) {
-    actionHtml = `<div class="actionArea"><div style="text-align:center;padding:20px;color:#6b5540">⏳ 等待对手出牌...</div></div>`;
+    actionHtml = '<div class="actionArea" style="text-align:center;padding:20px;color:#6b5540">⏳ 等待对手出牌...</div>';
   } else if (isResult) {
-    actionHtml = `<div class="actionArea" style="text-align:center"><div class="btn" id="pvpNextBtn" style="margin:6px auto">${s.isOver?'查看结果':'下一局'}</div></div>`;
+    actionHtml = '<div class="actionArea" style="text-align:center"><div class="btn" id="pvpNextBtn" style="margin:6px auto">'+(s.isOver?'查看结果':'下一局')+'</div></div>';
   }
-  q('#app').innerHTML = `<div class="battleHeader">${fighterHtml({...opp,hand:new Array(opp.handCount||0)},false)}<div class="roundBar">第 ${s.round}/5 局 🤠 联机对战</div></div>
-  <div class="battleTable">${isResult&&s.last?`<div class="revealNotice">${s.last.winner==='tie'?'🤝 平局':(s.last.winner===pvp.side?'🎉 胜利':'💔 失败')}</div>`:''}
-  <div class="zoneTitle">对手出牌区</div><div class="cardRow">${opp.played&&opp.played.length?opp.played.map(c=>cardHtml(c,'smallCard thrust')).join(''):'<span class="muted">等待出牌</span>'}</div>
-  <div class="community"><div class="cardRow">${s.community.map(c=>cardHtml(c,'large')).join('')}</div></div>
-  <div class="zoneTitle">我方出牌区</div><div class="cardRow">${me.played&&me.played.length?me.played.map(c=>cardHtml(c,'smallCard thrust')).join(''):'<span class="muted">请选择手牌</span>'}</div>
-  </div>${actionHtml}<div class="duelPlayerPanel">${fighterHtml({...me,hand:me.hand},true)}</div>`;
-  qa('.handScroll .playCard[data-id]').forEach(el => el.onclick = () => pvpToggleSelect(el.dataset.id));
-  qa('.skillBtn').forEach(b => b.onclick = () => pvpUseSkill(b.dataset.id));
+  q('#app').innerHTML = '<div class="battleHeader">'+fighterHtml({...opp,hand:new Array(opp.handCount||0)},false)+'<div class="roundBar">第 '+s.round+'/5 局 🤠 联机对战</div></div><div class="battleTable">'+(isResult&&s.last?'<div class="revealNotice">'+(s.last.winner==='tie'?'🤝 平局':(s.last.winner===pvp.side?'🎉 胜利':'💔 失败'))+'</div>':'')+'<div class="zoneTitle">对手出牌区</div><div class="cardRow">'+(opp.played&&opp.played.length?opp.played.map(function(c){return cardHtml(c,'smallCard thrust')}).join(''):'<span class="muted">等待出牌</span>')+'</div><div class="community"><div class="cardRow">'+s.community.map(function(c){return cardHtml(c,'large')}).join('')+'</div></div><div class="zoneTitle">我方出牌区</div><div class="cardRow">'+(me.played&&me.played.length?me.played.map(function(c){return cardHtml(c,'smallCard thrust')}).join(''):'<span class="muted">请选择手牌</span>')+'</div></div>'+actionHtml+'<div class="duelPlayerPanel">'+fighterHtml({...me,hand:me.hand},true)+'</div>';
+  qa('.handScroll .playCard[data-id]').forEach(function(el){el.onclick=function(){pvpToggleSelect(el.dataset.id)}});
+  qa('.skillBtn').forEach(function(b){b.onclick=function(){pvpUseSkill(b.dataset.id)}});
   const pb = q('#pvpPlayBtn'); if (pb) pb.onclick = pvpSubmitPlay;
-  const nb = q('#pvpNextBtn'); if (nb) nb.onclick = () => { if (s.isOver) { showPvPGameOver(s); return; } socket.emit('next_round'); toast('等待对手确认...'); };
+  const nb = q('#pvpNextBtn'); if (nb) nb.onclick = function(){if(s.isOver){showPvPGameOver(s);return}socket.emit('next_round');toast('等待对手确认...')};
 }
 
 function pvpToggleSelect(id) {
@@ -774,7 +734,7 @@ function showPvPResult(d) {
   const m = document.createElement('div'); m.className = 'resultBanner';
   const pWin = d.winner === pvp?.side;
   const title = d.winner === 'tie' ? '🤝 平局' : (pWin ? '🎉 本局胜利' : '💔 本局失败');
-  m.innerHTML = `<div class="resultBox"><div class="resultTitle" style="font-size:22px;margin-bottom:6px">${title}</div><div class="resultVLayout"><div class="resultSide${d.winner==='opp'?' resultWin':''}"><div class="resultHandName">${d.oe?.name||'未知'}</div><div class="resultCardRow">${cardsHtml(d.oe?.cards||[],'smallCard')}</div></div><div class="resultVS" style="margin:3px auto">⚔️</div><div class="resultSide${d.winner==='player'?' resultWin':''}"><div class="resultHandName">${d.pe?.name||'未知'}</div><div class="resultCardRow">${cardsHtml(d.pe?.cards||[],'smallCard')}</div></div></div><div class="resultDmg">${d.winner==='tie'?'平局不扣血':(pWin?'对手 -1❤️':'你 -1❤️')}</div><div class="grid2" style="margin-top:8px"><div class="btn dark" onclick="this.parentElement.parentElement.parentElement.remove();renderPvPBattle()">再看一下</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();socket.emit('next_round');toast('等待对手确认...')">${d.isOver?'结算':'下一局'}</div></div></div>`;
+  m.innerHTML = '<div class="resultBox"><div class="resultTitle" style="font-size:22px;margin-bottom:6px">'+title+'</div><div class="resultVLayout"><div class="resultSide'+(d.winner==='opp'?' resultWin':'')+'"><div class="resultHandName">'+(d.oe?.name||'未知')+'</div><div class="resultCardRow">'+cardsHtml(d.oe?.cards||[],'smallCard')+'</div></div><div class="resultVS" style="margin:3px auto">⚔️</div><div class="resultSide'+(d.winner==='player'?' resultWin':'')+'"><div class="resultHandName">'+(d.pe?.name||'未知')+'</div><div class="resultCardRow">'+cardsHtml(d.pe?.cards||[],'smallCard')+'</div></div></div><div class="resultDmg">'+(d.winner==='tie'?'平局不扣血':(pWin?'对手 -1❤️':'你 -1❤️'))+'</div><div class="grid2" style="margin-top:8px"><div class="btn dark" onclick="this.parentElement.parentElement.parentElement.remove();renderPvPBattle()">再看一下</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();socket.emit('next_round');toast('等待对手确认...')">'+(d.isOver?'结算':'下一局')+'</div></div></div>';
   document.body.appendChild(m);
 }
 
@@ -782,7 +742,7 @@ function showPvPGameOver(d) {
   pvp = null;
   const win = d.win;
   const m = document.createElement('div'); m.className = 'resultBanner';
-  m.innerHTML = `<div class="resultBox"><div class="resultTitle" style="font-size:26px">${win?'🏆 对战胜利':'💔 对战失败'}</div><div class="finalScore">${d.roundWins?.player||0} : ${d.roundWins?.opp||0}</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();setScreen('home')" style="margin-top:12px">回到主页</div></div>`;
+  m.innerHTML = '<div class="resultBox"><div class="resultTitle" style="font-size:26px">'+(win?'🏆 对战胜利':'💔 对战失败')+'</div><div class="finalScore">'+(d.roundWins?.player||0)+' : '+(d.roundWins?.opp||0)+'</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();setScreen('home')" style="margin-top:12px">回到主页</div></div>';
   document.body.appendChild(m);
 }
 

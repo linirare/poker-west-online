@@ -1,5 +1,5 @@
 {
   "deploy": {
-    "rootDirectory": "server"
+    "startCommand": "cd server && node index.js"
   }
 }

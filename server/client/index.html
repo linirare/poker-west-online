@@ -501,13 +501,13 @@ const CHARS=[
 const CM=Object.fromEntries(CHARS.map(c=>[c.id,c]));
 const CHARS_BY_NAME=Object.fromEntries(CHARS.map(c=>[c.name,c]));
 const RANK_CONFIG=[
-{name:'新手局',icon:'◇',stars:0,desc:'前3场保护，不掉星'},
-{name:'青铜',icon:'◆',stars:3,desc:'赢+1星，输不掉星'},
-{name:'白银',icon:'◆',stars:3,desc:'赢+1星，输-1星'},
-{name:'黄金',icon:'★',stars:4,desc:'赢+1星，输-1星'},
-{name:'铂金',icon:'★',stars:4,desc:'赢+1星，输-1星'},
-{name:'大师',icon:'♛',stars:0,desc:'积分制，胜+25 / 负-15'},
-{name:'传奇',icon:'♛',stars:0,desc:'1500分以上进入传奇'}
+{name:'新手局',icon:'🌱',stars:0,desc:'前3场保护，不掉星'},
+{name:'青铜',icon:'🥉',stars:3,desc:'赢+1星，输不掉星'},
+{name:'白银',icon:'🥈',stars:3,desc:'赢+1星，输-1星'},
+{name:'黄金',icon:'🥇',stars:4,desc:'赢+1星，输-1星'},
+{name:'铂金',icon:'💎',stars:4,desc:'赢+1星，输-1星'},
+{name:'大师',icon:'👑',stars:0,desc:'积分制，胜+25 / 负-15'},
+{name:'传奇',icon:'🌟',stars:0,desc:'1500分以上进入传奇'}
 ];
 let state={};
 let currentUser = null;
@@ -589,6 +589,26 @@ async function handleRegister() {
   } catch(e) { toast(e.message); q('#regBtn').textContent = '注册'; }
 }
 
+function showUserMenu() {
+  if (!currentUser) return toast('未登录');
+  const m = document.createElement('div'); m.className = 'modal'; m.id = 'userMenuModal';
+  m.innerHTML = '<div class="modalBox" style="text-align:center;max-width:300px">' +
+    '<div style="font-size:36px;margin-bottom:6px">👤</div>' +
+    '<div style="font-weight:1000;font-size:16px;margin-bottom:4px">' + currentUser.username + '</div>' +
+    '<div class="small muted" style="margin-bottom:12px">' + (currentUser.role === 'admin' ? '🛠️ 管理员' : '玩家') + '</div>' +
+    '<div class="btn red" id="logoutConfirmBtn">退出登录</div>' +
+    '<div class="small muted" style="margin-top:8px;cursor:pointer" onclick="this.closest(\'.modal\').remove()">关闭</div>' +
+    '</div>';
+  document.body.appendChild(m);
+  q('#logoutConfirmBtn').onclick = function() {
+    localStorage.removeItem(TOKEN_KEY);
+    currentUser = null;
+    state = initState(); save();
+    m.remove();
+    showAuthModal();
+  };
+}
+
 function handleLogout() {
   localStorage.removeItem(TOKEN_KEY);
   currentUser = null;
@@ -641,7 +661,7 @@ function rankProgressText(){const c=rankCfg();if((state.rankIdx||0)===0)return `
 function setScreen(s){if(pvp&&(pvp.phase==='lobby'||pvp.phase==='battle')){socket.emit('leave_room');pvp=null}render(s)}
 function render(screen='home'){renderNav(screen);if(screen==='home'){renderHome();fetchMail()}if(screen==='deck')renderDeck();if(screen==='chars')renderChars();if(screen==='shop')renderShop();if(screen==='rank')renderRank();if(screen==='teach')renderTeach()}
 function renderNav(active){const items=[['home','🏠','主页'],['deck','🃏','功能牌'],['chars','🌟','角色'],['shop','🎁','抽卡'],['rank','🏆','排行']];q('#nav').innerHTML=items.map(i=>`<button class="${active===i[0]?'active':''}" onclick="setScreen('${i[0]}')"><b>${i[1]}</b>${i[2]}</button>`).join('')}
-function topbar(title,sub=''){return `<div class="topbar"><div><div class="title">${title}</div>${sub?`<div class="sub">${sub}</div>`:''}</div><div class="res"><span class="pill">🪙 ${state.coins}</span><span class="pill">💎 ${state.gems}</span></div></div>`}
+function topbar(title,sub=''){return `<div class="topbar"><div><div class="title">${title}</div>${sub?`<div class="sub">${sub}</div>`:''}</div><div class="res"><span class="pill" style="cursor:pointer" onclick="showUserMenu()">👤 ${currentUser?.username||'未登录'}</span><span class="pill">🪙 ${state.coins}</span><span class="pill">💎 ${state.gems}</span></div></div>`}
 function renderHome(){const rc=rankCfg();const rankText=rankProgressText();q('#app').innerHTML=`${topbar('代号001')}
 <div class="homeLayout">
   <div class="heroArt">
@@ -1097,7 +1117,8 @@ async function initApp() {
   const token = localStorage.getItem(TOKEN_KEY);
   if (token) {
     try {
-      const d = await api('/load');
+      const [d, me] = await Promise.all([api('/load'), api('/me')]);
+      currentUser = me?.user || null;
       const gd = d.game_data || {};
       if (Object.keys(gd).length > 0) {
         state = { ...initState(), ...gd };
@@ -1106,7 +1127,7 @@ async function initApp() {
       if (d.wins !== undefined) state.wins = d.wins;
       checkDailyReset(); ensureDefaults(); save(); render('home'); pvpConnect();
       return;
-    } catch(e) { localStorage.removeItem(TOKEN_KEY); }
+    } catch(e) { localStorage.removeItem(TOKEN_KEY); currentUser = null; }
   }
   load(); showAuthModal();
 }

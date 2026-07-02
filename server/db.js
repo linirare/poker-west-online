@@ -4,6 +4,27 @@ const bcrypt = require('bcryptjs');
 
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data.json');
 let data = null;
+const UID_CACHE = new Set();
+
+function generateUid() {
+  let uid;
+  do { uid = String(Math.floor(10000000 + Math.random() * 90000000)); }
+  while (UID_CACHE.has(uid));
+  UID_CACHE.add(uid);
+  return uid;
+}
+
+function ensureUid(user) {
+  if (!user.uid) { user.uid = generateUid(); saveDb(); }
+  return user.uid;
+}
+
+function rebuildUidCache() {
+  UID_CACHE.clear();
+  for (const u of (data?.users || [])) {
+    if (u.uid) UID_CACHE.add(u.uid);
+  }
+}
 
 function getDb() {
   if (!data) throw new Error('Database not initialized');
@@ -20,6 +41,7 @@ async function initDb() {
     data = { users: [], nextId: 1 };
   }
   initDefaults();
+  rebuildUidCache();
   saveDb();
   console.log('[db] Database ready (' + data.users.length + ' users)');
 }
@@ -56,7 +78,7 @@ function getUserById(id) {
 
 function createUser(username, hash, isGuest = 0) {
   const user = {
-    id: data.nextId++, username, password: hash,
+    id: data.nextId++, uid: generateUid(), username, password: hash,
     is_admin: 0, is_guest: isGuest,
     created_at: new Date().toISOString().slice(0,19).replace('T',' '),
     last_login: null, total_games: 0, wins: 0, game_data: {}
@@ -64,6 +86,10 @@ function createUser(username, hash, isGuest = 0) {
   data.users.push(user);
   saveDb();
   return user;
+}
+
+function getUserByUid(uid) {
+  return data.users.find(u => u.uid === uid) || null;
 }
 
 function updateUser(id, fields) {
@@ -89,7 +115,7 @@ function getUserFull(id) {
 
 function getAllUsers() {
   return data.users.map(u => ({
-    id: u.id, username: u.username, is_admin: u.is_admin, is_guest: u.is_guest,
+    id: u.id, uid: u.uid, username: u.username, is_admin: u.is_admin, is_guest: u.is_guest,
     created_at: u.created_at, last_login: u.last_login,
     total_games: u.total_games, wins: u.wins,
     game_data: u.game_data || {}
@@ -109,9 +135,11 @@ function getStats() {
 
 function getLeaderboard() {
   return data.users
-    .filter(u => !u.is_admin && (u.total_games || 0) > 0)
+    .filter(u => !u.is_admin)
     .map(u => ({
+      uid: u.uid,
       username: u.username,
+      displayName: (u.game_data && u.game_data.displayName) || u.username,
       total_games: u.total_games || 0,
       wins: u.wins || 0,
       win_rate: u.total_games > 0 ? Math.round((u.wins / u.total_games) * 10000) / 100 : 0,
@@ -141,4 +169,13 @@ process.on('exit', () => saveDb());
 process.on('SIGINT', () => { saveDb(); process.exit(); });
 process.on('SIGTERM', () => { saveDb(); process.exit(); });
 
-module.exports = { initDb, getDb, saveDb, getUser, getUserById, getUserFull, createUser, updateUser, deleteUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail };
+function sendMailToUser(userId, mailItem) {
+  const user = data.users.find(u => u.id === userId);
+  if (!user) return false;
+  if (!user.mail) user.mail = [];
+  user.mail.unshift({ ...mailItem, id: mailItem.id + '_' + user.id, read: false, claimed: false });
+  saveDb();
+  return true;
+}
+
+module.exports = { initDb, getDb, saveDb, getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, deleteUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser };

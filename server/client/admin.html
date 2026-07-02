@@ -169,11 +169,11 @@ function renderDashboard(stats) {
 
   // Search
   html += '<h2>全部用户 (' + usersData.length + ')</h2>';
-  html += '<input class="searchBar" id="searchInput" placeholder="🔍 搜索用户名..." oninput="onSearch()">';
+  html += '<input class="searchBar" id="searchInput" placeholder="🔍 搜索用户名或游戏名..." oninput="onSearch()">';
 
   // Table
   html += '<div class="card"><div style="overflow-x:auto"><table><tr>';
-  html += '<th>ID</th><th>用户名</th><th>类型</th><th>🪙</th><th>💎</th><th>场次</th><th>胜场</th><th>胜率</th><th>段位</th><th>角色</th><th>宝箱</th><th>注册</th><th>最后登录</th><th>操作</th>';
+  html += '<th>ID</th><th>UID</th><th>游戏名</th><th>用户名</th><th>类型</th><th>🪙</th><th>💎</th><th>场次</th><th>胜场</th><th>胜率</th><th>段位</th><th>角色</th><th>宝箱</th><th>注册</th><th>最后登录</th><th>操作</th>';
   html += '</tr><tbody id="userTableBody">';
   html += '</tbody></table></div></div>';
   html += '<div id="detailPanel"></div>';
@@ -199,7 +199,7 @@ function renderUserRows() {
   if (!tbody) return;
   var q = searchQuery.toLowerCase();
   var filtered = usersData.filter(function(u) {
-    return !q || u.username.toLowerCase().indexOf(q) !== -1;
+    return !q || u.username.toLowerCase().indexOf(q) !== -1 || (u.game_data && u.game_data.displayName && u.game_data.displayName.toLowerCase().indexOf(q) !== -1);
   });
   tbody.innerHTML = filtered.map(function(u) {
     var gd = u.game_data || {};
@@ -211,6 +211,8 @@ function renderUserRows() {
     var active = expandedUserId === u.id ? ' active' : '';
     return '<tr class="' + active + '" onclick="toggleUser(' + u.id + ')">' +
       '<td>' + u.id + '</td>' +
+      '<td>' + esc(u.uid) + '</td>' +
+      '<td>' + esc(gd.displayName || '-') + '</td>' +
       '<td>' + esc(u.username) + '</td>' +
       '<td><span class="badge ' + typeCls + '">' + typeLabel + '</span></td>' +
       '<td>' + (gd.coins || 0) + '</td>' +
@@ -270,6 +272,8 @@ function showDetail(id) {
     '<div class="detailSection">📋 基础信息</div>' +
     '<div class="detailGrid">' +
       '<div class="detailField"><label>用户ID</label><div class="val">' + u.id + '</div></div>' +
+      '<div class="detailField"><label>游戏UID</label><div class="val">' + esc(u.uid) + '</div></div>' +
+      '<div class="detailField"><label>游戏名</label><input id="edit_displayName" value="' + esc(gd.displayName || '') + '"></div>' +
       '<div class="detailField"><label>用户名</label><input id="edit_username" value="' + esc(u.username) + '"></div>' +
       '<div class="detailField"><label>类型</label><div class="val">' + (u.is_admin ? '管理员' : (u.is_guest ? '游客' : '注册用户')) + '</div></div>' +
       '<div class="detailField"><label>注册时间</label><div class="val">' + formatTime(u.created_at) + '</div></div>' +
@@ -328,6 +332,15 @@ function showDetail(id) {
       }).join('') +
     '</div></div>' : '') +
 
+    '<div class="detailSection">📨 按UID发邮件</div>' +
+    '<div class="detailGrid">' +
+      '<div class="detailField" style="grid-column:1/-1"><label>标题</label><input id="mailUidTitle" placeholder="邮件标题"></div>' +
+      '<div class="detailField" style="grid-column:1/-1"><label>内容</label><textarea id="mailUidBody" style="width:100%;padding:6px;border-radius:6px;border:1px solid #5a3515;background:#1a0b05;color:#ffe8b7;font-size:13px;outline:none;min-height:40px;resize:vertical" placeholder="邮件正文..."></textarea></div>' +
+      '<div class="detailField"><label>钻石 💎</label><input id="mailUidGems" type="number" value="0" min="0"></div>' +
+      '<div class="detailField"><label>金币 🪙</label><input id="mailUidCoins" type="number" value="0" min="0"></div>' +
+    '</div>' +
+    '<div class="detailActions" style="margin-bottom:12px"><div class="btn sm" onclick="sendMailToUid(\'' + esc(u.uid) + '\')">📨 发送</div></div>' +
+
     '<div class="detailActions">' +
       '<div class="btn" onclick="saveUser(' + u.id + ')">💾 保存修改</div>' +
       '<div class="btn secondary" onclick="this.closest(\'.detailPanel\').classList.remove(\'open\');expandedUserId=null;renderUserRows()">关闭</div>' +
@@ -349,6 +362,7 @@ function saveUser(id) {
     streak: parseInt($('edit_streak')?.value) || 0,
     maxStreak: parseInt($('edit_maxStreak')?.value) || 0,
     game_data: {
+      displayName: $('edit_displayName')?.value || '',
       streak: parseInt($('edit_streak')?.value) || 0,
       maxStreak: parseInt($('edit_maxStreak')?.value) || 0,
       newbieGames: parseInt($('edit_newbieGames')?.value) || 0
@@ -395,6 +409,34 @@ function deleteUser(id, name) {
     usersData = usersData.filter(function(u){ return u.id !== id; });
     if (expandedUserId === id) { expandedUserId = null; $('detailPanel').innerHTML = ''; }
     renderUserRows();
+  })
+  .catch(function(){ toast('网络错误'); });
+}
+
+function sendMailToUid(uid) {
+  var title = $('mailUidTitle')?.value.trim();
+  if (!title) { toast('请输入邮件标题'); return; }
+  var body = $('mailUidBody')?.value.trim() || '';
+  var gems = parseInt($('mailUidGems')?.value) || 0;
+  var coins = parseInt($('mailUidCoins')?.value) || 0;
+  var items = {};
+  if (gems > 0) items.gems = gems;
+  if (coins > 0) items.coins = coins;
+  if (!body && Object.keys(items).length === 0) { toast('请填写内容或附带道具'); return; }
+
+  fetch('/api/auth/admin/mail/uid/' + uid, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ title: title, body: body, items: Object.keys(items).length ? items : null })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d) {
+    if (d.error) { toast('发送失败: ' + d.error); return; }
+    toast('✅ 邮件已发送给 ' + (d.user || uid));
+    $('mailUidTitle').value = '';
+    $('mailUidBody').value = '';
+    $('mailUidGems').value = '0';
+    $('mailUidCoins').value = '0';
   })
   .catch(function(){ toast('网络错误'); });
 }

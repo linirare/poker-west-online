@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getUser, getUserById, getUserFull, createUser, updateUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail } = require('./db');
+const { getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser } = require('./db');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'poker-west-secret-2024';
@@ -38,7 +38,7 @@ router.post('/register', (req, res) => {
   const user = createUser(username, hash);
 
   const token = jwt.sign({ id: user.id, username, is_admin: 0, is_guest: 0 }, JWT_SECRET, { expiresIn: '30d' });
-  res.json({ token, user: { id: user.id, username, is_admin: 0, is_guest: 0 } });
+  res.json({ token, user: { id: user.id, uid: user.uid, username, is_admin: 0, is_guest: 0 } });
 });
 
 router.post('/login', (req, res) => {
@@ -52,13 +52,13 @@ router.post('/login', (req, res) => {
 
   updateUser(user.id, { last_login: new Date().toISOString().slice(0,19).replace('T',' ') });
   const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin, is_guest: user.is_guest }, JWT_SECRET, { expiresIn: '30d' });
-  res.json({ token, user: { id: user.id, username: user.username, is_admin: user.is_admin, is_guest: user.is_guest } });
+  res.json({ token, user: { id: user.id, uid: user.uid, username: user.username, is_admin: user.is_admin, is_guest: user.is_guest } });
 });
 
 router.get('/me', authMiddleware, (req, res) => {
   const user = getUserById(req.user.id);
   if (!user) return res.status(404).json({ error: '用户不存在' });
-  res.json({ user: { id: user.id, username: user.username, is_admin: user.is_admin, is_guest: user.is_guest, created_at: user.created_at, last_login: user.last_login, total_games: user.total_games, wins: user.wins } });
+  res.json({ user: { id: user.id, uid: user.uid, username: user.username, is_admin: user.is_admin, is_guest: user.is_guest, created_at: user.created_at, last_login: user.last_login, total_games: user.total_games, wins: user.wins } });
 });
 
 router.put('/save', authMiddleware, (req, res) => {
@@ -181,6 +181,27 @@ router.post('/admin/mail', authMiddleware, adminMiddleware, (req, res) => {
 
   const sent = sendGlobalMail(mailItem);
   res.json({ ok: true, sentTo: sent });
+});
+
+// Admin: send mail by uid
+router.post('/admin/mail/uid/:uid', authMiddleware, adminMiddleware, (req, res) => {
+  const { title, body, items } = req.body;
+  if (!title) return res.status(400).json({ error: '标题不能为空' });
+
+  const user = getUserByUid(req.params.uid);
+  if (!user) return res.status(404).json({ error: '用户不存在' });
+
+  const mailItem = {
+    id: Date.now().toString(36),
+    from: 'system',
+    title,
+    body: body || '',
+    items: items || null,
+    created_at: new Date().toISOString().slice(0,19).replace('T',' ')
+  };
+
+  sendMailToUser(user.id, mailItem);
+  res.json({ ok: true, user: user.username });
 });
 
 module.exports = { router, authMiddleware, adminMiddleware };

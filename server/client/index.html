@@ -688,7 +688,7 @@ function save(){localStorage.setItem(LS,JSON.stringify(state));serverSave()}
 function rankCfg(){return RANK_CONFIG[Math.min(state.rankIdx||0,RANK_CONFIG.length-1)]}
 function rankProgressText(){const c=rankCfg();if((state.rankIdx||0)===0)return `${state.newbieGames||0}/3 场保护期`;if((state.rankIdx||0)>=5)return `${state.points||1000} 分`;return `${state.stars||0}/${c.stars} 星`}
 let currentScreen='home';function setScreen(s){currentScreen=s;if(pvp&&(pvp.phase==='lobby'||pvp.phase==='battle')){socket.emit('leave_room');pvp=null}render(s)}
-function render(screen='home'){renderNav(screen);if(screen==='home'){renderHome();fetchMail()}if(screen==='deck')renderDeck();if(screen==='chars')renderChars();if(screen==='shop')renderShop();if(screen==='rank')renderRank();if(screen==='teach')renderTeach()}
+function render(screen='home'){renderNav(screen);if(screen==='home'){renderHome();fetchMail();restoreChat()}if(screen==='deck')renderDeck();if(screen==='chars')renderChars();if(screen==='shop')renderShop();if(screen==='rank')renderRank();if(screen==='teach')renderTeach()}
 function updateTopbar(){const pills=q('#app')?.querySelectorAll?.('.pill');if(pills)pills.forEach(p=>{const t=p.textContent;if(t.startsWith('🪙'))p.textContent='🪙 '+state.coins;if(t.startsWith('💎'))p.textContent='💎 '+state.gems})}
 function renderNav(active){const items=[['home','🏠','主页'],['deck','🃏','功能牌'],['chars','🌟','角色'],['shop','🎁','抽卡'],['rank','🏆','排行']];q('#nav').innerHTML=items.map(i=>`<button class="${active===i[0]?'active':''}" onclick="setScreen('${i[0]}')"><b>${i[1]}</b>${i[2]}</button>`).join('')}
 function userAvatarHtml(){const c=CM[state.activeChar];const icon=c?c.icon:'🌟';const dn=state.displayName||currentUser?.username||'旅行者';const uid=currentUser?.uid||'--------';return '<div class="userHead" onclick="showUserMenu()"><div class="userAvatar">'+icon+'</div><div><div class="userName">'+dn+'</div><div class="userId">#'+uid+'</div></div></div>'}
@@ -921,6 +921,7 @@ function toast(t){let old=q('.toast');if(old)old.remove();let d=document.createE
 let socket = null;
 let pvp = null;
 let chatName = '玩家' + Math.floor(Math.random() * 900 + 100);
+let chatCache = [];
 
 function chatSetPlaceholder(show) {
   const el = q('#chatMsgs'); if (!el) return;
@@ -929,6 +930,17 @@ function chatSetPlaceholder(show) {
     el.insertAdjacentHTML('afterbegin', '<div class="chatMsg" style="color:#d0b890;font-size:13px;padding:6px 0;border:0">连接后可聊天...</div>');
   } else if (!show && existing) {
     existing.remove();
+  }
+}
+
+function restoreChat() {
+  const el = q('#chatMsgs'); if (!el) return;
+  if (socket && socket.connected && chatCache.length > 0) {
+    el.innerHTML = chatCache.map(m => chatMsgHtml(m)).join('');
+  } else if (socket && socket.connected) {
+    chatSetPlaceholder(false);
+  } else {
+    chatSetPlaceholder(true);
   }
 }
 
@@ -971,6 +983,7 @@ function pvpConnect() {
   socket.on('error', (d) => { toast('错误: ' + (d.msg || '')); });
   socket.on('opponent_left', () => { toast('对手已离开'); pvp = null; setScreen('home'); });
   socket.on('chat_history', (msgs) => {
+    chatCache = msgs;
     const el = q('#chatMsgs'); if (!el) return;
     el.innerHTML = msgs.map(m => chatMsgHtml(m)).join('');
     const placeholder = el.querySelector('.chatMsg[style*="color:#d0b890"]');
@@ -978,6 +991,7 @@ function pvpConnect() {
     scrollChat();
   });
   socket.on('new_chat_message', (m) => {
+    chatCache.push(m);
     const el = q('#chatMsgs'); if (!el) return;
     const placeholder = el.querySelector('.chatMsg[style*="color:#d0b890"]');
     if (placeholder) placeholder.remove();

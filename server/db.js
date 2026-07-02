@@ -150,9 +150,14 @@ function getLeaderboard() {
       win_rate: u.total_games > 0 ? Math.round((u.wins / u.total_games) * 10000) / 100 : 0,
       rankIdx: (u.game_data && u.game_data.rankIdx) || 0,
       stars: (u.game_data && u.game_data.stars) || 0,
-      activeChar: (u.game_data && u.game_data.activeChar) || 'cowboy'
+      activeChar: (u.game_data && u.game_data.activeChar) || 'cowboy',
+      points: (u.game_data && u.game_data.points) || 1000
     }))
-    .sort((a, b) => b.win_rate - a.win_rate || b.total_games - a.total_games)
+    .sort((a, b) => {
+      if ((b.rankIdx || 0) !== (a.rankIdx || 0)) return (b.rankIdx || 0) - (a.rankIdx || 0);
+      if ((b.rankIdx || 0) >= 5) return (b.points || 1000) - (a.points || 1000);
+      return (b.stars || 0) - (a.stars || 0);
+    })
     .slice(0, 100);
 }
 

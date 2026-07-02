@@ -20,7 +20,10 @@ app.use('/api/auth', authRouter);
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*', methods: ['GET', 'POST'] }
+  cors: { origin: '*', methods: ['GET', 'POST'] },
+  pingInterval: 25000,
+  pingTimeout: 15000,
+  transports: ['websocket', 'polling']
 });
 
 const PORT = process.env.PORT || 3000;

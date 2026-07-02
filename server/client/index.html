@@ -919,7 +919,7 @@ function toast(t){let old=q('.toast');if(old)old.remove();let d=document.createE
 // === 联机对战 PvP ===
 let socket = null;
 let pvp = null;
-let chatName = '玩家' + Math.floor(Math.random() * 900 + 100);
+function getChatName() { return state.displayName || (currentUser && currentUser.username) || '匿名'; }
 let chatCache = [];
 
 function chatSetPlaceholder(show) {
@@ -944,7 +944,7 @@ function restoreChat() {
 }
 
 function pvpConnect() {
-  if (socket && socket.connected) return;
+  if (socket) { socket.disconnect(); socket = null; }
   try { socket = io({ transports: ['websocket', 'polling'], reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 1000, reconnectionDelayMax: 5000 }); } catch(e) { setTimeout(pvpConnect, 2000); return; }
   socket.on('connect', () => { toast('已连接服务器'); chatSetPlaceholder(false); });
   socket.on('disconnect', () => { toast('与服务器断开'); chatSetPlaceholder(true); });
@@ -1193,7 +1193,7 @@ function sendChat() {
   if (!socket || !socket.connected) { pvpConnect(); toast('连接中...'); return; }
   const input = q('#chatInput'); if (!input) return;
   const text = input.value.trim(); if (!text) return;
-  socket.emit('chat_message', { name: chatName, text });
+  socket.emit('chat_message', { name: getChatName(), text });
   input.value = '';
 }
 function toggleChat() {
@@ -1213,8 +1213,6 @@ function chatMsgHtml(m) {
 }
 function esc(s) { return (s || '').replace(/[<>&]/g, function(c) { return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; }); }
 
-// auto-connect for chat
-setTimeout(pvpConnect, 500);
 </script>
 </body>
 </html>

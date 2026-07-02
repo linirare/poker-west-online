@@ -42,6 +42,9 @@ async function initDb() {
   }
   initDefaults();
   rebuildUidCache();
+  for (const user of data.users) {
+    ensureUid(user);
+  }
   saveDb();
   console.log('[db] Database ready (' + data.users.length + ' users)');
 }

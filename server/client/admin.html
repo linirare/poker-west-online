@@ -69,6 +69,8 @@ let token = localStorage.getItem(TOKEN_KEY);
 let usersData = [];
 let expandedUserId = null;
 let searchQuery = '';
+let chatMessages = [];
+let chatRefreshTimer = null;
 
 function authHeaders() {
   return token ? { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } : {};
@@ -190,8 +192,17 @@ function renderDashboard(stats) {
   html += '<div class="detailActions"><div class="btn" onclick="sendGlobalMail()">📨 发送全服邮件</div></div>';
   html += '</div></div>';
 
+  // Chat history section
+  html += '<div class="card" id="chatSection" style="margin-top:16px">';
+  html += '<h2 style="margin:0 0 8px;cursor:pointer" onclick="toggleChatSection()">💬 聊天记录 <span id="chatCount" style="font-size:12px;color:#a9885a"></span> <span id="chatToggle">▸</span></h2>';
+  html += '<div id="chatForm" style="display:none">';
+  html += '<div class="flex" style="margin-bottom:8px"><input class="searchBar" id="chatSearch" placeholder="🔍 搜索消息..." oninput="onChatSearch()" style="margin:0;flex:1"><div class="btn danger sm" onclick="clearChatHistory()">🗑 清空</div></div>';
+  html += '<div id="chatList" style="max-height:400px;overflow-y:auto;font-size:12px"><div class="muted" style="text-align:center;padding:20px">加载中...</div></div>';
+  html += '</div></div>';
+
   $('app').innerHTML = html;
   renderUserRows();
+  fetchChatHistory();
 }
 
 function renderUserRows() {
@@ -473,6 +484,65 @@ function sendGlobalMail() {
     $('mailCoins').value = '0';
   })
   .catch(function(){ toast('网络错误'); });
+}
+
+// === Chat history ===
+function fetchChatHistory() {
+  fetch('/api/auth/chat/history?limit=200', { headers: authHeaders() })
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (d.error) return;
+      chatMessages = d.messages || [];
+      renderChatHistory();
+      var count = $('chatCount');
+      if (count) count.textContent = '(' + chatMessages.length + '条)';
+    })
+    .catch(function(){});
+}
+
+function renderChatHistory() {
+  var list = $('chatList');
+  if (!list) return;
+  var q = ($('chatSearch')?.value || '').toLowerCase();
+  var filtered = q ? chatMessages.filter(function(m){ return (m.name || '').toLowerCase().indexOf(q) !== -1 || (m.text || '').toLowerCase().indexOf(q) !== -1; }) : chatMessages;
+  filtered.reverse();
+  var html = filtered.length ? filtered.map(function(m){
+    var t = m.time ? new Date(m.time).toLocaleString() : '-';
+    return '<div style="display:flex;gap:6px;padding:4px 6px;border-bottom:1px solid rgba(100,60,20,.12)"><span style="color:#a9885a;white-space:nowrap;font-size:11px">' + esc(t) + '</span><b style="white-space:nowrap;font-size:12px;color:#ffd56a">' + esc(m.name) + '</b><span style="flex:1;color:#ffe8b7;word-break:break-all">' + esc(m.text) + '</span></div>';
+  }).join('') : '<div class="muted" style="text-align:center;padding:20px">暂无聊天记录</div>';
+  list.innerHTML = html;
+}
+
+function toggleChatSection() {
+  var f = $('chatForm');
+  var t = $('chatToggle');
+  if (f) {
+    var open = f.style.display !== 'block';
+    f.style.display = open ? 'block' : 'none';
+    if (t) t.textContent = open ? '▾' : '▸';
+    if (open) { fetchChatHistory(); if (chatRefreshTimer) clearInterval(chatRefreshTimer); chatRefreshTimer = setInterval(fetchChatHistory, 5000); }
+    else { if (chatRefreshTimer) { clearInterval(chatRefreshTimer); chatRefreshTimer = null; } }
+  }
+}
+
+function onChatSearch() {
+  renderChatHistory();
+}
+
+function clearChatHistory() {
+  if (!confirm('确定清空全部聊天记录？')) return;
+  if (!confirm('再次确认：删除所有聊天数据？')) return;
+  fetch('/api/auth/chat/clear', { method: 'DELETE', headers: authHeaders() })
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (d.error) { toast('清空失败: ' + d.error); return; }
+      chatMessages = [];
+      renderChatHistory();
+      var count = $('chatCount');
+      if (count) count.textContent = '(0条)';
+      toast('✅ 聊天已清空');
+    })
+    .catch(function(){ toast('网络错误'); });
 }
 </script>
 </body>

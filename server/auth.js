@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser } = require('./db');
+const { getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser, getChatMessages, clearChatMessages } = require('./db');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'poker-west-secret-2024';
@@ -202,6 +202,16 @@ router.post('/admin/mail/uid/:uid', authMiddleware, adminMiddleware, (req, res) 
 
   sendMailToUser(user.id, mailItem);
   res.json({ ok: true, user: user.username });
+});
+
+router.get('/chat/history', authMiddleware, adminMiddleware, (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit) || 200, 500);
+  res.json({ messages: getChatMessages(limit) });
+});
+
+router.delete('/chat/clear', authMiddleware, adminMiddleware, (req, res) => {
+  clearChatMessages();
+  res.json({ success: true });
 });
 
 module.exports = { router, authMiddleware, adminMiddleware };

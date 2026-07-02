@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const game = require('./game');
 const rooms = require('./rooms');
+const { initDb, addChatMessage, getChatMessages } = require('./db');
 
 const app = express();
 app.use(cors());
@@ -28,8 +29,6 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3000;
 
-const chatMessages = [];
-const MAX_CHAT = 50;
 let onlineCount = 0;
 
 io.on('connection', (socket) => {
@@ -37,7 +36,7 @@ io.on('connection', (socket) => {
   io.emit('online_count', onlineCount);
   console.log(`[connect] ${socket.id} (online: ${onlineCount})`);
   socket.emit('online_count', onlineCount);
-  socket.emit('chat_history', chatMessages.slice(-30));
+  socket.emit('chat_history', getChatMessages(30));
 
   // === PvE: Create solo game vs AI ===
   socket.on('pve_start', ({ skills, difficulty = 1 }) => {
@@ -384,8 +383,7 @@ io.on('connection', (socket) => {
     if (!msg) return;
     const displayName = (name || '匿名').slice(0, 12);
     const entry = { name: displayName, text: msg, time: Date.now() };
-    chatMessages.push(entry);
-    if (chatMessages.length > MAX_CHAT) chatMessages.shift();
+    addChatMessage(entry);
     io.emit('new_chat_message', entry);
   });
 });

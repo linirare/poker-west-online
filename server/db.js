@@ -38,7 +38,9 @@ async function initDb() {
     } catch { data = null; }
   }
   if (!data) {
-    data = { users: [], nextId: 1 };
+    data = { users: [], chat: [], nextId: 1 };
+  } else if (!data.chat) {
+    data.chat = [];
   }
   initDefaults();
   rebuildUidCache();
@@ -181,4 +183,22 @@ function sendMailToUser(userId, mailItem) {
   return true;
 }
 
-module.exports = { initDb, getDb, saveDb, getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, deleteUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser };
+function addChatMessage(msg) {
+  if (!data.chat) data.chat = [];
+  data.chat.push(msg);
+  if (data.chat.length > 500) data.chat.splice(0, data.chat.length - 500);
+  saveDb();
+  return msg;
+}
+
+function getChatMessages(limit) {
+  const chat = data.chat || [];
+  return limit ? chat.slice(-limit) : chat;
+}
+
+function clearChatMessages() {
+  data.chat = [];
+  saveDb();
+}
+
+module.exports = { initDb, getDb, saveDb, getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, deleteUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser, addChatMessage, getChatMessages, clearChatMessages };

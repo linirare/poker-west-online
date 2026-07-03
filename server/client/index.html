@@ -1265,7 +1265,7 @@ async function initApp() {
         checkDailyReset(); ensureDefaults(); save(); render('home'); pvpConnect();
         return;
       }
-    } catch(e) { /* token invalid or server down */ }
+    } catch(e) { toast(e.message); }
     localStorage.removeItem(TOKEN_KEY);
   }
   // No token — must login

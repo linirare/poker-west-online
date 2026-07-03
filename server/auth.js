@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser, getChatMessages, clearChatMessages } = require('./db');
 
 const router = express.Router();
@@ -13,6 +14,18 @@ function authMiddleware(req, res, next) {
   }
   try {
     req.user = jwt.verify(header.slice(7), JWT_SECRET);
+    // Session token check — prevent multi-device login
+    const user = getUserFull(req.user.id);
+    if (!user) return res.status(401).json({ error: '用户不存在' });
+    if (user.session_token) {
+      if (req.user.session_token !== user.session_token) {
+        return res.status(401).json({ error: '账号在其他地方登录' });
+      }
+    } else {
+      // First-time migration: existing user without session_token
+      user.session_token = crypto.randomBytes(16).toString('hex');
+      updateUser(user.id, { session_token: user.session_token });
+    }
     next();
   } catch {
     return res.status(401).json({ error: '登录已过期' });
@@ -36,6 +49,8 @@ router.post('/register', (req, res) => {
 
   const hash = bcrypt.hashSync(password, 10);
   const user = createUser(username, hash);
+  const sessionToken = crypto.randomBytes(16).toString('hex');
+  updateUser(user.id, { session_token: sessionToken });
 
   // Welcome mail
   sendMailToUser(user.id, {
@@ -47,7 +62,7 @@ router.post('/register', (req, res) => {
     created_at: new Date().toISOString().slice(0,19).replace('T',' ')
   });
 
-  const token = jwt.sign({ id: user.id, username, is_admin: 0, is_guest: 0 }, JWT_SECRET, { expiresIn: '30d' });
+  const token = jwt.sign({ id: user.id, username, is_admin: 0, is_guest: 0, session_token: sessionToken }, JWT_SECRET, { expiresIn: '30d' });
   res.json({ token, user: { id: user.id, uid: user.uid, username, is_admin: 0, is_guest: 0 } });
 });
 
@@ -60,8 +75,9 @@ router.post('/login', (req, res) => {
     return res.status(400).json({ error: '用户名或密码错误' });
   }
 
-  updateUser(user.id, { last_login: new Date().toISOString().slice(0,19).replace('T',' ') });
-  const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin, is_guest: user.is_guest }, JWT_SECRET, { expiresIn: '30d' });
+  const sessionToken = crypto.randomBytes(16).toString('hex');
+  updateUser(user.id, { session_token: sessionToken, last_login: new Date().toISOString().slice(0,19).replace('T',' ') });
+  const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin, is_guest: user.is_guest, session_token: sessionToken }, JWT_SECRET, { expiresIn: '30d' });
   res.json({ token, user: { id: user.id, uid: user.uid, username: user.username, is_admin: user.is_admin, is_guest: user.is_guest } });
 });
 

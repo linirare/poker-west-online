@@ -37,6 +37,16 @@ router.post('/register', (req, res) => {
   const hash = bcrypt.hashSync(password, 10);
   const user = createUser(username, hash);
 
+  // Welcome mail
+  sendMailToUser(user.id, {
+    id: Date.now().toString(36),
+    from: 'system',
+    title: '🎉 欢迎加入代号 001',
+    body: '欢迎来到代号 001 — 一款策略与运气并重的扑克对决游戏！\n\n🎁 附上新手礼包，助你开局顺利。\n\n💡 点击主页左上角头像可以修改你的游戏昵称。\n\n快去功能牌仓库装备好你的牌组，开始第一场对战吧！',
+    items: { coins: 8888, gems: 666 },
+    created_at: new Date().toISOString().slice(0,19).replace('T',' ')
+  });
+
   const token = jwt.sign({ id: user.id, username, is_admin: 0, is_guest: 0 }, JWT_SECRET, { expiresIn: '30d' });
   res.json({ token, user: { id: user.id, uid: user.uid, username, is_admin: 0, is_guest: 0 } });
 });

@@ -1030,7 +1030,7 @@ function pvpConnect() {
 }
 
 function showPvPHome() {
-  pvpConnect();
+  if (!socket || !socket.connected) { pvpConnect(); }
   const m = document.createElement('div');
   m.className = 'modal'; m.id = 'pvpHomeModal';
   m.innerHTML = '<div class="modalBox" style="text-align:center"><div class="title" style="color:#321707">🌐 联机对战</div><div style="margin:6px 0 12px;font-size:13px;color:#6b5540">'+(socket&&socket.connected?'✅ 已连接':'🟡 连接中...')+'</div><div class="btn" style="margin-bottom:10px" onclick="var hm=q(\'#pvpHomeModal\');if(hm)hm.remove();showQuickMatchModal()">🔍 快速匹配</div><div style="text-align:left;margin-bottom:10px"><div style="font-weight:1000;margin-bottom:4px;font-size:14px">可用房间</div><div id="pvpRoomList" style="max-height:180px;overflow-y:auto;border:1px solid rgba(0,0,0,.1);border-radius:10px;padding:4px"></div></div><div style="display:flex;gap:4px;margin-bottom:8px"><input id="pvpRoomNameInput" placeholder="输入房间名称" style="flex:1;padding:10px;border:2px solid #8b7550;border-radius:12px;font-size:14px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center"><button class="btn" id="pvpCreateBtn" style="flex-shrink:0">创建</button></div><div style="display:flex;gap:4px"><input id="pvpRoomInput" placeholder="输入房间号" style="flex:1;padding:10px;border:2px solid #8b7550;border-radius:12px;font-size:16px;outline:none;background:#f5e8d0;color:#2a1607;text-align:center;letter-spacing:2px;font-weight:1000"><button class="btn" id="pvpJoinBtn" style="flex-shrink:0">加入</button></div><div class="btn dark" onclick="this.parentElement.parentElement.remove();pvp=null" style="margin-top:10px">返回</div></div>';

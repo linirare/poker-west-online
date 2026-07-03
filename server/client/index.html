@@ -753,7 +753,7 @@ function userAvatarHtml(){const c=CM[state.activeChar];const av=c?.avatar44||'as
 function topbar(title,sub=''){if(!currentUser)return `<div class="topbar"><div><div class="title">${title}</div>${sub?`<div class="sub">${sub}</div>`:''}</div><div class="res"><span class="pill"><span class="ci">🪙</span> ${state.coins}</span><span class="pill">💎 ${state.gems}</span></div></div>`;return `<div class="topbar">${userAvatarHtml()}<div class="res"><span class="pill"><span class="ci">🪙</span> ${state.coins}</span><span class="pill">💎 ${state.gems}</span></div></div>`}
 function renderHome(){const rc=rankCfg();const rankText=rankProgressText();const charArt=CM[state.activeChar]?.art||'assets/char_boy.png';q('#app').innerHTML=`${topbar('代号 001')}
 <div class="homeLayout">
-  <div class="heroArt" style="background:url('${charArt}') center bottom/cover #100804">
+  <div class="heroArt" style="background:url('${charArt}') center bottom/cover no-repeat;border:0">
     <div class="heroContent">
       <img class="heroLogoImg" src="assets/logo.png" alt="代号 001">
       <div class="heroRankBox">

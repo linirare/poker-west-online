@@ -694,7 +694,11 @@ async function afterLogin() {
     const gd = d.game_data || {};
     if (Object.keys(gd).length > 0) {
       state = { ...initState(), ...gd };
-    } else { state = initState(); }
+    } else {
+      const localData = loadLocalData();
+      if (localData) { state = localData; try { await api('/save', { method: 'PUT', body: JSON.stringify({ game_data: state, total_games: state.total || 0, wins: state.wins || 0 }) }); } catch(e) {} }
+      else { state = initState(); }
+    }
     if (d.total_games !== undefined) state.total = d.total_games;
     if (d.wins !== undefined) state.wins = d.wins;
     if (d.user) currentUser = d.user;
@@ -729,6 +733,7 @@ function serverSave() {
 
 function q(s){return document.querySelector(s)}function qa(s){return [...document.querySelectorAll(s)]}
 function initState(){return{coins:888,gems:88,rank:820,rankIdx:0,stars:0,points:1000,newbieGames:0,total:0,wins:0,streak:0,maxStreak:0,chest:0,autoPlay:false,aiTier:0,aiStreak:0,handCounts:[0,0,0,0,0,0,0,0,0,0],activeChar:'cowboy',equipped:[],displayName:'',skills:Object.fromEntries(SKILLS.map(s=>[s.id,{copies:3,uses:0}])),chars:{cowboy:{owned:true,lv:1,shards:0},sheriff:{owned:true,lv:1,shards:0},lily:{owned:false,lv:1,shards:0},miner:{owned:false,lv:1,shards:0}},tasks:{play:0,useSkill:0,winRound:0,straight:0},taskDate:'',history:[]}}
+function loadLocalData(){try{const raw=localStorage.getItem(LS);if(raw){const d=JSON.parse(raw);if(d&&typeof d==='object'&&'coins' in d)return d}}catch(e){}return null}
 function load(){try{state=JSON.parse(localStorage.getItem('poker_legacy_debug'))||initState()}catch(e){state=initState()}ensureDefaults();save()}
 function save(){localStorage.setItem(LS,JSON.stringify(state));serverSave()}
 function rankCfg(){return RANK_CONFIG[Math.min(state.rankIdx||0,RANK_CONFIG.length-1)]}
@@ -1172,15 +1177,23 @@ async function initApp() {
         currentUser = d.user;
         const gd = d.game_data || {};
         if (Object.keys(gd).length > 0) state = { ...initState(), ...gd };
-        else state = initState();
+        else {
+          // Server data empty — try localStorage fallback for existing users
+          const localData = loadLocalData();
+          if (localData) { state = localData; try { await api('/save', { method: 'PUT', body: JSON.stringify({ game_data: state, total_games: state.total || 0, wins: state.wins || 0 }) }); } catch(e) {} }
+          else { state = initState(); }
+        }
         if (d.total_games !== undefined) state.total = d.total_games;
         if (d.wins !== undefined) state.wins = d.wins;
         checkDailyReset(); ensureDefaults(); save(); render('home'); pvpConnect();
         return;
       }
-    } catch(e) { /* token invalid or server down — show login */ }
+    } catch(e) { /* token invalid or server down */ }
     localStorage.removeItem(TOKEN_KEY);
   }
+  // No token — try localStorage first
+  const localData = loadLocalData();
+  if (localData) { state = localData; checkDailyReset(); ensureDefaults(); save(); render('home'); return; }
   state = initState(); save();
   showAuthModal();
 }

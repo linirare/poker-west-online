@@ -135,8 +135,30 @@ function isFull(roomId) {
   return room && room.players.length >= 2;
 }
 
+// === Quick match queue ===
+let quickMatchQueue = [];
+
+function addToQuickMatch(socketId, skills, name) {
+  const idx = quickMatchQueue.findIndex(q => q.socketId !== socketId);
+  if (idx >= 0) {
+    const match = quickMatchQueue.splice(idx, 1)[0];
+    return { matched: true, opponent: match };
+  }
+  quickMatchQueue.push({ socketId, skills, name, timestamp: Date.now() });
+  return { matched: false };
+}
+
+function removeFromQuickMatch(socketId) {
+  quickMatchQueue = quickMatchQueue.filter(q => q.socketId !== socketId);
+}
+
+function isInQuickMatch(socketId) {
+  return quickMatchQueue.some(q => q.socketId === socketId);
+}
+
 module.exports = {
   createRoom, joinRoom, startBattle,
   getRoom, getPlayerRoom, leaveRoom, removeRoom, shuffleAI,
-  listRooms, isHost, kickPlayer, isFull
+  listRooms, isHost, kickPlayer, isFull,
+  addToQuickMatch, removeFromQuickMatch, isInQuickMatch
 };

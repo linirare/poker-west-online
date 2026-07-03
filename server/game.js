@@ -436,17 +436,6 @@ function isOver(battle) {
 
 function nextRound(battle) {
   battle.round++;
-  if (battle.round === 3) {
-    for (const rk of ['player', 'opp']) {
-      let f = battle[rk];
-      let usd = Object.values(f.skills).filter(sk => sk.used);
-      if (usd.length) {
-        let sk = usd[Math.floor(Math.random() * usd.length)];
-        sk.used = false; sk.charge = 1;
-        battle.logs.push((rk === 'player' ? '我方' : '对手') + '【' + SM[sk.id].name + '】获得二次使用机会');
-      }
-    }
-  }
   for (const key of ['player', 'opp']) {
     let f = battle[key];
     let target = HAND_LIMIT + (f.nextDrawBonus || 0) - (f.nextDrawPenalty || 0);

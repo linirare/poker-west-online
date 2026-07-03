@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
@@ -39,7 +39,7 @@ io.on('connection', (socket) => {
 
   // === PvE: Create solo game vs AI ===
   socket.on('pve_start', ({ skills, difficulty = 1 }) => {
-    const roomId = rooms.createRoom(socket.id, '你', skills, 'pve', difficulty);
+    const roomId = rooms.createRoom(socket.id, '玩家', skills, 'pve', difficulty);
     const battle = rooms.startBattle(roomId);
     if (!battle) return socket.emit('error', { msg: '创建失败' });
 
@@ -84,6 +84,47 @@ io.on('connection', (socket) => {
       players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
     });
     io.emit('room_list', rooms.listRooms());
+  });
+
+  // === Quick match: enter queue ===
+  socket.on('quick_match', ({ skills, name }) => {
+    const result = rooms.addToQuickMatch(socket.id, skills, name || '玩家');
+    if (result.matched) {
+      // Opponent found! Create PvP room
+      const opp = result.opponent;
+      const roomId = rooms.createRoom(socket.id, name || '玩家', skills, 'pvp', 1);
+      rooms.joinRoom(roomId, opp.socketId, opp.name || '玩家', opp.skills);
+      const room = rooms.getRoom(roomId);
+      socket.join(roomId);
+      io.to(opp.socketId).emit('quick_match_found', { roomId });
+      // Start the battle directly
+      setTimeout(() => {
+        if (rooms.getRoom(roomId)) {
+          rooms.getRoom(roomId).phase = 'confirm';
+          const p = rooms.getRoom(roomId).players;
+          p.forEach(pl => pl.ready = true);
+          const battle = rooms.startBattle(roomId);
+          if (battle) {
+            io.to(p[0].socketId).emit('game_state', game.buildPlayerView(battle, 'player'));
+            io.to(p[1].socketId).emit('game_state', game.buildPlayerView(battle, 'opp'));
+          }
+        }
+      }, 300);
+    } else {
+      // In queue — set 5s timeout
+      socket.emit('in_queue');
+      setTimeout(() => {
+        if (rooms.isInQuickMatch(socket.id)) {
+          rooms.removeFromQuickMatch(socket.id);
+          socket.emit('quick_match_timeout');
+        }
+      }, 5000);
+    }
+  });
+
+  // === Quick match: cancel ===
+  socket.on('quick_match_cancel', () => {
+    rooms.removeFromQuickMatch(socket.id);
   });
 
   // === PvP: Kick player ===
@@ -352,10 +393,25 @@ io.on('connection', (socket) => {
     }
   });
 
+  // === PvP Surrender ===
+  socket.on('pvp_surrender', () => {
+    const roomId = rooms.getPlayerRoom(socket.id);
+    if (!roomId) return;
+    const room = rooms.getRoom(roomId);
+    if (!room || room.mode !== 'pvp' || !room.battle) return;
+    const surrenderingSide = room.players[0].socketId === socket.id ? 'player' : 'opp';
+    const winningSide = surrenderingSide === 'player' ? 'opp' : 'player';
+    room.battle.player.hp = surrenderingSide === 'player' ? 0 : 999;
+    room.battle.opp.hp = winningSide === 'player' ? 999 : 0;
+    finishGame(room, roomId);
+    rooms.removeRoom(roomId);
+  });
+
   // === Disconnect ===
   socket.on('disconnect', () => {
     onlineCount = Math.max(0, onlineCount - 1);
     io.emit('online_count', onlineCount);
+    rooms.removeFromQuickMatch(socket.id);
     console.log(`[disconnect] ${socket.id} (online: ${onlineCount})`);
     const roomId = rooms.leaveRoom(socket.id);
     if (roomId) {
@@ -451,7 +507,7 @@ function resolvePvPRound(room, roomId) {
   if (winner === 'player') { o.hp = Math.max(0, o.hp - dmg); room.battle.roundWins.player++; }
   else if (winner === 'opp') { p.hp = Math.max(0, p.hp - dmg); room.battle.roundWins.opp++; }
   room.battle.phase = 'result';
-  room.battle.logs.push(`本局结果：我方【${pe.name}】 vs 对手【${oe.name}】`);
+  room.battle.logs.push(`本局结果：我方《${pe.name}》vs 对手《${oe.name}》`);
   room.battle.submitted = { player: false, opp: false };
 
   io.to(roomId).emit('round_result', {

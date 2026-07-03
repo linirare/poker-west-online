@@ -5,7 +5,11 @@ const crypto = require('crypto');
 const { getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser, getChatMessages, clearChatMessages } = require('./db');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'poker-west-secret-2024';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('[auth] FATAL: JWT_SECRET environment variable is required');
+  process.exit(1);
+}
 
 function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
@@ -32,6 +36,32 @@ function authMiddleware(req, res, next) {
   }
 }
 
+// Rate limiter: simple in-memory per-IP limiter
+const rateLimitMap = new Map();
+function rateLimit(maxRequests = 10, windowMs = 60000) {
+  return (req, res, next) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+    let entry = rateLimitMap.get(ip);
+    if (!entry || now - entry.windowStart > windowMs) {
+      entry = { windowStart: now, count: 0 };
+      rateLimitMap.set(ip, entry);
+    }
+    entry.count++;
+    if (entry.count > maxRequests) {
+      return res.status(429).json({ error: '请求过于频繁，请稍后再试' });
+    }
+    next();
+  };
+}
+// Cleanup stale entries (entries older than 2 min)
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of rateLimitMap) {
+    if (now - entry.windowStart > 120000) rateLimitMap.delete(ip);
+  }
+}, 120000);
+
 function adminMiddleware(req, res, next) {
   if (!req.user.is_admin) {
     return res.status(403).json({ error: '无管理员权限' });
@@ -39,7 +69,7 @@ function adminMiddleware(req, res, next) {
   next();
 }
 
-router.post('/register', (req, res) => {
+router.post('/register', rateLimit(10), (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: '用户名和密码不能为空' });
   if (username.length < 2 || username.length > 16) return res.status(400).json({ error: '用户名 2-16 个字符' });
@@ -66,7 +96,7 @@ router.post('/register', (req, res) => {
   res.json({ token, user: { id: user.id, uid: user.uid, username, is_admin: 0, is_guest: 0 } });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', rateLimit(10), (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: '用户名和密码不能为空' });
 

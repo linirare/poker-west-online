@@ -44,6 +44,7 @@ function startBattle(roomId) {
   const oSkills = room.skillMap[room.players[1]?.socketId] || shuffleAI();
 
   if (room.mode === 'pvp') {
+    game.resetUid();  // Reset card ID counter per battle
     const deck = game.newDeck();
     room.battle = game.createPvPBattle(
       deck, pSkills, oSkills,

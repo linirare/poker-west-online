@@ -7,11 +7,11 @@ let uid = 1;
 const SKILLS = [
   { id: 'fivejoker', tier: 'T0', icon: '🃏', name: '5-Joker', type: '策略', effect: '前4回合抽1张；第5回合抽Joker百搭' },
   { id: 'magician', tier: 'T0', icon: '🎩', name: '魔术师', type: '复制', effect: '复制一张自己手牌' },
-  { id: 'thief', tier: 'T1', icon: '🕵️', name: '神偷', type: '偷取', effect: '偷一张对方手牌' },
+  { id: 'thief', tier: 'T0', icon: '🕵️', name: '神偷', type: '偷取', effect: '偷一张对方手牌' },
   { id: 'fate', tier: 'T0', icon: '✨', name: '命运一击', type: '转化', effect: '弃一张牌，获得同花色A' },
   { id: 'hacker', tier: 'T0', icon: '💻', name: '黑客', type: '复制', effect: '复制对手一张手牌' },
   { id: 'lucky', tier: 'T1', icon: '🍀', name: '幸运日', type: '增幅', effect: '本回合若打出顺子，视为同花顺' },
-  { id: 'destroyer', tier: 'T2', icon: '🧩', name: '破坏专家', type: '干扰', effect: '随机弃掉对手2张手牌' },
+  { id: 'destroyer', tier: 'T1', icon: '🧩', name: '破坏专家', type: '干扰', effect: '随机弃掉对手2张手牌' },
   { id: 'glove', tier: 'T1', icon: '🧤', name: '白手套', type: '复制', effect: '复制一张公共牌到手牌' },
   { id: 'burst', tier: 'T1', icon: '⏫', name: '提前爆发', type: '额外', effect: '本回合可以多打1张牌' },
   { id: 'god', tier: 'T1', icon: '🎲', name: '赌神', type: '抽牌', effect: '随机获得A/K/Q一张' },
@@ -42,10 +42,10 @@ const AI_W = {
 };
 
 const CHARS = [
-  { id: 'cowboy', icon: '🌟', name: '星光旅人', rarity: '普通', effect: '金币收益 +5% 起' },
-  { id: 'sheriff', icon: '🛡️', name: '守护队长', rarity: '稀有', effect: '概率抵消封锁' },
-  { id: 'lily', icon: '🎀', name: '幸运莉莉', rarity: '史诗', effect: '胜利时额外宝箱进度概率' },
-  { id: 'miner', icon: '💎', name: '宝石收藏家', rarity: '传说', effect: '抽卡/结算额外金币概率' }
+  { id: 'cowboy', icon: '🌟', name: '牛仔', rarity: '普通', effect: '金币收益 +5%起，每级额外+2%' },
+  { id: 'sheriff', icon: '🛡️', name: '守护队长', rarity: '稀有', effect: '胜利额外钻石 +2💎起，每级+1💎' },
+  { id: 'lily', icon: '🎀', name: '幸运莉莉', rarity: '史诗', effect: '宝箱进度加速，每级+1进度' },
+  { id: 'miner', icon: '💎', name: '宝石收藏家', rarity: '传说', effect: '抽卡折扣 5%起，每级折扣+3%' }
 ];
 
 // === Card utilities ===
@@ -269,12 +269,12 @@ function applySkill(side, id, battle, selectedCards) {
     }
     case 'intel': {
       let cards = draw(battle.deck, 2), keep = sortCards(cards)[0];
-      add(keep); logs.push(`${own}抽2选1，保留 ${rankText(keep.rank)}${keep.suit}`);
+      add(keep); battle.deck.push(cards[1]); logs.push(`${own}抽2选1，保留 ${rankText(keep.rank)}${keep.suit}`);
       break;
     }
     case 'inspect': e.revealed = true; logs.push(`${own}查看了${opp}全部手牌`); break;
     case 'recycle': {
-      let recent = a.played.slice(-1);
+      let recent = a.discard.slice(-1);
       if (recent.length) { add(clone(recent[0])); logs.push(`${own}回收 ${rankText(recent[0].rank)}${recent[0].suit}`); }
       else { add(...draw(battle.deck, 1)); logs.push(`${own}无牌可回收，改为抽1张`); }
       break;
@@ -311,6 +311,7 @@ function applySkill(side, id, battle, selectedCards) {
 
 // === Battle creation ===
 function createBattle(playerSkills, oppSkills, difficulty = 1) {
+  uid = 1;
   let deck = newDeck();
   let community = draw(deck, 3);
   let diff = Math.min(2, Math.max(0, difficulty));
@@ -343,7 +344,7 @@ function createPvPBattle(deck, playerSkills, oppSkills, playerName, oppName) {
     selected: { player: [], opp: [] },
     logs: [], last: null,
     roundWins: { player: 0, opp: 0 },
-    mode: 'pvp',
+    mode: 'pvp', difficulty: 1,
     player: makeFighter(playerName, CHARS[0], playerSkills, draw(deck, 7)),
     opp: makeFighter(oppName, CHARS[1], oppSkills, draw(deck, 7)),
     submitted: { player: false, opp: false },
@@ -355,40 +356,45 @@ function createPvPBattle(deck, playerSkills, oppSkills, playerName, oppName) {
 function executeRound(battle) {
   let p = battle.player, o = battle.opp;
 
-  // Opponent AI actions
-  let oppAvail = Object.values(o.skills).filter(s => !s.used);
-  if (oppAvail.length) {
-    let cat = handCat(o.hand, battle.community);
-    if (cat < 4 || Math.random() < 0.35) {
-      let id = aiPickSkill('start', oppAvail, 'start', battle.difficulty, o.hp, p.hp, battle.round);
-      if (id) {
-        let sk = o.skills[id];
-        if (sk && !sk.used) {
-          sk.used = true; sk.charge = 0;
-          let logs = applySkill('opp', id, battle);
-          battle.logs.push(...logs);
+  // Only run AI if not already executed by processAITurn
+  if (!battle.submitted.opp) {
+    // Opponent AI actions
+    let oppAvail = Object.values(o.skills).filter(s => !s.used);
+    if (oppAvail.length) {
+      let cat = handCat(o.hand, battle.community);
+      if (cat < 4 || Math.random() < 0.35) {
+        let id = aiPickSkill('start', oppAvail, 'start', battle.difficulty, o.hp, p.hp, battle.round);
+        if (id) {
+          let sk = o.skills[id];
+          if (sk && !sk.used) {
+            sk.used = true; sk.charge = 0;
+            let logs = applySkill('opp', id, battle);
+            battle.logs.push(...logs);
+          }
         }
       }
     }
-  }
 
-  // Opponent auto-select best cards
-  let oppNeed = roundNeed('opp', battle);
-  while (o.hand.length < oppNeed) o.hand.push(...draw(battle.deck, 1));
-  let bestPlay = chooseBest(o.hand, oppNeed, battle.community, o.buff);
-  o.played = bestPlay.map(c => ({ ...c }));
-  o.hand = o.hand.filter(c => !bestPlay.includes(c));
-  o.discard.push(...bestPlay);
+    // Opponent auto-select best cards
+    let oppNeed = roundNeed('opp', battle);
+    while (o.hand.length < oppNeed) o.hand.push(...draw(battle.deck, 1));
+    let bestPlay = chooseBest(o.hand, oppNeed, battle.community, o.buff);
+    o.played = bestPlay.map(c => ({ ...c }));
+    o.hand = o.hand.filter(c => !bestPlay.includes(c));
+    o.discard.push(...bestPlay);
 
-  // Opponent play-phase skills
-  let oppPlayAvail = Object.values(o.skills).filter(s => !s.used);
-  if (oppPlayAvail.length) {
-    let id = aiPickSkill('play', oppPlayAvail, 'play', battle.difficulty, o.hp, p.hp, battle.round);
-    if (id && !o.skills[id]?.used) {
-      o.skills[id].used = true; o.skills[id].charge = 0;
-      let logs = applySkill('opp', id, battle);
-      battle.logs.push(...logs);
+    // Opponent play-phase skills
+    let oppPlayAvail = Object.values(o.skills).filter(s => !s.used);
+    if (oppPlayAvail.length) {
+      let id = aiPickSkill('play', oppPlayAvail, 'play', battle.difficulty, o.hp, p.hp, battle.round);
+      if (id && !o.skills[id]?.used) {
+        o.skills[id].used = true; o.skills[id].charge = 0;
+        let logs = applySkill('opp', id, battle);
+        battle.logs.push(...logs);
+      }
     }
+
+    battle.submitted.opp = true;
   }
 
   // Evaluate
@@ -498,11 +504,13 @@ function buildPlayerView(battle, forSide) {
   };
 }
 
+function resetUid() { uid = 1; }
+
 module.exports = {
   SUITS, PLAY_COUNTS, HAND_LIMIT, SKILLS, SM, CHARS, AI_W,
   newDeck, shuffle, draw, clone, rankText, sortCards, cloneArr,
   makeFighter, combos, evaluate, evaluateNoJoker, compare,
   handCat, aiPickSkill, chooseBest, applySkill,
   createBattle, createPvPBattle, executeRound, roundNeed, isOver, nextRound,
-  buildPlayerView
+  buildPlayerView, resetUid
 };

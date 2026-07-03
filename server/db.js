@@ -69,6 +69,7 @@ function initDefaults() {
       last_login: null, total_games: 0, wins: 0, game_data: {}
     });
     console.log('[db] Default admin created: admin / admin123');
+    console.log('[db] ⚠️  WARNING: Change admin password immediately in production!');
   }
 }
 

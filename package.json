@@ -2,7 +2,8 @@
   "name": "poker-west-online",
   "version": "1.0.0",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "test": "node --test test/game.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

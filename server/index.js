@@ -1,4 +1,15 @@
-﻿const express = require('express');
+﻿// Set JWT secret before loading auth module
+if (!process.env.JWT_SECRET) {
+  const isProd = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENV;
+  if (isProd) {
+    console.error('[server] FATAL: JWT_SECRET must be set in production');
+    process.exit(1);
+  }
+  process.env.JWT_SECRET = 'poker-west-dev-' + require('crypto').randomBytes(16).toString('hex');
+  console.log('[server] DEV: Generated random JWT_SECRET');
+}
+
+const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
@@ -10,7 +21,7 @@ const { initDb, addChatMessage, getChatMessages } = require('./db');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'client'), { maxAge: '365d' }));
+app.use(express.static(path.join(__dirname, 'client'), { maxAge: 0 }));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'client', 'admin.html')));
 
 initDb();
@@ -27,6 +38,7 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
+const QUICK_MATCH_TIMEOUT = 15000;
 
 let onlineCount = 0;
 
@@ -118,7 +130,7 @@ io.on('connection', (socket) => {
           rooms.removeFromQuickMatch(socket.id);
           socket.emit('quick_match_timeout');
         }
-      }, 5000);
+      }, 15000);
     }
   });
 
@@ -506,6 +518,22 @@ function resolvePvPRound(room, roomId) {
   room.battle.last = { winner, pEval: pe, oEval: oe, dmg };
   if (winner === 'player') { o.hp = Math.max(0, o.hp - dmg); room.battle.roundWins.player++; }
   else if (winner === 'opp') { p.hp = Math.max(0, p.hp - dmg); room.battle.roundWins.opp++; }
+
+  // Flushbeliever and charge carryover (same as executeRound)
+  for (const f of [p, o]) {
+    if (f.buff.flushBeliever && f.played.length) {
+      const sc = {};
+      for (const c of [...f.played, ...room.battle.community]) {
+        sc[c.suit] = (sc[c.suit] || 0) + 1;
+        if (sc[c.suit] >= 3) {
+          f.nextDrawBonus = (f.nextDrawBonus || 0) + 2;
+          room.battle.logs.push(`${f === p ? '我方' : '对手'}同花信徒触发，下回合额外抽2张`);
+          break;
+        }
+      }
+    }
+  }
+
   room.battle.phase = 'result';
   room.battle.logs.push(`本局结果：我方《${pe.name}》vs 对手《${oe.name}》`);
   room.battle.submitted = { player: false, opp: false };

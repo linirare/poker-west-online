@@ -1192,9 +1192,7 @@ async function initApp() {
     } catch(e) { /* token invalid or server down */ }
     localStorage.removeItem(TOKEN_KEY);
   }
-  // No token — try localStorage first
-  const localData = loadLocalData();
-  if (localData) { state = localData; checkDailyReset(); ensureDefaults(); save(); render('home'); return; }
+  // No token — must login
   state = initState(); save();
   showAuthModal();
 }

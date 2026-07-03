@@ -74,7 +74,12 @@ router.put('/save', authMiddleware, (req, res) => {
 router.get('/load', authMiddleware, (req, res) => {
   const user = getUserById(req.user.id);
   if (!user) return res.status(404).json({ error: '用户不存在' });
-  res.json({ game_data: user.game_data || {}, total_games: user.total_games || 0, wins: user.wins || 0 });
+  res.json({
+    game_data: user.game_data || {},
+    total_games: user.total_games || 0,
+    wins: user.wins || 0,
+    user: { id: user.id, uid: user.uid, username: user.username, is_admin: user.is_admin }
+  });
 });
 
 router.get('/admin/users', authMiddleware, adminMiddleware, (req, res) => {

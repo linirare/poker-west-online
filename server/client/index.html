@@ -534,6 +534,7 @@ const SKILLS=[
 ];
 const SM=Object.fromEntries(SKILLS.map(s=>[s.id,s]));
 const SKILL_ART={fivejoker:'assets/skill_fivejoker_cutout.png',magician:'assets/skill_magician_cutout.png',thief:'assets/skill_thief_cutout.png',fate:'assets/skill_fate_cutout.png',hacker:'assets/skill_hacker_cutout.png',glove:'assets/skill_glove_cutout.png',lucky:'assets/skill_lucky_cutout.png',god:'assets/skill_god_cutout.png',destroyer:'assets/skill_destroyer_cutout.png',burst:'assets/skill_burst_cutout.png'};
+function preloadAssets(){const urls=[];for(const k in SKILL_ART)urls.push(SKILL_ART[k]);for(const c of CHARS){urls.push(c.art,c.avatar,c.avatar56,c.avatar44)}urls.push('assets/logo.png');urls.forEach(u=>{const i=new Image();i.src=u})}
 const CHAR_ART_ID={cowboy:'boy',sheriff:'redgirl',lily:'blonde',miner:'strongman'};
 const CHARS=[
 {id:'cowboy',icon:'🌟',name:'牛仔',rarity:'普通',effect:'金币收益 +5%起，每级额外+2%',art:'assets/hero_boy.png',avatar:'assets/avatar_boy_64.png',avatar56:'assets/avatar_boy_56.png',avatar44:'assets/avatar_boy_44.png'},
@@ -1162,6 +1163,7 @@ function showPvPConfirm(d) {
 }
 
 async function initApp() {
+  preloadAssets();
   const token = localStorage.getItem(TOKEN_KEY);
   if (token) {
     try {

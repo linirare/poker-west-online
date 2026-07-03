@@ -1186,6 +1186,7 @@ async function initApp() {
 }
 initApp();
 document.querySelector('.phone')?.addEventListener('touchmove',function(e){if(!e.target.closest('.screen,.modal,.modalBox,.chatBody'))e.preventDefault()},{passive:false});
+document.addEventListener('click',function(){hideSkillDetail()});
 function showSkillDetail(id,btn){
   var s=SM[id];if(!s)return;
   if(!btn){

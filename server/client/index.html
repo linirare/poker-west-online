@@ -1186,6 +1186,7 @@ async function initApp() {
 }
 initApp();
 document.addEventListener('touchmove',function(e){if(!e.target.closest('.screen,.modal,.modalBox,.chatBody,.chatMsgs,.log'))e.preventDefault()},{passive:false});
+var _scr=document.querySelector('.screen');if(_scr){_scr.addEventListener('scroll',function(){if(this.scrollTop<0)this.scrollTop=0;var max=this.scrollHeight-this.clientHeight;if(this.scrollTop>max)this.scrollTop=Math.max(0,max)},{passive:true})}
 function showSkillDetail(id,btn){
   var s=SM[id];if(!s)return;
   if(!btn){

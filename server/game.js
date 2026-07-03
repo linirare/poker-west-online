@@ -269,7 +269,9 @@ function applySkill(side, id, battle, selectedCards) {
     }
     case 'intel': {
       let cards = draw(battle.deck, 2), keep = sortCards(cards)[0];
-      add(keep); battle.deck.push(cards[1]); logs.push(`${own}抽2选1，保留 ${rankText(keep.rank)}${keep.suit}`);
+      add(keep);
+      if (cards[1] !== keep) battle.deck.push(cards[1]);
+      logs.push(`${own}抽2选1，保留 ${rankText(keep.rank)}${keep.suit}`);
       break;
     }
     case 'inspect': e.revealed = true; logs.push(`${own}查看了${opp}全部手牌`); break;

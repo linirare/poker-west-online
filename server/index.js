@@ -1,12 +1,12 @@
-﻿// Set JWT secret before loading auth module
+﻿// JWT secret — env var preferred, auto-generate as fallback
 if (!process.env.JWT_SECRET) {
-  const isProd = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENV;
-  if (isProd) {
-    console.error('[server] FATAL: JWT_SECRET must be set in production');
-    process.exit(1);
+  const crypto = require('crypto');
+  process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
+  if (process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENV) {
+    console.log('[server] WARNING: JWT_SECRET not set, using auto-generated key (sessions reset on restart)');
+  } else {
+    console.log('[server] DEV: Generated random JWT_SECRET');
   }
-  process.env.JWT_SECRET = 'poker-west-dev-' + require('crypto').randomBytes(16).toString('hex');
-  console.log('[server] DEV: Generated random JWT_SECRET');
 }
 
 const express = require('express');

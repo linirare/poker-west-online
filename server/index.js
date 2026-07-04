@@ -123,7 +123,7 @@ io.on('connection', (socket) => {
         }
       }, 300);
     } else {
-      // In queue — set 5s timeout
+      // In queue — set 15s timeout
       socket.emit('in_queue');
       setTimeout(() => {
         if (rooms.isInQuickMatch(socket.id)) {

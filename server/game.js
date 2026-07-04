@@ -42,10 +42,10 @@ const AI_W = {
 };
 
 const CHARS = [
-  { id: 'cowboy', icon: '🌟', name: '牛仔', rarity: '普通', effect: '金币收益 +5%起，每级额外+2%' },
-  { id: 'sheriff', icon: '🛡️', name: '守护队长', rarity: '稀有', effect: '胜利额外钻石 +2💎起，每级+1💎' },
-  { id: 'lily', icon: '🎀', name: '幸运莉莉', rarity: '史诗', effect: '宝箱进度加速，每级+1进度' },
-  { id: 'miner', icon: '💎', name: '宝石收藏家', rarity: '传说', effect: '抽卡折扣 5%起，每级折扣+3%' }
+  { id: 'cowboy', icon: '🃏', name: '代号A', rarity: '普通', effect: '每局金币 +100，每级+50' },
+  { id: 'sheriff', icon: '♥️', name: '代号Q', rarity: '稀有', effect: '每日免费 💎30，每级+20' },
+  { id: 'lily', icon: '🌟', name: '代号J', rarity: '史诗', effect: '宝箱进度 x1.5，每级+0.2' },
+  { id: 'miner', icon: '👑', name: '代号K', rarity: '传说', effect: '每胜 💎+50，每级+30' }
 ];
 
 // === Card utilities ===

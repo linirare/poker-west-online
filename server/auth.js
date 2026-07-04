@@ -5,11 +5,15 @@ const crypto = require('crypto');
 const { getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser, getChatMessages, clearChatMessages } = require('./db');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  console.error('[auth] FATAL: JWT_SECRET environment variable is required');
-  process.exit(1);
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = require('crypto').randomBytes(32).toString('hex');
+  if (process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENV) {
+    console.log('[auth] WARNING: JWT_SECRET not set, using auto-generated key (sessions reset on restart)');
+  } else {
+    console.log('[auth] DEV: Generated random JWT_SECRET');
+  }
 }
+const JWT_SECRET = process.env.JWT_SECRET;
 
 function authMiddleware(req, res, next) {
   const header = req.headers.authorization;

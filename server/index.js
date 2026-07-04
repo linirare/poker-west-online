@@ -397,8 +397,10 @@ io.on('connection', (socket) => {
       const gd = { ...(user.game_data || {}) };
       const activeChar = gd.activeChar || 'cowboy';
       const lv = (gd.chars && gd.chars[activeChar]?.lv) || 1;
-      let coins = won ? 320 : 90;
-      let gems = won ? 12 : 5;
+      const RANK_MULT = [1.0, 1.2, 1.5, 1.8, 2.2, 2.6, 3.0];
+      const mult = RANK_MULT[Math.min(gd.rankIdx || 0, 6)];
+      let coins = Math.round((won ? 200 : 80) * mult);
+      let gems = Math.round((won ? 50 : 20) * mult);
       let chest = won ? 2 : 1;
       if (activeChar === 'cowboy') coins += 100 + (lv - 1) * 50;
       if (activeChar === 'miner' && won) gems += 50 + (lv - 1) * 30;
@@ -647,25 +649,28 @@ function resolvePvPRound(room, roomId) {
 function finishGame(room, roomId) {
   const b = room.battle;
   const isPvP = b.mode === 'pvp';
+  const RANK_MULT = [1.0, 1.2, 1.5, 1.8, 2.2, 2.6, 3.0];
 
   function calcAndPersist(won, dbUserId) {
     let coins, gems, chest;
     if (isPvP) {
-      coins = won ? 200 : 60;
-      gems = won ? 8 : 3;
+      coins = won ? 200 : 80;
+      gems = won ? 50 : 20;
       chest = won ? 2 : 1;
     } else {
-      // PvE
       const tied = !won && b.roundWins.player === b.roundWins.opp;
-      if (won) { coins = 320; gems = 12; chest = 2; }
-      else if (tied) { coins = 150; gems = 0; chest = 0; }
-      else { coins = 90; gems = 5; chest = 1; }
+      if (won) { coins = 200; gems = 50; chest = 2; }
+      else if (tied) { coins = 120; gems = 25; chest = 1; }
+      else { coins = 80; gems = 20; chest = 1; }
     }
 
     if (dbUserId) {
       const user = getUserById(dbUserId);
       if (user) {
         const gd = { ...(user.game_data || {}) };
+        const mult = RANK_MULT[Math.min(gd.rankIdx || 0, 6)];
+        coins = Math.round(coins * mult);
+        gems = Math.round(gems * mult);
         // Character bonuses (PvE only)
         if (!isPvP) {
           const activeChar = gd.activeChar || 'cowboy';

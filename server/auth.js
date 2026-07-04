@@ -279,4 +279,4 @@ router.delete('/chat/clear', authMiddleware, adminMiddleware, (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = { router, authMiddleware, adminMiddleware };
+module.exports = { router, authMiddleware, adminMiddleware, JWT_SECRET, jwt };

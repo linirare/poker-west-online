@@ -9,6 +9,7 @@ if (!process.env.JWT_SECRET) {
   }
 }
 
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -16,7 +17,7 @@ const cors = require('cors');
 const path = require('path');
 const game = require('./game');
 const rooms = require('./rooms');
-const { initDb, addChatMessage, getChatMessages } = require('./db');
+const { initDb, addChatMessage, getChatMessages, getUserById, updateUser } = require('./db');
 
 const app = express();
 app.use(cors());
@@ -40,6 +41,18 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3000;
 const QUICK_MATCH_TIMEOUT = 15000;
 
+// Socket.io auth middleware — extract userId from JWT handshake token
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.userId = decoded.id;
+    } catch (e) { /* invalid token, continue as guest */ }
+  }
+  next();
+});
+
 let onlineCount = 0;
 
 io.on('connection', (socket) => {
@@ -54,6 +67,8 @@ io.on('connection', (socket) => {
     const roomId = rooms.createRoom(socket.id, '玩家', skills, 'pve', difficulty);
     const battle = rooms.startBattle(roomId);
     if (!battle) return socket.emit('error', { msg: '创建失败' });
+    const room = rooms.getRoom(roomId);
+    if (room && socket.userId) room.playerDBId = socket.userId;
 
     socket.join(roomId);
     socket.emit('game_state', game.buildPlayerView(battle, 'player'));
@@ -73,6 +88,8 @@ io.on('connection', (socket) => {
   socket.on('pvp_create_room', ({ skills, name, roomName }) => {
     const roomId = rooms.createRoom(socket.id, name || '玩家', skills, 'pvp', 1, roomName);
     socket.join(roomId);
+    const room = rooms.getRoom(roomId);
+    if (room && socket.userId) room.playerDBId = socket.userId;
     socket.emit('room_created', { roomId, hostName: name || '玩家', roomName });
     io.emit('room_list', rooms.listRooms());
   });
@@ -84,6 +101,7 @@ io.on('connection', (socket) => {
 
     socket.join(roomId);
     const room = rooms.getRoom(roomId);
+    if (room && socket.userId) room.oppDBId = socket.userId;
 
     // Notify room members (not auto-start — host decides)
     io.to(roomId).emit('player_joined', {
@@ -100,13 +118,17 @@ io.on('connection', (socket) => {
 
   // === Quick match: enter queue ===
   socket.on('quick_match', ({ skills, name }) => {
-    const result = rooms.addToQuickMatch(socket.id, skills, name || '玩家');
+    const result = rooms.addToQuickMatch(socket.id, skills, name || '玩家', socket.userId);
     if (result.matched) {
       // Opponent found! Create PvP room
       const opp = result.opponent;
       const roomId = rooms.createRoom(socket.id, name || '玩家', skills, 'pvp', 1);
       rooms.joinRoom(roomId, opp.socketId, opp.name || '玩家', opp.skills);
       const room = rooms.getRoom(roomId);
+      if (room) {
+        if (socket.userId) room.playerDBId = socket.userId;
+        if (opp.userId) room.oppDBId = opp.userId;
+      }
       socket.join(roomId);
       io.to(opp.socketId).emit('quick_match_found', { roomId });
       // Start the battle directly
@@ -368,6 +390,29 @@ io.on('connection', (socket) => {
     }
   });
 
+  // === PvE: Client-side battle finish → server rewards ===
+  socket.on('pve_finish', ({ won }) => {
+    const user = socket.userId ? getUserById(socket.userId) : null;
+    if (user) {
+      const gd = { ...(user.game_data || {}) };
+      const activeChar = gd.activeChar || 'cowboy';
+      const lv = (gd.chars && gd.chars[activeChar]?.lv) || 1;
+      let coins = won ? 320 : 90;
+      let gems = won ? 12 : 5;
+      let chest = won ? 2 : 1;
+      if (activeChar === 'cowboy') coins += 100 + (lv - 1) * 50;
+      if (activeChar === 'miner' && won) gems += 50 + (lv - 1) * 30;
+      if (activeChar === 'lily') chest = Math.ceil(chest * (1.5 + (lv - 1) * 0.2));
+      gd.coins = (gd.coins || 888) + coins;
+      gd.gems = (gd.gems || 88) + gems;
+      gd.chest = Math.min(10, (gd.chest || 0) + chest);
+      gd.total = (gd.total || 0) + 1;
+      if (won) gd.wins = (gd.wins || 0) + 1;
+      updateUser(socket.userId, { game_data: gd });
+      socket.emit('pve_rewards', { coins, gems, chest });
+    }
+  });
+
   // === PvP: Rematch (back to lobby) ===
   socket.on('pvp_rematch', () => {
     const roomId = rooms.getPlayerRoom(socket.id);
@@ -419,27 +464,77 @@ io.on('connection', (socket) => {
     rooms.removeRoom(roomId);
   });
 
-  // === Disconnect ===
+  // === Disconnect — with reconnection support ===
   socket.on('disconnect', () => {
     onlineCount = Math.max(0, onlineCount - 1);
     io.emit('online_count', onlineCount);
     rooms.removeFromQuickMatch(socket.id);
     console.log(`[disconnect] ${socket.id} (online: ${onlineCount})`);
-    const roomId = rooms.leaveRoom(socket.id);
+
+    // Check if this is a PvP player in an active battle — start reconnection grace period
+    const roomId = rooms.getPlayerRoom(socket.id);
     if (roomId) {
       const room = rooms.getRoom(roomId);
-      if (room && room.players.length > 0) {
-        if (room.phase === 'playing') {
-          io.to(roomId).emit('opponent_left');
+      if (room && room.mode === 'pvp' && room.phase === 'playing' && socket.userId) {
+        room.reconnectingPlayers = room.reconnectingPlayers || {};
+        if (!room.reconnectingPlayers[socket.userId]) {
+          room.reconnectingPlayers[socket.userId] = { oldSocketId: socket.id };
+        }
+        room.reconnectingPlayers[socket.userId].timer = setTimeout(() => {
+          const r2 = rooms.getRoom(roomId);
+          if (r2 && r2.reconnectingPlayers && r2.reconnectingPlayers[socket.userId]) {
+            delete r2.reconnectingPlayers[socket.userId];
+            if (Object.keys(r2.reconnectingPlayers).length === 0) delete r2.reconnectingPlayers;
+            rooms.leaveRoom(socket.id);
+            io.to(roomId).emit('opponent_left');
+            io.emit('room_list', rooms.listRooms());
+          }
+        }, 15000);
+        io.to(roomId).emit('opponent_reconnecting');
+        return; // Don't clean up — wait for reconnection
+      }
+    }
+
+    // Normal cleanup for non-PvP or non-battle disconnects
+    const leftRoomId = rooms.leaveRoom(socket.id);
+    if (leftRoomId) {
+      const leftRoom = rooms.getRoom(leftRoomId);
+      if (leftRoom && leftRoom.players.length > 0) {
+        if (leftRoom.phase === 'playing') {
+          io.to(leftRoomId).emit('opponent_left');
         } else {
-          io.to(roomId).emit('player_joined', {
-            players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
+          io.to(leftRoomId).emit('player_joined', {
+            players: leftRoom.players.map(p => ({ name: p.name, socketId: p.socketId }))
           });
         }
       } else {
-        io.to(roomId).emit('opponent_left');
+        io.to(leftRoomId).emit('opponent_left');
       }
       io.emit('room_list', rooms.listRooms());
+    }
+  });
+
+  // === Reconnect to PvP battle ===
+  socket.on('reconnect_player', ({ roomId }) => {
+    const room = rooms.getRoom(roomId);
+    if (!room || room.mode !== 'pvp' || room.phase !== 'playing') return;
+    if (!socket.userId) return;
+    if (!room.reconnectingPlayers || !room.reconnectingPlayers[socket.userId]) return;
+
+    const entry = room.reconnectingPlayers[socket.userId];
+    const oldSocketId = entry.oldSocketId;
+    clearTimeout(entry.timer);
+    delete room.reconnectingPlayers[socket.userId];
+    if (Object.keys(room.reconnectingPlayers).length === 0) delete room.reconnectingPlayers;
+
+    if (rooms.reconnectPlayer(roomId, oldSocketId, socket.id)) {
+      socket.join(roomId);
+      const side = getSide(room, socket.id);
+      if (side) {
+        socket.emit('game_state', game.buildPlayerView(room.battle, side));
+      }
+      io.to(roomId).emit('opponent_reconnected');
+      console.log(`[reconnect] Player reconnected to room ${roomId}`);
     }
   });
 
@@ -551,14 +646,62 @@ function resolvePvPRound(room, roomId) {
 
 function finishGame(room, roomId) {
   const b = room.battle;
-  if (b.mode === 'pvp') {
+  const isPvP = b.mode === 'pvp';
+
+  function calcAndPersist(won, dbUserId) {
+    let coins, gems, chest;
+    if (isPvP) {
+      coins = won ? 200 : 60;
+      gems = won ? 8 : 3;
+      chest = won ? 2 : 1;
+    } else {
+      // PvE
+      const tied = !won && b.roundWins.player === b.roundWins.opp;
+      if (won) { coins = 320; gems = 12; chest = 2; }
+      else if (tied) { coins = 150; gems = 0; chest = 0; }
+      else { coins = 90; gems = 5; chest = 1; }
+    }
+
+    if (dbUserId) {
+      const user = getUserById(dbUserId);
+      if (user) {
+        const gd = { ...(user.game_data || {}) };
+        // Character bonuses (PvE only)
+        if (!isPvP) {
+          const activeChar = gd.activeChar || 'cowboy';
+          const lv = (gd.chars && gd.chars[activeChar]?.lv) || 1;
+          if (activeChar === 'cowboy') coins += 100 + (lv - 1) * 50;
+          if (activeChar === 'miner' && won) gems += 50 + (lv - 1) * 30;
+          if (activeChar === 'lily') chest = Math.ceil(chest * (1.5 + (lv - 1) * 0.2));
+        }
+        gd.coins = (gd.coins || 888) + coins;
+        gd.gems = (gd.gems || 88) + gems;
+        if (!isPvP) gd.chest = Math.min(10, (gd.chest || 0) + chest);
+        gd.total = (gd.total || 0) + 1;
+        if (won) gd.wins = (gd.wins || 0) + 1;
+        updateUser(dbUserId, { game_data: gd });
+      }
+    }
+    return { coins, gems, chest };
+  }
+
+  if (isPvP) {
     const pWin = b.roundWins.player > b.roundWins.opp || b.opp.hp <= 0;
     const oWin = b.roundWins.opp > b.roundWins.player || b.player.hp <= 0;
-    io.to(room.players[0].socketId).emit('game_over', { win: pWin, roundWins: { player: b.roundWins.player, opp: b.roundWins.opp }, playerHp: b.player.hp, oppHp: b.opp.hp });
-    io.to(room.players[1].socketId).emit('game_over', { win: oWin, roundWins: { player: b.roundWins.opp, opp: b.roundWins.player }, playerHp: b.opp.hp, oppHp: b.player.hp });
+    const pRew = calcAndPersist(pWin, room.playerDBId);
+    const oRew = calcAndPersist(oWin, room.oppDBId);
+    io.to(room.players[0].socketId).emit('game_over', {
+      win: pWin, roundWins: { player: b.roundWins.player, opp: b.roundWins.opp },
+      playerHp: b.player.hp, oppHp: b.opp.hp, rewards: pRew
+    });
+    io.to(room.players[1].socketId).emit('game_over', {
+      win: oWin, roundWins: { player: b.roundWins.opp, opp: b.roundWins.player },
+      playerHp: b.opp.hp, oppHp: b.player.hp, rewards: oRew
+    });
   } else {
     const win = b.roundWins.player > b.roundWins.opp || b.opp.hp <= 0;
-    io.to(roomId).emit('game_over', { win, roundWins: { ...b.roundWins }, playerHp: b.player.hp, oppHp: b.opp.hp });
+    const rew = calcAndPersist(win, room.playerDBId);
+    io.to(roomId).emit('game_over', { win, roundWins: { ...b.roundWins }, rewards: rew });
   }
 }
 

@@ -963,7 +963,7 @@ function showRoundResult(winner,pe,oe,dmg){let title=winner==='player'?'本局�
 function isOver(){return battle.mode==='tutorial'?battle.round>=5:(battle.player.hp<=0||battle.opp.hp<=0||battle.round>=5||battle.roundWins.player>=3||battle.roundWins.opp>=3)}
 function nextRound(){if(isOver())return finishBattle();battle.round++;window._turnDeadline=null;for(const key of ['player','opp']){let f=battle[key];let target=HAND_LIMIT+(f.nextDrawBonus||0)-(f.nextDrawPenalty||0);let n=Math.max(0,target-f.hand.length);f.hand.push(...draw(battle.deck,n));f.played=[];f.buff={};f.skillUses=0;f.playBonus=f.nextPlayBonus||0;f.nextPlayBonus=0;f.nextDrawBonus=0;f.nextDrawPenalty=0;f.locked=false}battle.selected=[];battle.phase='select';log(`进入第${battle.round}局：手牌补到${HAND_LIMIT}张，基础打${PLAY_COUNTS[battle.round-1]}张`);renderBattle();if(battle.mode==='tutorial'){battle.tutorialStep=Math.min(5,(battle.tutorialStep||1)+1);setTimeout(()=>showTutorialStep(battle.tutorialStep),250)}else{setTimeout(aiStartSkill,500)}}
 function deckLines(deck){return deck.map(s=>`<div class="deckSkillLine"><span>${s.icon} ${s.name}</span><b>${s.tier}</b></div>`).join('')||'<div class="muted">无</div>'}
-function finishBattle(){q('.screen').style.bottom='';q('#nav').style.display='';let win=battle.roundWins.player>battle.roundWins.opp||battle.opp.hp<=0;let lose=battle.roundWins.opp>battle.roundWins.player||battle.player.hp<=0;state.tasks.play++;if(battle.mode==='ranked'&&!battle.tutorialStep){if(win&&!lose){state.aiStreak=(state.aiStreak||0)>0?state.aiStreak+1:1}else if(lose&&!win){state.aiStreak=(state.aiStreak||0)<0?state.aiStreak-1:-1}if(state.aiStreak>=2){state.aiStreak=0;if(state.aiTier<2){state.aiTier++}else{state.aiTier=0}}else if(state.aiStreak<=-2){state.aiStreak=0;if(state.aiTier>0){state.aiTier--}else{state.aiTier=2}}}let ladderText='快速对战不计天梯';if(battle.mode==='ranked')ladderText=updateLadder(win);else{state.total++;if(win)state.wins++}let base=win?320:lose?90:150;let lv=charLv(state.activeChar);if(state.activeChar==='cowboy')base+=100+(lv-1)*50;state.coins+=base;state.gems+=(win?12:5);state.rank=Math.max(0,(state.rank||820)+(win?30:lose?-10:0));var oldChest=state.chest;var chestAdd=win?2:1;if(state.activeChar==='lily')chestAdd=Math.ceil(chestAdd*(1.5+(lv-1)*0.2));state.chest=Math.min(10,state.chest+chestAdd);if(state.activeChar==='miner'&&win)state.gems+=50+(lv-1)*30;state.history.unshift({win,score:`${battle.roundWins.player}:${battle.roundWins.opp}`,time:Date.now(),mode:battle.mode||'normal'});var gemReward=(win?12:5)+(state.activeChar==='miner'&&win?50+(charLv('miner')-1)*30:0);save();let m=document.createElement('div');m.className='resultBanner';m.innerHTML=`<div class="resultBox"><div class="resultTitle" style="font-size:26px">${win?'🎉 对战胜利':lose?'💔 对战失败':'🤝 对战平局'}</div><div class="finalScore">${battle.roundWins.player} : ${battle.roundWins.opp}</div><div style="margin:8px 0;font-size:15px;font-weight:1000">获得：<span class="ci">🪙</span>${base} 💎${gemReward}</div><div class="grid2" style="margin-top:10px"><div class="btn dark" onclick="this.parentElement.parentElement.parentElement.remove();battle=null;state.mode='normal';setScreen('rank')">查看天梯</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();battle=null;state.mode='normal';setScreen('home')">回到主页</div></div></div>`;document.body.appendChild(m)}
+function finishBattle(){q('.screen').style.bottom='';q('#nav').style.display='';let win=battle.roundWins.player>battle.roundWins.opp||battle.opp.hp<=0;let lose=battle.roundWins.opp>battle.roundWins.player||battle.player.hp<=0;state.tasks.play++;if(battle.mode==='ranked'&&!battle.tutorialStep){if(win&&!lose){state.aiStreak=(state.aiStreak||0)>0?state.aiStreak+1:1}else if(lose&&!win){state.aiStreak=(state.aiStreak||0)<0?state.aiStreak-1:-1}if(state.aiStreak>=2){state.aiStreak=0;if(state.aiTier<2){state.aiTier++}else{state.aiTier=0}}else if(state.aiStreak<=-2){state.aiStreak=0;if(state.aiTier>0){state.aiTier--}else{state.aiTier=2}}}let ladderText='快速对战不计天梯';if(battle.mode==='ranked')ladderText=updateLadder(win);else{state.total++;if(win)state.wins++}state.history.unshift({win,score:`${battle.roundWins.player}:${battle.roundWins.opp}`,time:Date.now(),mode:battle.mode||'normal'});save();var _pveRew={coins:0,gems:0};if(socket&&socket.connected&&currentUser){socket.emit('pve_finish',{won:win});socket.once('pve_rewards',function(r){_pveRew=r;var el=q('#pveRewardsDisplay');if(el)el.innerHTML='<span class="ci">🪙</span>'+r.coins+' 💎'+r.gems})}else{_pveRew={coins:win?320:lose?90:150,gems:(win?12:5)+(state.activeChar==='miner'&&win?50+(charLv('miner')-1)*30:0)}}var gemDisplay=_pveRew.gems;let m=document.createElement('div');m.className='resultBanner';m.innerHTML=`<div class="resultBox"><div class="resultTitle" style="font-size:26px">${win?'🎉 对战胜利':lose?'💔 对战失败':'🤝 对战平局'}</div><div class="finalScore">${battle.roundWins.player} : ${battle.roundWins.opp}</div><div style="margin:8px 0;font-size:15px;font-weight:1000">获得：<span class="ci">🪙</span>${_pveRew.coins} 💎${gemDisplay}<span id="pveRewardsDisplay"></span></div><div class="grid2" style="margin-top:10px"><div class="btn dark" onclick="this.parentElement.parentElement.parentElement.remove();battle=null;state.mode='normal';setScreen('rank')">查看天梯</div><div class="btn" onclick="this.parentElement.parentElement.parentElement.remove();battle=null;state.mode='normal';setScreen('home')">回到主页</div></div></div>`;document.body.appendChild(m)}
 function surrenderPvE(){if(!battle)return;battle.player.hp=0;battle.opp.hp=1;finishBattle()}
 function surrenderPvP(){if(!pvp)return;socket.emit('pvp_surrender');pvp=null;setScreen('home')}
 /* poker eval */
@@ -1009,9 +1009,20 @@ function restoreChat() {
 
 function pvpConnect() {
   if (socket) { socket.disconnect(); socket = null; }
-  try { socket = io({ transports: ['websocket', 'polling'], reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 1000, reconnectionDelayMax: 5000 }); } catch(e) { setTimeout(pvpConnect, 2000); return; }
-  socket.on('connect', () => { toast('已连接服务器'); chatSetPlaceholder(false); });
-  socket.on('disconnect', () => { toast('与服务器断开'); chatSetPlaceholder(true); });
+  const token = localStorage.getItem('poker_token');
+  const auth = token ? { token } : {};
+  try { socket = io({ transports: ['websocket', 'polling'], auth, reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 1000, reconnectionDelayMax: 5000 }); } catch(e) { setTimeout(pvpConnect, 2000); return; }
+  socket.on('connect', () => {
+    toast('已连接服务器'); chatSetPlaceholder(false);
+    // Auto-reconnect to PvP battle if disconnected mid-game
+    if (pvp && pvp.roomId && pvp.phase === 'battle') {
+      socket.emit('reconnect_player', { roomId: pvp.roomId });
+    }
+  });
+  socket.on('disconnect', () => {
+    toast('与服务器断开，正在重连...'); chatSetPlaceholder(true);
+    if (pvp && pvp.phase === 'battle') showPvPReconnectOverlay(true);
+  });
   socket.on('online_count', (n) => {
     const el = q('#onlineCount');
     if (el) el.textContent = '🟢 ' + n;
@@ -1044,6 +1055,15 @@ function pvpConnect() {
   socket.on('game_over', (d) => { if (!pvp) return; showPvPGameOver(d); });
   socket.on('room_rematch', (d) => { pvp = { roomId: d.roomId, phase: 'lobby', side: pvp?.side || 'player', selected: [], isHost: d.hostId === socket.id, hostId: d.hostId, roomName: d.roomName, players: d.players }; showPvPLobby(); });
   socket.on('error', (d) => { toast('错误: ' + (d.msg || '')); });
+  socket.on('opponent_reconnecting', () => {
+    toast('对手掉线，等待重连...');
+    showPvPReconnectOverlay(true);
+  });
+  socket.on('opponent_reconnected', () => {
+    toast('对手已重连');
+    showPvPReconnectOverlay(false);
+    renderPvPBattle();
+  });
   socket.on('opponent_left', () => { toast('对手已离开'); pvp = null; setScreen('home'); });
   socket.on('chat_history', (msgs) => {
     chatCache = msgs;
@@ -1283,17 +1303,23 @@ function showPvPGameOver(d) {
   q('.screen').style.bottom=''; q('#nav').style.display='';
   pvp = null;
   const win = d.win;
+  const rew = d.rewards || { coins: win?200:60, gems: win?8:3 };
   state.total = (state.total || 0) + 1;
   if (win) state.wins = (state.wins || 0) + 1;
-  state.coins = (state.coins || 0) + (win ? 200 : 60);
-  state.gems = (state.gems || 0) + (win ? 8 : 3);
-  state.chest = Math.min(10, (state.chest || 0) + (win ? 2 : 1));
   state.history = state.history || [];
   state.history.unshift({ win: win, score: (d.roundWins?.player||0)+':'+(d.roundWins?.opp||0), time: Date.now(), mode: 'pvp' });
   save();
   const m = document.createElement('div'); m.className = 'resultBanner';
-  m.innerHTML = '<div class="resultBox"><div class="resultTitle" style="font-size:26px">'+(win?'🏆 对战胜利':'💔 对战失败')+'</div><div class="finalScore">'+(d.roundWins?.player||0)+' : '+(d.roundWins?.opp||0)+'</div><div style="margin:8px 0;font-size:15px;font-weight:1000">获得：<span class="ci">🪙</span>'+(win?200:60)+' 💎'+(win?8:3)+'</div><div class="grid2" style="margin-top:12px"><div class="btn" onclick="this.closest(\'.resultBanner\').remove();socket.emit(\'pvp_rematch\');">再来一把</div><div class="btn dark" onclick="this.closest(\'.resultBanner\').remove();socket.emit(\'leave_room\');setScreen(\'home\')">回到主页</div></div></div>';
+  m.innerHTML = '<div class="resultBox"><div class="resultTitle" style="font-size:26px">'+(win?'🏆 对战胜利':'💔 对战失败')+'</div><div class="finalScore">'+(d.roundWins?.player||0)+' : '+(d.roundWins?.opp||0)+'</div><div style="margin:8px 0;font-size:15px;font-weight:1000">获得：<span class="ci">🪙</span>'+rew.coins+' 💎'+rew.gems+'</div><div class="grid2" style="margin-top:12px"><div class="btn" onclick="this.closest(\'.resultBanner\').remove();socket.emit(\'pvp_rematch\');">再来一把</div><div class="btn dark" onclick="this.closest(\'.resultBanner\').remove();socket.emit(\'leave_room\');setScreen(\'home\')">回到主页</div></div></div>';
   document.body.appendChild(m);
+}
+function showPvPReconnectOverlay(show) {
+  const el = q('#pvpReconnectOverlay');
+  if (show && !el) {
+    const d = document.createElement('div'); d.id = 'pvpReconnectOverlay'; d.className = 'modal';
+    d.innerHTML = '<div class="modalBox" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">⏳</div><div style="font-weight:1000;font-size:16px;color:#321707">等待重连...</div><div class="muted" style="font-size:13px;margin-top:4px">对手掉线了，15秒内重连可继续对局</div></div>';
+    document.body.appendChild(d);
+  } else if (!show && el) { el.remove(); }
 }
 function showPvPConfirm(d) {
   if (!pvp) return;

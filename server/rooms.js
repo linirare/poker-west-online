@@ -139,13 +139,13 @@ function isFull(roomId) {
 // === Quick match queue ===
 let quickMatchQueue = [];
 
-function addToQuickMatch(socketId, skills, name) {
+function addToQuickMatch(socketId, skills, name, userId) {
   const idx = quickMatchQueue.findIndex(q => q.socketId !== socketId);
   if (idx >= 0) {
     const match = quickMatchQueue.splice(idx, 1)[0];
     return { matched: true, opponent: match };
   }
-  quickMatchQueue.push({ socketId, skills, name, timestamp: Date.now() });
+  quickMatchQueue.push({ socketId, skills, name, userId, timestamp: Date.now() });
   return { matched: false };
 }
 
@@ -157,9 +157,22 @@ function isInQuickMatch(socketId) {
   return quickMatchQueue.some(q => q.socketId === socketId);
 }
 
+// === Reconnection support ===
+function reconnectPlayer(roomId, oldSocketId, newSocketId) {
+  const room = rooms.get(roomId);
+  if (!room) return false;
+  const p = room.players.find(p => p.socketId === oldSocketId);
+  if (!p) return false;
+  p.socketId = newSocketId;
+  playerRooms.delete(oldSocketId);
+  playerRooms.set(newSocketId, roomId);
+  return true;
+}
+
 module.exports = {
   createRoom, joinRoom, startBattle,
   getRoom, getPlayerRoom, leaveRoom, removeRoom, shuffleAI,
   listRooms, isHost, kickPlayer, isFull,
-  addToQuickMatch, removeFromQuickMatch, isInQuickMatch
+  addToQuickMatch, removeFromQuickMatch, isInQuickMatch,
+  reconnectPlayer
 };

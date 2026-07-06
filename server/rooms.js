@@ -140,10 +140,8 @@ function isFull(roomId) {
 let quickMatchQueue = [];
 
 function addToQuickMatch(socketId, skills, name, userId) {
-  const idx = quickMatchQueue.findIndex(q => q.socketId !== socketId);
-  if (idx >= 0) {
-    const match = quickMatchQueue.splice(idx, 1)[0];
-    return { matched: true, opponent: match };
+  if (quickMatchQueue.length > 0) {
+    return { matched: true, opponent: quickMatchQueue.shift() };
   }
   quickMatchQueue.push({ socketId, skills, name, userId, timestamp: Date.now() });
   return { matched: false };

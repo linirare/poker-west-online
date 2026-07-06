@@ -39,7 +39,7 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-const QUICK_MATCH_TIMEOUT = 15000;
+const QUICK_MATCH_TIMEOUT = 10000;
 
 // Socket.io auth middleware — extract userId from JWT handshake token
 io.use((socket, next) => {
@@ -55,6 +55,27 @@ io.use((socket, next) => {
 
 let onlineCount = 0;
 
+// Simple in-memory socket rate limiter (per socket, per event)
+const socketRateLimit = new Map();
+function checkSocketRate(socketId, event, maxPerMin = 30) {
+  const key = socketId + ':' + event;
+  const now = Date.now();
+  let entry = socketRateLimit.get(key);
+  if (!entry || now - entry.windowStart > 60000) {
+    entry = { windowStart: now, count: 0 };
+    socketRateLimit.set(key, entry);
+  }
+  entry.count++;
+  return entry.count <= maxPerMin;
+}
+// Clean stale entries every 5 min
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of socketRateLimit) {
+    if (now - v.windowStart > 120000) socketRateLimit.delete(k);
+  }
+}, 300000);
+
 io.on('connection', (socket) => {
   onlineCount++;
   io.emit('online_count', onlineCount);
@@ -62,62 +83,8 @@ io.on('connection', (socket) => {
   socket.emit('online_count', onlineCount);
   socket.emit('chat_history', getChatMessages(30));
 
-  // === PvE: Create solo game vs AI ===
-  socket.on('pve_start', ({ skills, difficulty = 1 }) => {
-    const roomId = rooms.createRoom(socket.id, '玩家', skills, 'pve', difficulty);
-    const battle = rooms.startBattle(roomId);
-    if (!battle) return socket.emit('error', { msg: '创建失败' });
-    const room = rooms.getRoom(roomId);
-    if (room && socket.userId) room.playerDBId = socket.userId;
-
-    socket.join(roomId);
-    socket.emit('game_state', game.buildPlayerView(battle, 'player'));
-
-    // AI auto-play after short delay
-    setTimeout(() => {
-      processAITurn(roomId);
-    }, 600);
-  });
-
-  // === PvP: List rooms ===
-  socket.on('pvp_list_rooms', () => {
-    socket.emit('room_list', rooms.listRooms());
-  });
-
-  // === PvP: Create room ===
-  socket.on('pvp_create_room', ({ skills, name, roomName }) => {
-    const roomId = rooms.createRoom(socket.id, name || '玩家', skills, 'pvp', 1, roomName);
-    socket.join(roomId);
-    const room = rooms.getRoom(roomId);
-    if (room && socket.userId) room.playerDBId = socket.userId;
-    socket.emit('room_created', { roomId, hostName: name || '玩家', roomName });
-    io.emit('room_list', rooms.listRooms());
-  });
-
-  // === PvP: Join room ===
-  socket.on('pvp_join_room', ({ roomId, skills, name }) => {
-    const result = rooms.joinRoom(roomId, socket.id, name || '玩家', skills);
-    if (result.error) return socket.emit('error', { msg: result.error });
-
-    socket.join(roomId);
-    const room = rooms.getRoom(roomId);
-    if (room && socket.userId) room.oppDBId = socket.userId;
-
-    // Notify room members (not auto-start — host decides)
-    io.to(roomId).emit('player_joined', {
-      players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
-    });
-    socket.emit('room_info', {
-      roomId,
-      hostId: room.hostId,
-      roomName: room.roomName,
-      players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
-    });
-    io.emit('room_list', rooms.listRooms());
-  });
-
-  // === Quick match: enter queue ===
-  socket.on('quick_match', ({ skills, name }) => {
+  // === Unified match: PvP with AI fallback ===
+  socket.on('start_match', ({ skills, name }) => {
     const result = rooms.addToQuickMatch(socket.id, skills, name || '玩家', socket.userId);
     if (result.matched) {
       // Opponent found! Create PvP room
@@ -130,7 +97,7 @@ io.on('connection', (socket) => {
         if (opp.userId) room.oppDBId = opp.userId;
       }
       socket.join(roomId);
-      io.to(opp.socketId).emit('quick_match_found', { roomId });
+      io.to(opp.socketId).emit('match_found', { roomId });
       // Start the battle directly
       setTimeout(() => {
         if (rooms.getRoom(roomId)) {
@@ -145,89 +112,20 @@ io.on('connection', (socket) => {
         }
       }, 300);
     } else {
-      // In queue — set 15s timeout
+      // In queue — set 10s timeout, then fallback to AI
       socket.emit('in_queue');
       setTimeout(() => {
         if (rooms.isInQuickMatch(socket.id)) {
           rooms.removeFromQuickMatch(socket.id);
-          socket.emit('quick_match_timeout');
+          socket.emit('ai_fallback');
         }
-      }, 15000);
+      }, QUICK_MATCH_TIMEOUT);
     }
   });
 
-  // === Quick match: cancel ===
-  socket.on('quick_match_cancel', () => {
+  // === Cancel match ===
+  socket.on('cancel_match', () => {
     rooms.removeFromQuickMatch(socket.id);
-  });
-
-  // === PvP: Kick player ===
-  socket.on('pvp_kick_player', ({ roomId, targetSocketId }) => {
-    const room = rooms.getRoom(roomId);
-    if (!room || room.hostId !== socket.id) return;
-    const targetSock = io.sockets.sockets.get(targetSocketId);
-    if (targetSock) { targetSock.emit('kicked'); targetSock.leave(roomId); }
-    rooms.kickPlayer(roomId, targetSocketId);
-    const updated = rooms.getRoom(roomId);
-    if (updated) {
-      io.to(roomId).emit('player_joined', {
-        players: updated.players.map(p => ({ name: p.name, socketId: p.socketId }))
-      });
-    }
-    io.emit('room_list', rooms.listRooms());
-  });
-
-  // === PvP: Host starts game ===
-  socket.on('pvp_host_start', () => {
-    const roomId = rooms.getPlayerRoom(socket.id);
-    if (!roomId) return;
-    const room = rooms.getRoom(roomId);
-    if (!room || room.hostId !== socket.id || room.players.length < 2) return;
-    room.phase = 'confirm';
-    io.to(roomId).emit('room_confirm', {
-      players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
-    });
-  });
-
-  // === PvP: Confirm ready ===
-  socket.on('pvp_confirm_ready', () => {
-    const roomId = rooms.getPlayerRoom(socket.id);
-    if (!roomId) return;
-    const room = rooms.getRoom(roomId);
-    if (!room || room.phase !== 'confirm') return;
-    const p = room.players.find(p => p.socketId === socket.id);
-    if (p) p.ready = true;
-    if (room.players.length >= 2 && room.players.every(p => p.ready)) {
-      const battle = rooms.startBattle(roomId);
-      if (battle) {
-        io.to(room.players[0].socketId).emit('game_state', game.buildPlayerView(battle, 'player'));
-        io.to(room.players[1].socketId).emit('game_state', game.buildPlayerView(battle, 'opp'));
-      }
-    } else {
-      io.to(roomId).emit('confirm_progress', {
-        readyCount: room.players.filter(p => p.ready).length,
-        total: room.players.length
-      });
-    }
-  });
-
-  // === PvP: Decline/exit during confirm ===
-  socket.on('pvp_decline', () => {
-    const roomId = rooms.getPlayerRoom(socket.id);
-    if (!roomId) return;
-    socket.leave(roomId);
-    rooms.leaveRoom(socket.id);
-    socket.emit('left_room');
-    const room = rooms.getRoom(roomId);
-    if (room && room.players.length > 0) {
-      io.to(roomId).emit('player_joined', {
-        players: room.players.map(p => ({ name: p.name, socketId: p.socketId }))
-      });
-    } else {
-      io.to(roomId).emit('opponent_left');
-      rooms.removeRoom(roomId);
-    }
-    io.emit('room_list', rooms.listRooms());
   });
 
   // === PvP: Submit play ===
@@ -392,6 +290,7 @@ io.on('connection', (socket) => {
 
   // === PvE: Client-side battle finish → server rewards ===
   socket.on('pve_finish', ({ won }) => {
+    if (!checkSocketRate(socket.id, 'pve_finish', 10)) return;
     const user = socket.userId ? getUserById(socket.userId) : null;
     if (user) {
       const gd = { ...(user.game_data || {}) };
@@ -542,6 +441,7 @@ io.on('connection', (socket) => {
 
   // === Chat ===
   socket.on('chat_message', ({ name, text }) => {
+    if (!checkSocketRate(socket.id, 'chat', 20)) return;
     if (!text || typeof text !== 'string') return;
     const msg = text.trim().slice(0, 200);
     if (!msg) return;
@@ -708,6 +608,7 @@ function finishGame(room, roomId) {
     const rew = calcAndPersist(win, room.playerDBId);
     io.to(roomId).emit('game_over', { win, roundWins: { ...b.roundWins }, rewards: rew });
   }
+  rooms.removeRoom(roomId);
 }
 
 server.listen(PORT, () => {

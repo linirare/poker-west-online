@@ -124,7 +124,14 @@ router.get('/me', authMiddleware, (req, res) => {
 router.put('/save', authMiddleware, (req, res) => {
   const { game_data, total_games, wins } = req.body;
   const fields = {};
-  if (game_data) fields.game_data = game_data;
+  if (game_data) {
+    const ALLOWED = new Set(['coins','gems','chest','total','wins','streak','maxStreak','rankIdx','stars','points','newbieGames','activeChar','equipped','displayName','skills','chars','tasks','taskDate','lastDailyDate','history','handCounts','aiTier','aiStreak','titles','frames','cosmetic']);
+    const clean = {};
+    for (const k of Object.keys(game_data)) {
+      if (ALLOWED.has(k)) clean[k] = game_data[k];
+    }
+    fields.game_data = clean;
+  }
   if (total_games !== undefined) fields.total_games = total_games;
   if (wins !== undefined) fields.wins = wins;
   updateUser(req.user.id, fields);

@@ -652,6 +652,7 @@ async function handleRegister() {
     localStorage.removeItem('poker_home_tutorial_hint_dismissed');
     await afterLogin();
     render('home');
+    setTimeout(function(){ startTutorial(); }, 400);
     toast('先装备 2 张功能牌开始第一局');
   } catch(e) { toast(e.message); q('#regBtn').textContent = '注册'; }
 }
@@ -759,7 +760,7 @@ function serverSave() {
 }
 
 function q(s){return document.querySelector(s)}function qa(s){return [...document.querySelectorAll(s)]}
-function initState(){return{coins:888,gems:88,rank:820,rankIdx:0,stars:0,points:1000,newbieGames:0,total:0,wins:0,streak:0,maxStreak:0,chest:0,aiTier:0,aiStreak:0,handCounts:[0,0,0,0,0,0,0,0,0,0],activeChar:'cowboy',equipped:[],displayName:'',skills:Object.fromEntries(SKILLS.map(s=>[s.id,{copies:3,uses:0}])),chars:{cowboy:{owned:true,lv:1,shards:0},sheriff:{owned:true,lv:1,shards:0},lily:{owned:false,lv:1,shards:0},miner:{owned:false,lv:1,shards:0}},tasks:{play:0,useSkill:0,winRound:0,straight:0},taskDate:'',lastDailyDate:'',history:[]}}
+function initState(){return{coins:888,gems:88,rank:820,rankIdx:0,stars:0,points:1000,newbieGames:0,total:0,wins:0,streak:0,maxStreak:0,chest:0,aiTier:0,aiStreak:0,handCounts:[0,0,0,0,0,0,0,0,0,0],activeChar:'cowboy',equipped:['shuffle','rogue'],displayName:'',skills:Object.fromEntries(SKILLS.map(s=>[s.id,{copies:s.tier==='T3'?5:3,uses:0}])),chars:{cowboy:{owned:true,lv:1,shards:0},sheriff:{owned:true,lv:1,shards:0},lily:{owned:false,lv:1,shards:0},miner:{owned:false,lv:1,shards:0}},tasks:{play:0,useSkill:0,winRound:0,straight:0},taskDate:'',lastDailyDate:'',history:[]}}
 function loadLocalData(){try{const raw=localStorage.getItem(LS);if(raw){const d=JSON.parse(raw);if(d&&typeof d==='object'&&'coins' in d)return d}}catch(e){}return null}
 function save(){localStorage.setItem(LS,JSON.stringify(state));serverSave()}
 function rankCfg(){return RANK_CONFIG[Math.min(state.rankIdx||0,RANK_CONFIG.length-1)]}

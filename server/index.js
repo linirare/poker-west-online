@@ -309,11 +309,11 @@ io.on('connection', (socket) => {
       const RANK_MULT = [1.0, 1.2, 1.5, 1.8, 2.2, 2.6, 3.0];
       const mult = RANK_MULT[Math.min(gd.rankIdx || 0, 6)];
       let coins = Math.round((won ? 200 : 80) * mult);
-      let gems = Math.round((won ? 50 : 20) * mult);
+      let gems = won ? 50 : 20;
       let chest = won ? 2 : 1;
       if (activeChar === 'cowboy') coins += 100 + (lv - 1) * 50;
       if (activeChar === 'miner' && won) gems += 50 + (lv - 1) * 30;
-      if (activeChar === 'lily') chest = Math.ceil(chest * (1.5 + (lv - 1) * 0.2));
+      if (activeChar === 'lily') chest = chest * (lv <= 3 ? 2 : 3);
       gd.coins = (gd.coins || 888) + coins;
       gd.gems = (gd.gems || 88) + gems;
       gd.chest = Math.min(10, (gd.chest || 0) + chest);
@@ -580,14 +580,14 @@ function finishGame(room, roomId) {
         const gd = { ...(user.game_data || {}) };
         const mult = RANK_MULT[Math.min(gd.rankIdx || 0, 6)];
         coins = Math.round(coins * mult);
-        gems = Math.round(gems * mult);
+
         // Character bonuses (PvE only)
         if (!isPvP) {
           const activeChar = gd.activeChar || 'cowboy';
           const lv = (gd.chars && gd.chars[activeChar]?.lv) || 1;
           if (activeChar === 'cowboy') coins += 100 + (lv - 1) * 50;
           if (activeChar === 'miner' && won) gems += 50 + (lv - 1) * 30;
-          if (activeChar === 'lily') chest = Math.ceil(chest * (1.5 + (lv - 1) * 0.2));
+          if (activeChar === 'lily') chest = chest * (lv <= 3 ? 2 : 3);
         }
         gd.coins = (gd.coins || 888) + coins;
         gd.gems = (gd.gems || 88) + gems;

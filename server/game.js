@@ -1,5 +1,6 @@
 // Shared game logic — extracted from poker-west-h5.html
 const SUITS = ['♠', '♥', '♦', '♣'];
+const SUIT_ORDER = { '♠': 4, '♥': 3, '♦': 2, '♣': 1 };
 const PLAY_COUNTS = [3, 3, 3, 4, 5];
 const HAND_LIMIT = 7;
 let uid = 1;
@@ -107,7 +108,7 @@ function evaluate(cards, buff = {}) {
       for (const s of SUITS) {
         let rep = cards.map(c => c.joker ? { ...c, rank: r, suit: s, joker: false } : c);
         let ev = evaluate(rep, buff);
-        if (!best || compare(ev.score, best.score) > 0) best = ev;
+        if (!best || compare(ev.score, best.score, ev.cards, best.cards) > 0) best = ev;
       }
     return best;
   }
@@ -149,10 +150,22 @@ function evaluateNoJoker(cs, buff = {}) {
   return { name: '高牌', cat: 0, score: [0, ...ranks], cards: cs };
 }
 
-function compare(a, b) {
+function compare(a, b, cardsA, cardsB) {
   for (let i = 0; i < Math.max(a.length, b.length); i++) {
     let d = (a[i] || 0) - (b[i] || 0);
     if (d) return d;
+  }
+  // Score identical — suit tiebreaker via best 5-card hand
+  if (cardsA && cardsB) {
+    const sortedA = [...cardsA].sort((x, y) => y.rank - x.rank || (SUIT_ORDER[y.suit] || 0) - (SUIT_ORDER[x.suit] || 0));
+    const sortedB = [...cardsB].sort((x, y) => y.rank - x.rank || (SUIT_ORDER[y.suit] || 0) - (SUIT_ORDER[x.suit] || 0));
+    for (let i = 0; i < Math.max(sortedA.length, sortedB.length); i++) {
+      if (i >= sortedA.length) return -1;
+      if (i >= sortedB.length) return 1;
+      if (sortedA[i].rank !== sortedB[i].rank) return sortedA[i].rank - sortedB[i].rank;
+      const d = (SUIT_ORDER[sortedA[i].suit] || 0) - (SUIT_ORDER[sortedB[i].suit] || 0);
+      if (d) return d;
+    }
   }
   return 0;
 }
@@ -186,10 +199,10 @@ function aiPickSkill(sit, avail, phase, diff = 1, oppHp, playerHp, round) {
 }
 
 function chooseBest(hand, n, community, buff) {
-  let best = null, bestScore = null;
+  let best = null, bestEv = null;
   for (const cb of combos(hand, n)) {
     let ev = evaluate([...cb, ...community], { ...buff, played: cb });
-    if (!bestScore || compare(ev.score, bestScore) > 0) { best = cb; bestScore = ev.score; }
+    if (!bestEv || compare(ev.score, bestEv.score, ev.cards, bestEv.cards) > 0) { best = cb; bestEv = ev; }
   }
   return best || hand.slice(0, n);
 }
@@ -402,7 +415,7 @@ function executeRound(battle) {
   // Evaluate
   let pe = evaluate([...p.played, ...battle.community], { ...p.buff, played: p.played });
   let oe = evaluate([...o.played, ...battle.community], { ...o.buff, played: o.played });
-  let cmp = compare(pe.score, oe.score);
+  let cmp = compare(pe.score, oe.score, pe.cards, oe.cards);
   let winner = cmp > 0 ? 'player' : cmp < 0 ? 'opp' : 'tie';
   let dmg = winner === 'tie' ? 0 : 1;
 

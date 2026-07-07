@@ -749,6 +749,8 @@ function ensureDefaults() {
   if (state.lastDailyDate === undefined) state.lastDailyDate = '';
   if (state.pityT2 === undefined) state.pityT2 = 0;
   if (state.pityT0 === undefined) state.pityT0 = 0;
+  if (state.chestOpensToday === undefined) state.chestOpensToday = 0;
+  if (state.chestDate === undefined) state.chestDate = '';
 }
 
 let _saveTimer = null;
@@ -762,7 +764,7 @@ function serverSave() {
 }
 
 function q(s){return document.querySelector(s)}function qa(s){return [...document.querySelectorAll(s)]}
-function initState(){return{coins:888,gems:88,rank:820,rankIdx:0,stars:0,points:1000,newbieGames:0,total:0,wins:0,streak:0,maxStreak:0,chest:0,aiTier:0,aiStreak:0,handCounts:[0,0,0,0,0,0,0,0,0,0],activeChar:'cowboy',equipped:['shuffle','rogue'],displayName:'',pityT2:0,pityT0:0,skills:Object.fromEntries(SKILLS.map(s=>[s.id,{copies:s.tier==='T3'?5:0,uses:0}])),chars:{cowboy:{owned:true,lv:1,shards:0},sheriff:{owned:true,lv:1,shards:0},lily:{owned:false,lv:1,shards:0},miner:{owned:false,lv:1,shards:0}},tasks:{play:0,useSkill:0,winRound:0,straight:0},taskDate:'',lastDailyDate:'',history:[]}}
+function initState(){return{coins:888,gems:88,rank:820,rankIdx:0,stars:0,points:1000,newbieGames:0,total:0,wins:0,streak:0,maxStreak:0,chest:0,aiTier:0,aiStreak:0,handCounts:[0,0,0,0,0,0,0,0,0,0],activeChar:'cowboy',equipped:['shuffle','rogue'],displayName:'',pityT2:0,pityT0:0,chestOpensToday:0,chestDate:'',skills:Object.fromEntries(SKILLS.map(s=>[s.id,{copies:s.tier==='T3'?5:0,uses:0}])),chars:{cowboy:{owned:true,lv:1,shards:0},sheriff:{owned:true,lv:1,shards:0},lily:{owned:false,lv:1,shards:0},miner:{owned:false,lv:1,shards:0}},tasks:{play:0,useSkill:0,winRound:0,straight:0},taskDate:'',lastDailyDate:'',history:[]}}
 function loadLocalData(){try{const raw=localStorage.getItem(LS);if(raw){const d=JSON.parse(raw);if(d&&typeof d==='object'&&'coins' in d)return d}}catch(e){}return null}
 function save(){localStorage.setItem(LS,JSON.stringify(state));serverSave()}
 function rankCfg(){return RANK_CONFIG[Math.min(state.rankIdx||0,RANK_CONFIG.length-1)]}
@@ -787,7 +789,7 @@ function renderHome(){const rc=rankCfg();const rankText=rankProgressText();const
         <div class="heroRankMeta">
           <span>⚔️ ${state.total||0} 场</span>
           <span>🔥 ${state.streak||0} 连胜</span>
-          <span>🎁 ${state.chest||0}/10</span>
+          <span>🎁 ${state.chest||0}/${10+(state.chestOpensToday||0)*2}</span>
         </div>
       </div>
     </div>
@@ -990,7 +992,7 @@ function setupTutorialBattle(){battle.community=[tutorialCard(11,'♠'),tutorial
 
 
 
-function openChest(){if(state.chest<10)return;state.chest=0;state.gems+=50;save();toast('宝箱已开启！获得 50 钻石');renderHome()}
+function openChest(){const today=new Date().toDateString();if(state.chestDate!==today){state.chestDate=today;state.chestOpensToday=0}const required=10+(state.chestOpensToday||0)*2;if(state.chest<required)return toast('还需 '+(required-state.chest)+' 点开启第 '+((state.chestOpensToday||0)+1)+' 箱');if(state.chestOpensToday>=5)return toast('今日已开启5箱，明天再来吧');state.chest-=required;state.chestOpensToday=(state.chestOpensToday||0)+1;const r=Math.random();if(r<0.6){const pool=SKILLS.filter(s=>s.tier==='T3');const s=pool[Math.floor(Math.random()*pool.length)];state.skills[s.id]??={copies:0,uses:0};state.skills[s.id].copies++;toast('宝箱开启！获得 T3 功能牌：'+s.name)}else if(r<0.9){const pool=SKILLS.filter(s=>s.tier==='T2');const s=pool[Math.floor(Math.random()*pool.length)];state.skills[s.id]??={copies:0,uses:0};state.skills[s.id].copies++;toast('宝箱开启！获得 T2 功能牌：'+s.name)}else{state.coins+=100;toast('宝箱开启！获得 100 金币')}save();renderHome()}
 function showCardPopup(card,text){if(!card)return;var d=document.createElement('div');d.className='cardPopup';d.innerHTML='<div class="cardPopupInner">'+cardHtml(card,'large')+'<div class="cardPopupText">'+text+'</div></div>';document.body.appendChild(d);setTimeout(function(){d.remove()},1800)}
 
 function showHandChart(){var m=document.createElement('div');m.className='modal';m.innerHTML='<div class="modalBox"><div class="title" style="color:#321707;margin-bottom:6px">📖 牌型表（从大到小）</div><div style="max-height:65vh;overflow-y:auto">'+HANDS_EX.map(function(h,i){var s='';h.cards.forEach(function(c){s+='<div class="playCard smallCard'+(c.suit=="♥"||c.suit=="♦"?' redSuit':'')+'" style="width:32px;height:45px;font-size:10px;display:inline-flex;margin:0 -3px"><div class="rank" style="font-size:11px">'+({14:'A',13:'K',12:'Q',11:'J',10:'10'}[c.rank]||String(c.rank))+'</div><div class="suit" style="font-size:15px">'+c.suit+'</div></div>'});return '<div style="padding:5px 0;border-bottom:1px solid rgba(100,60,20,.1)"><div style="font-size:13px;font-weight:1000;margin-bottom:3px">'+(i+1)+'. '+h.emoji+' '+h.name+'</div><div style="display:flex;gap:0;justify-content:center">'+s+'</div></div>'

@@ -17,7 +17,7 @@ const cors = require('cors');
 const path = require('path');
 const game = require('./game');
 const rooms = require('./rooms');
-const { initDb, addChatMessage, getChatMessages, getUserById, getUserFull, updateUser } = require('./db');
+const { initDb, addChatMessage, getChatMessages, getUserById, getUserFull, updateUser, getServerConfig } = require('./db');
 
 const app = express();
 app.use(cors());
@@ -28,6 +28,23 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'client', 'adm
 initDb();
 
 const { router: authRouter } = require('./auth');
+
+// Maintenance mode check — runs before all API routes
+app.use('/api', (req, res, next) => {
+  const cfg = getServerConfig();
+  if (cfg.maintenanceMode) {
+    const header = req.headers.authorization;
+    if (header && header.startsWith('Bearer ')) {
+      try {
+        const decoded = jwt.verify(header.slice(7), process.env.JWT_SECRET);
+        if (decoded.is_admin) return next();
+      } catch(e) {}
+    }
+    return res.status(503).json({ error: cfg.maintenanceMessage || '服务器维护中，请稍后再试' });
+  }
+  next();
+});
+
 app.use('/api/auth', authRouter);
 
 const server = http.createServer(app);
@@ -64,6 +81,11 @@ io.use((socket, next) => {
 });
 
 let onlineCount = 0;
+
+// PvE anti-cheat cooldown & daily limit
+const pveCooldown = new Map();
+const pveDailyLimit = new Map();
+setInterval(() => { const now = Date.now(); for (const [id, t] of pveCooldown) { if (now - t > 60000) pveCooldown.delete(id); } }, 60000);
 
 // Simple in-memory socket rate limiter (per socket, per event)
 const socketRateLimit = new Map();
@@ -303,6 +325,15 @@ io.on('connection', (socket) => {
     if (!checkSocketRate(socket.id, 'pve_finish', 10)) return;
     const user = socket.userId ? getUserById(socket.userId) : null;
     if (user) {
+      // Anti-cheat: 30s cooldown
+      const lastPve = pveCooldown.get(user.id);
+      if (lastPve && Date.now() - lastPve < 30000) return socket.emit('pve_rewards', { coins: 0, gems: 0 });
+      // Anti-cheat: 50 games/day limit
+      const dateKey = user.id + '_' + new Date().toISOString().slice(0,10);
+      const dayCount = (pveDailyLimit.get(dateKey) || 0) + 1;
+      if (dayCount > 50) return socket.emit('pve_rewards', { coins: 0, gems: 0 });
+      pveCooldown.set(user.id, Date.now());
+      pveDailyLimit.set(dateKey, dayCount);
       const gd = { ...(user.game_data || {}) };
       const activeChar = gd.activeChar || 'cowboy';
       const lv = (gd.chars && gd.chars[activeChar]?.lv) || 1;

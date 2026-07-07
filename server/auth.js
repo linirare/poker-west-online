@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser, getChatMessages, clearChatMessages } = require('./db');
+const { getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser, getChatMessages, clearChatMessages, addEventLog, getEventStats, getAnnouncements, addAnnouncement, deleteAnnouncement, getServerConfig, setServerConfig, getSkillOverrides, setSkillOverride, getGameVersions, addGameVersion } = require('./db');
 
 const router = express.Router();
 if (!process.env.JWT_SECRET) {
@@ -14,6 +14,15 @@ if (!process.env.JWT_SECRET) {
   }
 }
 const JWT_SECRET = process.env.JWT_SECRET;
+const RANK_CONFIG = [
+  { name: '新手局', icon: '🌱', stars: 0, desc: '前3场保护，不掉星' },
+  { name: '青铜', icon: '🥉', stars: 3, desc: '赢+1星，输不掉星' },
+  { name: '白银', icon: '🥈', stars: 3, desc: '赢+1星，输-1星' },
+  { name: '黄金', icon: '🥇', stars: 4, desc: '赢+1星，输-1星' },
+  { name: '铂金', icon: '💎', stars: 4, desc: '赢+1星，输-1星' },
+  { name: '大师', icon: '👑', stars: 0, desc: '积分制，胜+25 / 负-15' },
+  { name: '传奇', icon: '🌟', stars: 0, desc: '1500分以上进入传奇' }
+];
 
 function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
@@ -125,7 +134,7 @@ router.put('/save', authMiddleware, (req, res) => {
   const { game_data, total_games, wins } = req.body;
   const fields = {};
   if (game_data) {
-    const ALLOWED = new Set(['coins','gems','chest','total','wins','streak','maxStreak','rankIdx','stars','points','newbieGames','activeChar','equipped','displayName','skills','chars','tasks','taskDate','lastDailyDate','history','handCounts','aiTier','aiStreak','titles','frames','cosmetic']);
+    const ALLOWED = new Set(['coins','gems','chest','total','wins','activeChar','equipped','displayName','skills','chars','tasks','taskDate','lastDailyDate','history','handCounts','aiTier','aiStreak','titles','frames','cosmetic','ladderProtect','weeklyTasks','weeklyTaskDate','dailyFirstWinDate','loginStreak','lastLoginDate','vipPoints','passLevel','vipLevel']);
     const clean = {};
     for (const k of Object.keys(game_data)) {
       if (ALLOWED.has(k)) clean[k] = game_data[k];
@@ -284,6 +293,130 @@ router.get('/chat/history', authMiddleware, adminMiddleware, (req, res) => {
 router.delete('/chat/clear', authMiddleware, adminMiddleware, (req, res) => {
   clearChatMessages();
   res.json({ success: true });
+});
+
+// Analytics tracking (fire-and-forget)
+router.post('/track', authMiddleware, (req, res) => {
+  const { event, info } = req.body;
+  if (!event) return res.status(400).json({ error: 'event required' });
+  addEventLog(req.user.id, event, info);
+  res.json({ ok: true });
+});
+// Admin event stats
+router.get('/admin/events', authMiddleware, adminMiddleware, (req, res) => {
+  res.json(getEventStats());
+});
+
+// === Announcements ===
+router.get('/config/announcements', (req, res) => {
+  const list = getAnnouncements();
+  res.json({ announcements: list.filter(a => a.enabled !== false).sort((a, b) => b.id - a.id).slice(0, 5) });
+});
+
+// Admin: announcements CRUD
+router.get('/admin/announcements', authMiddleware, adminMiddleware, (req, res) => {
+  res.json({ announcements: getAnnouncements() });
+});
+
+router.post('/admin/announcements', authMiddleware, adminMiddleware, (req, res) => {
+  const { title, body, enabled } = req.body;
+  if (!title) return res.status(400).json({ error: '标题不能为空' });
+  const item = {
+    id: Date.now(),
+    title,
+    body: body || '',
+    enabled: enabled !== false,
+    created_at: new Date().toISOString().slice(0,19).replace('T',' ')
+  };
+  addAnnouncement(item);
+  res.json({ ok: true, announcement: item });
+});
+
+router.delete('/admin/announcements/:id', authMiddleware, adminMiddleware, (req, res) => {
+  deleteAnnouncement(parseInt(req.params.id));
+  res.json({ ok: true });
+});
+
+// Server config
+router.get('/admin/config', authMiddleware, adminMiddleware, (req, res) => {
+  res.json(getServerConfig());
+});
+
+router.put('/admin/config', authMiddleware, adminMiddleware, (req, res) => {
+  const { maintenanceMode, maintenanceMessage } = req.body;
+  const cfg = setServerConfig({ maintenanceMode, maintenanceMessage });
+  res.json({ ok: true, config: cfg });
+});
+
+// Content roadmap: skill overrides
+router.get('/admin/skills', authMiddleware, adminMiddleware, (req, res) => {
+  res.json({ overrides: getSkillOverrides(), versions: getGameVersions() });
+});
+router.put('/admin/skills/toggle', authMiddleware, adminMiddleware, (req, res) => {
+  const { skillId, enabled } = req.body;
+  if (!skillId) return res.status(400).json({ error: 'skillId required' });
+  setSkillOverride(skillId, enabled !== false);
+  res.json({ ok: true, overrides: getSkillOverrides() });
+});
+
+// Server-authoritative ladder update (anti-cheat)
+router.post('/ladder/update', authMiddleware, (req, res) => {
+  const { won } = req.body;
+  const user = getUserFull(req.user.id);
+  if (!user) return res.status(404).json({ error: '用户不存在' });
+
+  const gd = { ...(user.game_data || {}) };
+  const total_games = (user.total_games || 0) + 1;
+  const wins = (user.wins || 0) + (won ? 1 : 0);
+
+  let rankIdx = gd.rankIdx || 0;
+  let stars = gd.stars || 0;
+  let points = gd.points || 1000;
+  let streak = gd.streak || 0;
+  let maxStreak = gd.maxStreak || 0;
+  let newbieGames = gd.newbieGames || 0;
+  let ladderProtect = gd.ladderProtect || 0;
+  let msg = '';
+
+  if (won) { streak++; maxStreak = Math.max(maxStreak, streak); } else streak = 0;
+
+  if (rankIdx === 0) {
+    newbieGames++;
+    if (newbieGames >= 3) { rankIdx = 1; stars = 0; }
+    msg = won ? '新手保护 +1场' : '新手保护，不掉星';
+  } else if (rankIdx <= 4) {
+    if (won) {
+      stars++;
+      if (streak >= 3 && rankIdx < 4) stars++;
+      if (stars >= RANK_CONFIG[rankIdx].stars && rankIdx < 5) {
+        rankIdx++; stars = 0;
+        if (rankIdx >= 2 && rankIdx <= 4) ladderProtect = 1;
+        msg = '升段！';
+      } else msg = '天梯 +1星';
+    } else if (rankIdx > 1) {
+      if (ladderProtect > 0) { ladderProtect = 0; msg = '大段保护，不掉星'; }
+      else {
+        stars--;
+        if (stars < 0) { rankIdx--; stars = RANK_CONFIG[rankIdx].stars - 1; msg = '降段'; }
+        else msg = '天梯 -1星';
+      }
+    } else msg = '新手保护，不掉星';
+  } else {
+    points = (points || 1000) + (won ? 25 : -15);
+    if (rankIdx === 5) {
+      if (points >= 1500) { rankIdx = 6; points = 0; msg = '升段！传奇'; }
+      else if (points < 900) { rankIdx = 4; stars = RANK_CONFIG[4].stars - 1; points = 1000; msg = '降段至铂金'; }
+      else if (points < 0) points = 0;
+    } else if (points < 0) points = 0;
+    msg = won ? '天梯 +25分' : '天梯 -15分';
+  }
+
+  gd.rankIdx = rankIdx; gd.stars = stars; gd.points = points;
+  gd.streak = streak; gd.maxStreak = maxStreak;
+  gd.newbieGames = newbieGames; gd.ladderProtect = ladderProtect;
+
+  updateUser(req.user.id, { game_data: gd, total_games, wins });
+  res.json({ rankIdx, stars, points, streak, maxStreak, newbieGames, ladderProtect, msg });
 });
 
 module.exports = { router, authMiddleware, adminMiddleware, JWT_SECRET, jwt };

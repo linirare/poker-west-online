@@ -38,10 +38,15 @@ async function initDb() {
     } catch { data = null; }
   }
   if (!data) {
-    data = { users: [], chat: [], nextId: 1 };
+    data = { users: [], chat: [], nextId: 1, events: [] };
   } else if (!data.chat) {
     data.chat = [];
   }
+  if (!data.events) data.events = [];
+  if (!data.announcements) data.announcements = [];
+  if (!data.server_config) data.server_config = { maintenanceMode: false, maintenanceMessage: '' };
+  if (!data.skill_overrides) data.skill_overrides = {};
+  if (!data.game_versions) data.game_versions = [];
   initDefaults();
   rebuildUidCache();
   for (const user of data.users) {
@@ -207,4 +212,66 @@ function clearChatMessages() {
   saveDb();
 }
 
-module.exports = { initDb, getDb, saveDb, getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, deleteUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser, addChatMessage, getChatMessages, clearChatMessages };
+// Analytics event tracking
+function addEventLog(userId, event, info) {
+  if (!data.events) data.events = [];
+  data.events.push({ userId, event, info: info || {}, time: new Date().toISOString().slice(0,19).replace('T',' ') });
+  if (data.events.length > 10000) data.events.splice(0, data.events.length - 10000);
+  saveDb();
+}
+function getEventLogs(limit) {
+  const events = data.events || [];
+  return limit ? events.slice(-limit) : events;
+}
+function getEventStats() {
+  const events = data.events || [];
+  const stats = {};
+  for (const e of events) {
+    stats[e.event] = (stats[e.event] || 0) + 1;
+  }
+  const byUser = {};
+  for (const e of events.slice(-200)) {
+    if (!byUser[e.userId]) byUser[e.userId] = { userId: e.userId, events: {} };
+    byUser[e.userId].events[e.event] = (byUser[e.userId].events[e.event] || 0) + 1;
+  }
+  return { total: events.length, byEvent: stats, recentUsers: Object.values(byUser).slice(-20) };
+}
+
+// Ops tools: announcements
+function getAnnouncements() { return data.announcements || []; }
+function addAnnouncement(item) {
+  if (!data.announcements) data.announcements = [];
+  data.announcements.push(item);
+  saveDb();
+  return item;
+}
+function deleteAnnouncement(id) {
+  if (!data.announcements) data.announcements = [];
+  data.announcements = data.announcements.filter(a => a.id !== id);
+  saveDb();
+}
+
+// Ops tools: server config
+function getServerConfig() { return data.server_config || { maintenanceMode: false, maintenanceMessage: '' }; }
+function setServerConfig(cfg) {
+  data.server_config = { ...getServerConfig(), ...cfg };
+  saveDb();
+  return data.server_config;
+}
+
+// Content roadmap: skill overrides & version tracking
+function getSkillOverrides() { return data.skill_overrides || {}; }
+function setSkillOverride(skillId, enabled) {
+  data.skill_overrides[skillId] = enabled;
+  saveDb();
+  return data.skill_overrides;
+}
+function addGameVersion(ver) {
+  if (!data.game_versions) data.game_versions = [];
+  data.game_versions.push({ ...ver, time: new Date().toISOString().slice(0,19).replace('T',' ') });
+  saveDb();
+  return ver;
+}
+function getGameVersions() { return data.game_versions || []; }
+
+module.exports = { initDb, getDb, saveDb, getUser, getUserById, getUserByUid, getUserFull, createUser, updateUser, deleteUser, getAllUsers, getStats, getLeaderboard, sendGlobalMail, sendMailToUser, addChatMessage, getChatMessages, clearChatMessages, addEventLog, getEventLogs, getEventStats, getAnnouncements, addAnnouncement, deleteAnnouncement, getServerConfig, setServerConfig, getSkillOverrides, setSkillOverride, getGameVersions, addGameVersion };

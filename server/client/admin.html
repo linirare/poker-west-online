@@ -200,9 +200,35 @@ function renderDashboard(stats) {
   html += '<div id="chatList" style="max-height:400px;overflow-y:auto;font-size:12px"><div class="muted" style="text-align:center;padding:20px">加载中...</div></div>';
   html += '</div></div>';
 
+  // === Announcement management ===
+  html += '<div class="card" id="announcementSection" style="margin-top:16px">';
+  html += '<h2 style="margin:0 0 8px;cursor:pointer" onclick="toggleAnnouncementSection()">📢 公告管理 <span id="announcementToggle">▸</span></h2>';
+  html += '<div id="announcementPanel" style="display:none">';
+  html += '<div id="announcementList"></div>';
+  html += '<div class="detailGrid" style="margin-top:8px">';
+  html += '<div class="detailField" style="grid-column:1/-1"><label>标题</label><input id="annTitle" placeholder="公告标题"></div>';
+  html += '<div class="detailField" style="grid-column:1/-1"><label>内容</label><textarea id="annBody" style="width:100%;padding:6px;border-radius:6px;border:1px solid #5a3515;background:#1a0b05;color:#ffe8b7;font-size:13px;outline:none;min-height:60px;resize:vertical" placeholder="公告内容..."></textarea></div>';
+  html += '<div class="detailField"><label>启用</label><select id="annEnabled"><option value="1">是</option><option value="0">否</option></select></div>';
+  html += '</div>';
+  html += '<div class="detailActions"><div class="btn" onclick="createAnnouncement()">📢 发布公告</div></div>';
+  html += '</div></div>';
+
+  // === Maintenance mode ===
+  html += '<div class="card" id="configSection" style="margin-top:16px">';
+  html += '<h2 style="margin:0 0 8px;cursor:pointer" onclick="toggleConfigSection()">🔧 服务器配置 <span id="configToggle">▸</span></h2>';
+  html += '<div id="configPanel" style="display:none">';
+  html += '<div class="detailGrid">';
+  html += '<div class="detailField"><label>维护模式</label><select id="cfgMaintenance"><option value="1">开启</option><option value="0" selected>关闭</option></select></div>';
+  html += '<div class="detailField" style="grid-column:1/-1"><label>维护消息</label><input id="cfgMaintenanceMsg" placeholder="例：服务器维护中，预计30分钟"></div>';
+  html += '</div>';
+  html += '<div class="detailActions"><div class="btn" onclick="updateServerConfig()">💾 保存配置</div></div>';
+  html += '</div></div>';
+
   $('app').innerHTML = html;
   renderUserRows();
   fetchChatHistory();
+  fetchAnnouncements();
+  fetchServerConfig();
 }
 
 function renderUserRows() {
@@ -306,6 +332,9 @@ function showDetail(id) {
       '<div class="detailField"><label>胜率</label><div class="val">' + rate + '</div></div>' +
       '<div class="detailField"><label>连胜</label><input id="edit_streak" type="number" value="' + (gd.streak || 0) + '"></div>' +
       '<div class="detailField"><label>最大连胜</label><input id="edit_maxStreak" type="number" value="' + (gd.maxStreak || 0) + '"></div>' +
+      '<div class="detailField"><label>VIP积分</label><input id="edit_vipPoints" type="number" value="' + (gd.vipPoints || 0) + '"></div>' +
+      '<div class="detailField"><label>VIP等级</label><input id="edit_vipLevel" type="number" value="' + (gd.vipLevel || 0) + '"></div>' +
+      '<div class="detailField"><label>通行证等级</label><input id="edit_passLevel" type="number" value="' + (gd.passLevel || 0) + '"></div>' +
     '</div>' +
 
     '<div class="detailSection">🌟 角色 (' + Object.keys(chars).length + ')</div>' +
@@ -543,6 +572,111 @@ function clearChatHistory() {
       toast('✅ 聊天已清空');
     })
     .catch(function(){ toast('网络错误'); });
+}
+// === Announcement management ===
+let announcementData = [];
+
+function toggleAnnouncementSection() {
+  var f = $('announcementPanel');
+  var t = $('announcementToggle');
+  if (f) { var open = f.style.display !== 'block'; f.style.display = open ? 'block' : 'none'; if (t) t.textContent = open ? '▾' : '▸'; if (open) fetchAnnouncements(); }
+}
+
+function fetchAnnouncements() {
+  fetch('/api/auth/admin/announcements', { headers: authHeaders() })
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (d.error) return;
+      announcementData = d.announcements || [];
+      renderAnnouncementList();
+    })
+    .catch(function(){});
+}
+
+function renderAnnouncementList() {
+  var list = $('announcementList');
+  if (!list) return;
+  list.innerHTML = announcementData.length ? announcementData.map(function(a) {
+    var status = a.enabled !== false ? '🟢' : '🔴';
+    var time = a.created_at || '-';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 6px;border-bottom:1px solid rgba(100,60,20,.2)">' +
+      '<div><b>' + esc(a.title) + '</b> ' + status + '<br><span class="muted" style="font-size:11px">' + esc(a.body || '') + ' · ' + time + '</span></div>' +
+      '<div class="btn danger sm" onclick="deleteAnnouncement(' + a.id + ')">删除</div></div>';
+  }).join('') : '<div class="muted" style="text-align:center;padding:16px">暂无公告</div>';
+}
+
+function createAnnouncement() {
+  var title = $('annTitle')?.value.trim();
+  if (!title) { toast('请输入公告标题'); return; }
+  var body = $('annBody')?.value.trim() || '';
+  var enabled = $('annEnabled')?.value === '1';
+
+  fetch('/api/auth/admin/announcements', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ title: title, body: body, enabled: enabled })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d) {
+    if (d.error) { toast('发布失败: ' + d.error); return; }
+    toast('✅ 公告已发布');
+    $('annTitle').value = '';
+    $('annBody').value = '';
+    $('annEnabled').value = '1';
+    fetchAnnouncements();
+  })
+  .catch(function(){ toast('网络错误'); });
+}
+
+function deleteAnnouncement(id) {
+  if (!confirm('确定删除此公告？')) return;
+  fetch('/api/auth/admin/announcements/' + id, {
+    method: 'DELETE',
+    headers: authHeaders()
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d) {
+    if (d.error) { toast('删除失败: ' + d.error); return; }
+    toast('✅ 公告已删除');
+    fetchAnnouncements();
+  })
+  .catch(function(){ toast('网络错误'); });
+}
+
+// === Server config ===
+function toggleConfigSection() {
+  var f = $('configPanel');
+  var t = $('configToggle');
+  if (f) { var open = f.style.display !== 'block'; f.style.display = open ? 'block' : 'none'; if (t) t.textContent = open ? '▾' : '▸'; if (open) fetchServerConfig(); }
+}
+
+function fetchServerConfig() {
+  fetch('/api/auth/admin/config', { headers: authHeaders() })
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (d.error) return;
+      var cfg = d.config || d;
+      if ($('cfgMaintenance')) $('cfgMaintenance').value = cfg.maintenanceMode ? '1' : '0';
+      if ($('cfgMaintenanceMsg')) $('cfgMaintenanceMsg').value = cfg.maintenanceMessage || '';
+    })
+    .catch(function(){});
+}
+
+function updateServerConfig() {
+  var maintenanceMode = $('cfgMaintenance')?.value === '1';
+  var maintenanceMessage = $('cfgMaintenanceMsg')?.value.trim() || '';
+
+  fetch('/api/auth/admin/config', {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify({ maintenanceMode: maintenanceMode, maintenanceMessage: maintenanceMessage })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d) {
+    if (d.error) { toast('保存失败: ' + d.error); return; }
+    toast('✅ 配置已保存');
+  })
+  .catch(function(){ toast('网络错误'); });
 }
 </script>
 </body>

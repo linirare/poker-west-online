@@ -17,7 +17,7 @@ const cors = require('cors');
 const path = require('path');
 const game = require('./game');
 const rooms = require('./rooms');
-const { initDb, addChatMessage, getChatMessages, getUserById, updateUser } = require('./db');
+const { initDb, addChatMessage, getChatMessages, getUserById, getUserFull, updateUser } = require('./db');
 
 const app = express();
 app.use(cors());
@@ -41,14 +41,24 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3000;
 const QUICK_MATCH_TIMEOUT = 10000;
 
-// Socket.io auth middleware — extract userId from JWT handshake token
+// Socket.io auth middleware — verify JWT + check session_token (prevents multi-login)
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Session token check — same logic as auth.js authMiddleware
+      const user = getUserFull(decoded.id);
+      if (user && user.session_token) {
+        if (decoded.session_token !== user.session_token) {
+          return next(new Error('账号在其他地方登录'));
+        }
+      }
       socket.userId = decoded.id;
-    } catch (e) { /* invalid token, continue as guest */ }
+    } catch (e) {
+      if (e.message === '账号在其他地方登录') return next(e);
+      /* invalid token, continue as guest */
+    }
   }
   next();
 });

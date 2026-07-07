@@ -1,3 +1,7 @@
 node_modules/
 server/node_modules/
 server/data.json
+
+# 策划案设计文档（本地保留，不同步线上）
+策划案_*.md
+~$*.xlsx

@@ -157,7 +157,15 @@ function getLeaderboard() {
       rankIdx: (u.game_data && u.game_data.rankIdx) || 0,
       stars: (u.game_data && u.game_data.stars) || 0,
       activeChar: (u.game_data && u.game_data.activeChar) || 'cowboy',
-      points: (u.game_data && u.game_data.points) || 1000
+      points: (u.game_data && u.game_data.points) || 1000,
+      pvpGames: (u.game_data && u.game_data.pvpGames) || 0,
+      pvpWins: (u.game_data && u.game_data.pvpWins) || 0,
+      aiGames: (u.game_data && u.game_data.aiGames) || 0,
+      aiWins: (u.game_data && u.game_data.aiWins) || 0,
+      pvpWinRate: (u.game_data && u.game_data.pvpGames) > 0
+        ? Math.round((u.game_data.pvpWins / u.game_data.pvpGames) * 10000) / 100 : 0,
+      aiRatio: u.total_games > 0
+        ? Math.round(((u.game_data?.aiGames || 0) / u.total_games) * 100) : 0
     }))
     .sort((a, b) => {
       if ((b.rankIdx || 0) !== (a.rankIdx || 0)) return (b.rankIdx || 0) - (a.rankIdx || 0);

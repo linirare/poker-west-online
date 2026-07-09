@@ -134,7 +134,7 @@ router.put('/save', authMiddleware, (req, res) => {
   const { game_data, total_games, wins } = req.body;
   const fields = {};
   if (game_data) {
-    const ALLOWED = new Set(['coins','gems','chest','total','wins','activeChar','equipped','displayName','skills','chars','tasks','taskDate','lastDailyDate','history','handCounts','aiTier','aiStreak','titles','frames','cosmetic','ladderProtect','weeklyTasks','weeklyTaskDate','dailyFirstWinDate','loginStreak','lastLoginDate','vipPoints','passLevel','vipLevel']);
+    const ALLOWED = new Set(['coins','gems','chest','total','wins','activeChar','equipped','displayName','skills','chars','tasks','taskDate','lastDailyDate','history','handCounts','aiTier','aiStreak','titles','frames','cosmetic','ladderProtect','weeklyTasks','weeklyTaskDate','dailyFirstWinDate','loginStreak','lastLoginDate','vipPoints','passLevel','vipLevel','pvpGames','pvpWins','aiGames','aiWins']);
     const clean = {};
     for (const k of Object.keys(game_data)) {
       if (ALLOWED.has(k)) clean[k] = game_data[k];
@@ -402,7 +402,7 @@ router.post('/ladder/update', authMiddleware, (req, res) => {
       }
     } else msg = '新手保护，不掉星';
   } else {
-    points = (points || 1000) + (won ? 25 : -15);
+    let delta = won ? 25 : -15; points = (points || 1000) + delta;
     if (rankIdx === 5) {
       if (points >= 1500) { rankIdx = 6; points = 0; msg = '升段！传奇'; }
       else if (points < 900) { rankIdx = 4; stars = RANK_CONFIG[4].stars - 1; points = 1000; msg = '降段至铂金'; }

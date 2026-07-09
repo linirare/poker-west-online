@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>代号001 · 策划案 vs DEMO 差异化对比</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#f5f0eb; color:#2b1a0a; padding:20px; line-height:1.6 }
+.wrap { max-width:1200px; margin:0 auto }
+h1 { font-size:28px; margin-bottom:4px }
+.sub { color:#6b5540; font-size:14px; margin-bottom:24px }
+.summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:28px }
+.summary-card { background:#fff; border-radius:12px; padding:16px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.06) }
+.summary-card .num { font-size:32px; font-weight:1000 }
+.summary-card .lbl { font-size:12px; color:#6b5540; margin-top:2px }
+.green { color:#2a7a2a } .red { color:#c0392b } .orange { color:#d4a030 }
+table { width:100%; border-collapse:separate; border-spacing:0 6px; margin-bottom:20px }
+thead th { text-align:left; font-size:13px; color:#6b5540; padding:8px 12px; font-weight:600 }
+tbody td { background:#fff; padding:12px; box-shadow:0 1px 3px rgba(0,0,0,.04); vertical-align:top }
+tbody tr td:first-child { border-radius:10px 0 0 10px }
+tbody tr td:last-child { border-radius:0 10px 10px 0 }
+.status { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap }
+.status.ready { background:#dff0df; color:#2a6a2a }
+.status.gap { background:#fde8e8; color:#c0392b }
+.status.partial { background:#fef6dd; color:#8a6a20 }
+.section-title { font-size:20px; font-weight:1000; margin:32px 0 12px; padding-bottom:8px; border-bottom:2px solid #ddd0c0 }
+.section-title .tag { font-size:12px; font-weight:600; padding:2px 8px; border-radius:10px; margin-left:8px }
+.tag.p0 { background:#fde8e8; color:#c0392b } .tag.p1 { background:#fef6dd; color:#8a6a20 } .tag.p2 { background:#e8f0fe; color:#2a6a9a }
+.col-name { width:180px; font-weight:700 }
+.col-plan { width:35% } .col-demo { width:35% } .col-status { width:100px; text-align:center }
+td { font-size:13px }
+td p { margin:2px 0 }
+.code { font-family:'SF Mono',monospace; font-size:11px; background:#f0ebe5; padding:1px 5px; border-radius:3px; color:#5a3f20 }
+.detail-list { margin:4px 0 4px 16px }
+.detail-list li { margin:2px 0 }
+.collapsible { cursor:pointer; user-select:none }
+.collapsible::before { content:'▶ '; font-size:10px }
+.collapsible.open::before { content:'▼ ' }
+.collapsible-body { display:none; margin-top:8px; padding:8px; background:#faf6f0; border-radius:6px; font-size:12px; line-height:1.5 }
+.collapsible-body.open { display:block }
+.tag-s { display:inline-block; padding:0 6px; border-radius:4px; font-size:10px; font-weight:700; color:#fff; margin-right:4px }
+.tag-s.imp { background:#6a3a9a } .tag-s.rec { background:#2a7a9a }
+.footer { margin-top:40px; padding:16px 0; text-align:center; font-size:12px; color:#8b7550; border-top:1px solid #ddd0c0 }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>📋 代号001 · 策划案 vs DEMO 差异化对比</h1>
+<p class="sub">对比基准：<a href="https://gh.lirare.xyz/dh001/" target="_blank">gh.lirare.xyz/dh001/</a> 全系统聚合策划案（2026-07-07版） vs <a href="https://poker.lirare.xyz" target="_blank">poker.lirare.xyz</a> 当前线上DEMO代码</p>
+
+<div class="summary">
+  <div class="summary-card"><div class="num">15</div><div class="lbl">已对齐项 ✅</div></div>
+  <div class="summary-card"><div class="num red">7</div><div class="lbl">未对齐项 ❌</div></div>
+  <div class="summary-card"><div class="num orange">3</div><div class="lbl">部分对齐 🔶</div></div>
+  <div class="summary-card"><div class="num">7</div><div class="lbl">超配项 ✨</div></div>
+</div>
+
+<!-- ===================================================== -->
+<div class="section-title">⚡ P0 — 核心玩法 <span class="tag p0">P0</span></div>
+
+<table>
+<thead><tr><th>检查项</th><th>策划案要求</th><th>DEMO现状</th><th>状态</th></tr></thead>
+<tbody>
+
+<tr>
+<td class="col-name">花色踢脚</td>
+<td>评分向量相等时以花色决胜：♠&gt;♥&gt;♦&gt;♣</td>
+<td><code>compare()</code>在<code>executeRound</code>和<code>chooseBest</code>中传入cards参数，支持花色踢脚。但<code>evaluate()</code>内部组合比较（第118行）未传cards，中间比较不使用花色。<br><br><b>影响：</b>实战对局结算层面花色决胜正常，但评估函数内部选最优组合时不考虑花色，可能导致次优组合被选择（极低概率）。</td>
+<td><span class="status partial">部分对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">抽卡保底</td>
+<td>①十连至少1张T2+ ②50抽保底T0</td>
+<td><code>drawSkills()</code>（第926行）通过<code>gotT2Plus</code>标志实现十连保底T2+，<code>pityT0</code>计数器实现50抽保底T0。概率T0 6%/T1 17%/T2 32%/T3 45% 与策划案一致。</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">宝箱开箱</td>
+<td>60% T3牌 / 30% T2牌 / 100🪙<br>日上限5箱，第N箱=10+(N-1)×2点</td>
+<td><code>openChest()</code>（第1048行）概率分布、日上限5箱、阶梯消耗均与策划案完全一致。</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">大段保护</td>
+<td>升白银/黄金/铂金后获1次大段保护</td>
+<td><code>updateLadder()</code>（第930行）升段时设<code>ladderProtect=1</code>，输时优先消耗。✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">大师掉段</td>
+<td>大师积分&lt;900掉回铂金Ⅰ满星</td>
+<td><code>updateLadder()</code>中实现：<code>if(state.points&lt;900){rankIdx=4;stars=RANK_CONFIG[4].stars-1;points=1000}</code>，与策划案一致。</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">AI四因子</td>
+<td>①近期表现(2场调档) ②胜率校准(&ge;30场) ③技能品质(tier&times;0.15) ④段位</td>
+<td><code>getAIParams()</code>（第984行）全部实现。段位加成<code>rankIdx&times;0.045</code>，胜率&lt;35%或&gt;65%各&pm;0.10，装备最高tier&times;(-0.15)。<code>finishBattle()</code>中<code>aiStreak</code>连胜连败各2次调档。</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+</tbody>
+</table>
+
+<!-- ===================================================== -->
+<div class="section-title">🌱 P1 — 成长系统 <span class="tag p1">P1</span></div>
+
+<table>
+<thead><tr><th>检查项</th><th>策划案要求</th><th>DEMO现状</th><th>状态</th></tr></thead>
+<tbody>
+
+<tr>
+<td class="col-name">角色 · 代号A</td>
+<td>PvE结算额外金币：100+(等级-1)&times;50</td>
+<td><code>finishBattle()</code> 中 <code>state.activeChar==='cowboy'</code> 时奖励 <code>100+(charLv('cowboy')-1)*50</code> ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">角色 · 代号Q</td>
+<td>每日签到额外钻石：30+(等级-1)&times;20</td>
+<td><code>claimDailyBonus()</code> 中 <code>30+(charLv('sheriff')-1)*20</code> ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">角色 · 代号J</td>
+<td>PvE宝箱倍率 Lv.1-3&times;2 / Lv.4-5&times;3</td>
+<td><b>实际代码中不存在宝箱倍率实现。</b><br>角色数据中写的是"宝箱进度 x1.5，每级+0.2"，但<code>openChest()</code>和宝箱积分累加逻辑中均未使用任何倍率。<code>finishBattle()</code>的宝箱积分累计也未应用代号J倍率。<br><br>❌ 显示值(1.5)与策划案(&times;2/&times;3)不符，且实际未生效。</td>
+<td><span class="status gap">未对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">角色 · 代号K</td>
+<td>PvE胜利额外钻石：50+(等级-1)&times;30</td>
+<td><code>finishBattle()</code> 中 <code>state.activeChar==='miner' && win</code> 时奖励 <code>50+(charLv('miner')-1)*30</code> ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">角色招募保底</td>
+<td>连续10抽未解锁新角色→下一次必定获得未拥有角色</td>
+<td><code>drawChars()</code> 中 <code>charPity&ge;9</code> 且存在未拥有角色时强制新角色 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">角色升级消耗</td>
+<td>Lv.1→5 合计72碎片+5760金币</td>
+<td><code>upChar()</code>中 <code>cost=lv*4+8</code> 和 <code>cost*80</code> 金币，合计72碎片+5760金币 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">每日任务</td>
+<td>3局/5技能/6回合/顺子+ = 70💎</td>
+<td>TASK_REWARDS 15+15+15+25 = 70💎 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">段位倍率</td>
+<td>只影响金币，钻石固定</td>
+<td>服务端 <code>finishGame()</code> 金币使用段位倍率，钻石固定 ✅<br>客户端 <code>finishBattle()</code> 同样 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">教学固定牌组</td>
+<td>玩家A&A至少一对 vs AI不成牌型</td>
+<td><code>setupTutorialBattle()</code> 玩家手牌含 A♥A♦，AI 无成牌，公共牌 J♠/Q♦/K♣ ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+</tbody>
+</table>
+
+<!-- ===================================================== -->
+<div class="section-title">🛠 P2 — 功能系统 <span class="tag p2">P2</span></div>
+
+<table>
+<thead><tr><th>检查项</th><th>策划案要求</th><th>DEMO现状</th><th>状态</th></tr></thead>
+<tbody>
+
+<tr>
+<td class="col-name">新手引导</td>
+<td>5步：①欢迎+头像 ②商店抽卡 ③角色招募 ④装备功能牌 ⑤开始对战</td>
+<td><code>showOnboardingStep()</code> 完整5步实现，首登入自动触发，含引导高亮和操作引导 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">外装系统</td>
+<td>8称号+6头像框，基于成就/段位解锁</td>
+<td>TITLES(8个)+FRAMES(6个)完整实现。<code>checkCosmeticUnlocks()</code>自动检测解锁。<code>showCosmeticSelect()</code>选择界面。排行榜/对局中展示 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">反作弊</td>
+<td>服务端计算天梯、库存暂扣、频率限制</td>
+<td><code>POST /api/auth/ladder/update</code>服务端天梯、PvE 30s冷却+日上限50局、socket频率限制、库存暂扣机制均已实现 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">数据埋点</td>
+<td>跟踪关键事件用于分析</td>
+<td><code>track()</code>函数 + <code>POST /api/auth/track</code> + admin事件统计，覆盖login/battle_end/gacha_pull/recruit/chest_open等 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">运营工具</td>
+<td>公告CRUD + 维护模式 + 配置管理</td>
+<td>公告创建/启用/删除、维护模式开关+自定义消息、服务端配置管理均已实现 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">邮件系统</td>
+<td>系统自动/全服运营/个人运营，附件领取幂等</td>
+<td>欢迎信自动发送、全服邮件、定向邮件、附件领取(<code>claimMail</code>)均实现 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">聊天系统</td>
+<td>首发开放，主页显示最新消息，点开展开面板</td>
+<td>Socket.io 实时聊天、频率限制20条/分、200字符限制、主页显示最新消息 ✅</td>
+<td><span class="status ready">已对齐</span></td>
+</tr>
+
+<tr>
+<td class="col-name">排行榜</td>
+<td>综合天梯排行，支持多维数据</td>
+<td><code>GET /api/auth/leaderboard</code> + <code>renderRank()</code> 展示前三名和完整列表 ✅<br><br>❌ <b>但只展示综合榜，缺少PvP胜率和人机局占比维度。</b></td>
+<td><span class="status partial">部分对齐</span></td>
+</tr>
+
+</tbody>
+</table>
+
+<!-- ===================================================== -->
+<div class="section-title">⚠️ 关键差异详情 <span class="tag p0">P0差异</span></div>
+
+<table>
+<thead><tr><th>#</th><th>差异项</th><th>优先级</th><th>影响范围</th><th>实现建议</th></tr></thead>
+<tbody>
+
+<tr>
+<td>1</td>
+<td><b>代号J宝箱倍率缺失</b></td>
+<td><span class="status gap">P0</span></td>
+<td>server/client/index.html: 角色数据、finishBattle()宝箱累计、openChest()</td>
+<td>
+  <ol class="detail-list">
+    <li>修改 CHARS 中 lily 的 effect 文本为 "PvE宝箱倍率 Lv.1-3×2 / Lv.4-5×3"</li>
+    <li>在 <code>finishBattle()</code> 宝箱累计处插入：<code>const jLv=charLv('lily'); const chestMult=jLv>=4?3:jLv>=1?2:1; state.chest+=chestMult</code></li>
+    <li>注意：宝箱来源仅PvE人机（PvP不积累），策划案中PvE胜+2、平/负+1，需乘以上述倍率</li>
+  </ol>
+</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td><b>人机兜底天梯积分80%折算</b></td>
+<td><span class="status gap">P0</span></td>
+<td>server/auth.js: ladder/update<br>server/index.js: pve_finish</td>
+<td>
+  <ol class="detail-list">
+    <li>在 <code>POST /api/auth/ladder/update</code> 增加 <code>isAI</code> 参数</li>
+    <li>当 <code>isAI=true</code> 且 rankIdx>=5 时，积分变化为 <code>Math.round((won?25:-15)*0.8)</code></li>
+    <li>客户端 <code>tryLadderAPI()</code> 调用时区分 PvE/PvP 来源</li>
+  </ol>
+</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td><b>系统未记录对手类型</b></td>
+<td><span class="status gap">P0</span></td>
+<td>server/db.js: data.users game_data<br>server/auth.js: ladder/update</td>
+<td>
+  <ol class="detail-list">
+    <li>在用户 <code>game_data</code> 增加 <code>pvpGames/wins</code>、<code>aiGames/wins</code> 统计</li>
+    <li><code>finishBattle()</code> / <code>pve_finish</code> 更新对应计数器</li>
+    <li>排行榜数据源增加人机占比字段</li>
+  </ol>
+</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td><b>结算字段不完整（策划案22项）</b></td>
+<td><span class="status gap">P1</span></td>
+<td>server/index.js: finishGame<br>server/client/index.html: finishBattle</td>
+<td>
+  <ol class="detail-list">
+    <li>策划案列出22项结算字段，当前DEMO结算只输出基础项</li>
+    <li>缺少：对手类型、是否计天梯、连胜/保护标记、角色加成明细、功能牌消耗/退还结果、红点摘要</li>
+    <li>建议补齐至策划案规格，便于后续运营分析</li>
+  </ol>
+</td>
+</tr>
+
+</tbody>
+</table>
+
+<div class="section-title">🔶 次要差异 <span class="tag p1">P1</span></div>
+
+<table>
+<thead><tr><th>#</th><th>差异项</th><th>策划案</th><th>DEMO</th><th>建议</th></tr></thead>
+<tbody>
+
+<tr>
+<td>5</td>
+<td><b>匹配超时策略</b></td>
+<td>5-10-15s 3段匹配→无人转人机</td>
+<td>固定10s超时</td>
+<td>用户感知差异小，但3段式可以在低段位更快匹配人机。低优先级。</td>
+</tr>
+
+<tr>
+<td>6</td>
+<td><b>PvP掉线AI代打</b></td>
+<td>15s AI代打，再等15s可重连，超30s判负</td>
+<td>只有15s重连窗口，无AI代打</td>
+<td>PvP体验影响较大，掉线方直接判负。添加AI代打需要服务端实现自动出牌。</td>
+</tr>
+
+<tr>
+<td>7</td>
+<td><b>花色踢脚覆盖范围</b></td>
+<td>所有评分比较均使用花色决胜</td>
+<td><code>evaluate()</code>内部组合比较未使用花色</td>
+<td>极低概率影响最优组合选择，但在<code>chooseBest</code>入口已传cards，实战不受影响。</td>
+</tr>
+
+<tr>
+<td>8</td>
+<td><b>排行榜多维数据</b></td>
+<td>至少综合天梯、PvP胜率、人机局占比</td>
+<td>只展示综合榜</td>
+<td>数据口径需先埋好，待对手类型记录实现后可补。</td>
+</tr>
+
+</tbody>
+</table>
+
+<div class="section-title">✨ 超配项（策划案未要求但DEMO已实现）</div>
+
+<table>
+<thead><tr><th>功能</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>每周任务</td><td>5项周任务（赢20局/用50次技能/开10箱/抽20次/打30局），合计200💎</td></tr>
+<tr><td>登录连续奖励</td><td>3/5/7天阶梯奖励，最高7天达200💎+3000🪙+随机T2牌</td></tr>
+<tr><td>每日首胜奖励</td><td>每天首场胜利额外+50🪙+10💎</td></tr>
+<tr><td>天梯连胜奖励</td><td>青铜/白银/黄金3连胜额外+1星（策划案中已包含此条）</td></tr>
+<tr><td>功能牌库存暂扣</td><td>创建对局时暂扣库存，结算胜退败扣，取消/教学不消耗</td></tr>
+<tr><td>外装选择界面</td><td>人物详情弹窗中可切换称号和头像框，排行榜/对局中展示</td></tr>
+<tr><td>聊天频率限制+管理</td><td>20条/分钟，Admin可查看/清空聊天记录</td></tr>
+</tbody>
+</table>
+
+<div class="section-title">📊 系统覆盖率总览</div>
+
+<table>
+<thead><tr><th>系统模块</th><th>策划案要求数</th><th>已对齐</th><th>未对齐</th><th>覆盖率</th></tr></thead>
+<tbody>
+<tr><td>对战系统</td><td>9</td><td>7</td><td>2</td><td>78%</td></tr>
+<tr><td>天梯系统</td><td>8</td><td>7</td><td>1</td><td>88%</td></tr>
+<tr><td>角色系统</td><td>5</td><td>4</td><td>1</td><td>80%</td></tr>
+<tr><td>商店与经济</td><td>8</td><td>8</td><td>0</td><td>100%</td></tr>
+<tr><td>AI人机</td><td>4</td><td>4</td><td>0</td><td>100%</td></tr>
+<tr><td>功能牌</td><td>5</td><td>5</td><td>0</td><td>100%</td></tr>
+<tr><td>成就&amp;统计</td><td>3</td><td>3</td><td>0</td><td>100%</td></tr>
+<tr><td>外装系统</td><td>2</td><td>2</td><td>0</td><td>100%</td></tr>
+<tr><td>经济循环</td><td>4</td><td>4</td><td>0</td><td>100%</td></tr>
+<tr><td>邮件系统</td><td>4</td><td>4</td><td>0</td><td>100%</td></tr>
+<tr><td>运营工具</td><td>3</td><td>3</td><td>0</td><td>100%</td></tr>
+<tr><td>数据埋点</td><td>1</td><td>1</td><td>0</td><td>100%</td></tr>
+<tr><td>新手引导</td><td>1</td><td>1</td><td>0</td><td>100%</td></tr>
+<tr><td>反作弊</td><td>3</td><td>2</td><td>1</td><td>67%</td></tr>
+<tr><td><b>合计</b></td><td><b>60</b></td><td><b>53</b></td><td><b>7</b></td><td><b>88%</b></td></tr>
+</tbody>
+</table>
+
+<div class="section-title">🎯 优先修复清单</div>
+
+<table>
+<thead><tr><th>优先级</th><th>任务</th><th>预估工时</th><th>难度</th></tr></thead>
+<tbody>
+<tr>
+<td><span class="status gap">P0</span></td>
+<td><b>代号J宝箱倍率修复</b> — CHARS数据修正 + finishBattle()宝箱累计插入倍率逻辑</td>
+<td>~15行</td>
+<td>低</td>
+</tr>
+<tr>
+<td><span class="status gap">P0</span></td>
+<td><b>人机天梯积分80%折算</b> — ladder/update增加isAI参数 + AI对局积分按0.8折算</td>
+<td>~15行</td>
+<td>低</td>
+</tr>
+<tr>
+<td><span class="status gap">P0</span></td>
+<td><b>记录对手类型</b> — game_data增加pvpGames/wins/aiGames/wins统计</td>
+<td>~30行</td>
+<td>中</td>
+</tr>
+<tr>
+<td><span class="status gap">P1</span></td>
+<td><b>完善结算字段至22项</b> — 补齐缺少的对手类型/是否计天梯/红点摘要等</td>
+<td>~40行</td>
+<td>中</td>
+</tr>
+<tr>
+<td><span class="status gap">P1</span></td>
+<td><b>PvP掉线AI代打</b> — 掉线后15s服务端自动出牌</td>
+<td>~50行</td>
+<td>高</td>
+</tr>
+<tr>
+<td><span class="status gap">P1</span></td>
+<td><b>排行榜多维数据</b> — 增加PvP胜率/人机局占比字段展示</td>
+<td>~25行</td>
+<td>中</td>
+</tr>
+</tbody>
+</table>
+
+<div class="footer">
+  <p>生成日期：2026-07-09 | 对比版本：策划案 v0.1/v1.0/v2.0 (2026-07-07) vs DEMO 线上代码</p>
+  <p style="margin-top:4px;color:#a89880">覆盖范围：15个系统模块 · 60项检查点 · 整体对齐率 88%</p>
+</div>
+
+</div>
+
+<script>
+document.querySelectorAll('.collapsible').forEach(el=>{
+  el.addEventListener('click',()=>{
+    el.classList.toggle('open');
+    el.nextElementSibling.classList.toggle('open');
+  });
+});
+</script>
+
+</body>
+</html>

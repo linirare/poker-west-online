@@ -351,7 +351,14 @@ io.on('connection', (socket) => {
       gd.total = (gd.total || 0) + 1;
       if (won) gd.wins = (gd.wins || 0) + 1;
       updateUser(socket.userId, { game_data: gd });
-      socket.emit('pve_rewards', { coins, gems, chest });
+      socket.emit('pve_rewards', {
+        coins, gems, chest,
+        opponentType: 'ai',
+        streak: gd.streak || 0,
+        ladderProtect: gd.ladderProtect || 0,
+        chestAfter: gd.chest,
+        charBonus: { char: activeChar, lv }
+      });
     }
   });
 
@@ -422,16 +429,18 @@ io.on('connection', (socket) => {
         if (!room.reconnectingPlayers[socket.userId]) {
           room.reconnectingPlayers[socket.userId] = { oldSocketId: socket.id };
         }
-        room.reconnectingPlayers[socket.userId].timer = setTimeout(() => {
+        room.reconnectingPlayers[socket.userId].aiTimer = setTimeout(() => {
+          processAITurnForDisconnected(roomId, socket.userId);
+        }, 15000);
+        room.reconnectingPlayers[socket.userId].abandonTimer = setTimeout(() => {
           const r2 = rooms.getRoom(roomId);
           if (r2 && r2.reconnectingPlayers && r2.reconnectingPlayers[socket.userId]) {
             delete r2.reconnectingPlayers[socket.userId];
             if (Object.keys(r2.reconnectingPlayers).length === 0) delete r2.reconnectingPlayers;
-            rooms.leaveRoom(socket.id);
             io.to(roomId).emit('opponent_left');
             io.emit('room_list', rooms.listRooms());
           }
-        }, 15000);
+        }, 30000);
         io.to(roomId).emit('opponent_reconnecting');
         return; // Don't clean up — wait for reconnection
       }
@@ -465,7 +474,8 @@ io.on('connection', (socket) => {
 
     const entry = room.reconnectingPlayers[socket.userId];
     const oldSocketId = entry.oldSocketId;
-    clearTimeout(entry.timer);
+    clearTimeout(entry.aiTimer);
+    clearTimeout(entry.abandonTimer);
     delete room.reconnectingPlayers[socket.userId];
     if (Object.keys(room.reconnectingPlayers).length === 0) delete room.reconnectingPlayers;
 
@@ -490,6 +500,17 @@ io.on('connection', (socket) => {
     const entry = { name: displayName, text: msg, time: Date.now() };
     addChatMessage(entry);
     io.emit('new_chat_message', entry);
+  });
+  // === Gacha broadcast (T0 pulls) ===
+  socket.on('gacha_broadcast', ({ tier, cardName }) => {
+    if (!checkSocketRate(socket.id, 'gacha', 6)) return;
+    if (tier !== 'T0' || !cardName) return;
+    let displayName = '???';
+    if (socket.userId) {
+      const user = getUserById(socket.userId);
+      if (user) displayName = user.game_data?.displayName || user.username;
+    }
+    io.emit('gacha_notify', { displayName, cardName });
   });
 });
 
@@ -542,6 +563,62 @@ function processAITurn(roomId) {
       logs: [...room.battle.logs].slice(0, 50)
     });
     io.to(roomId).emit('game_state', game.buildPlayerView(room.battle, 'player'));
+  }
+}
+
+function processAITurnForDisconnected(roomId, userId) {
+  const room = rooms.getRoom(roomId);
+  if (!room || !room.battle || room.battle.mode !== 'pvp') return;
+  let side = null;
+  if (room.playerDBId === userId) side = 'player';
+  else if (room.oppDBId === userId) side = 'opp';
+  if (!side) return;
+  const fighter = room.battle[side];
+  const otherSide = side === 'player' ? 'opp' : 'player';
+  // Round result phase: auto-ready for next round
+  if (room.battle.phase === 'result') {
+    room.battle.ready[side] = true;
+    if (room.battle.ready.player && room.battle.ready.opp) {
+      room.battle.ready = { player: false, opp: false };
+      if (game.isOver(room.battle)) { finishGame(room, roomId); return; }
+      game.nextRound(room.battle);
+      io.to(room.players[0].socketId).emit('game_state', game.buildPlayerView(room.battle, 'player'));
+      io.to(room.players[1].socketId).emit('game_state', game.buildPlayerView(room.battle, 'opp'));
+    }
+    // Schedule next check for card selection phase
+    const e = room.reconnectingPlayers && room.reconnectingPlayers[userId];
+    if (e) { clearTimeout(e.aiTimer); e.aiTimer = setTimeout(() => processAITurnForDisconnected(roomId, userId), 2000); }
+    return;
+  }
+  // Card selection phase: auto-play
+  if (room.battle.phase !== 'select' || room.battle.submitted[side]) return;
+  const need = game.roundNeed(side, room.battle);
+  while (fighter.hand.length < need) fighter.hand.push(...game.draw(room.battle.deck, 1));
+  let avail = Object.values(fighter.skills).filter(s => !s.used);
+  if (avail.length) {
+    const cat = game.handCat(fighter.hand, room.battle.community);
+    if (cat < 4 || Math.random() < 0.35) {
+      const id = game.aiPickSkill('start', avail, 'start', 1, fighter.hp, room.battle[otherSide].hp, room.battle.round);
+      if (id && !fighter.skills[id]?.used) { fighter.skills[id].used = true; fighter.skills[id].charge = 0; game.applySkill(side, id, room.battle); }
+    }
+  }
+  const best = game.chooseBest(fighter.hand, need, room.battle.community, fighter.buff);
+  fighter.played = best.map(c => ({ ...c }));
+  fighter.hand = fighter.hand.filter(c => !best.includes(c));
+  fighter.discard.push(...fighter.played);
+  avail = Object.values(fighter.skills).filter(s => !s.used);
+  if (avail.length) {
+    const id = game.aiPickSkill('play', avail, 'play', 1, fighter.hp, room.battle[otherSide].hp, room.battle.round);
+    if (id && !fighter.skills[id]?.used) { fighter.skills[id].used = true; fighter.skills[id].charge = 0; game.applySkill(side, id, room.battle); }
+  }
+  room.battle.submitted[side] = true;
+  io.to(roomId).emit('ai_submitted', { side });
+  if (room.battle.submitted.player && room.battle.submitted.opp) {
+    try { resolvePvPRound(room, roomId); } catch (e) { io.to(roomId).emit('error', { msg: 'AI结算异常' }); return; }
+    if (!game.isOver(room.battle)) {
+      const e = room.reconnectingPlayers && room.reconnectingPlayers[userId];
+      if (e) { clearTimeout(e.aiTimer); e.aiTimer = setTimeout(() => processAITurnForDisconnected(roomId, userId), 3000); }
+    }
   }
 }
 
@@ -605,6 +682,9 @@ function finishGame(room, roomId) {
       else { coins = 80; gems = 20; chest = 1; }
     }
 
+    let streak = 0, ladderProtect = 0, chestAfter = 0;
+    let charBonus = null;
+
     if (dbUserId) {
       const user = getUserById(dbUserId);
       if (user) {
@@ -619,16 +699,20 @@ function finishGame(room, roomId) {
           if (activeChar === 'cowboy') coins += 100 + (lv - 1) * 50;
           if (activeChar === 'miner' && won) gems += 50 + (lv - 1) * 30;
           if (activeChar === 'lily') chest = chest * (lv <= 3 ? 2 : 3);
+          charBonus = { char: activeChar, lv };
         }
+        streak = gd.streak || 0;
+        ladderProtect = gd.ladderProtect || 0;
         gd.coins = (gd.coins || 888) + coins;
         gd.gems = (gd.gems || 88) + gems;
         if (!isPvP) gd.chest = Math.min(10, (gd.chest || 0) + chest);
+        chestAfter = gd.chest;
         gd.total = (gd.total || 0) + 1;
         if (won) gd.wins = (gd.wins || 0) + 1;
         updateUser(dbUserId, { game_data: gd });
       }
     }
-    return { coins, gems, chest };
+    return { coins, gems, chest, streak, ladderProtect, chestAfter, charBonus };
   }
 
   if (isPvP) {
@@ -638,16 +722,23 @@ function finishGame(room, roomId) {
     const oRew = calcAndPersist(oWin, room.oppDBId);
     io.to(room.players[0].socketId).emit('game_over', {
       win: pWin, roundWins: { player: b.roundWins.player, opp: b.roundWins.opp },
-      playerHp: b.player.hp, oppHp: b.opp.hp, rewards: pRew
+      playerHp: b.player.hp, oppHp: b.opp.hp, rewards: pRew,
+      opponentType: 'human', streak: pRew.streak, ladderProtect: pRew.ladderProtect,
+      chestAfter: pRew.chestAfter, charBonus: pRew.charBonus
     });
     io.to(room.players[1].socketId).emit('game_over', {
       win: oWin, roundWins: { player: b.roundWins.opp, opp: b.roundWins.player },
-      playerHp: b.opp.hp, oppHp: b.player.hp, rewards: oRew
+      playerHp: b.opp.hp, oppHp: b.player.hp, rewards: oRew,
+      opponentType: 'human', streak: oRew.streak, ladderProtect: oRew.ladderProtect,
+      chestAfter: oRew.chestAfter, charBonus: oRew.charBonus
     });
   } else {
     const win = b.roundWins.player > b.roundWins.opp || b.opp.hp <= 0;
     const rew = calcAndPersist(win, room.playerDBId);
-    io.to(roomId).emit('game_over', { win, roundWins: { ...b.roundWins }, rewards: rew });
+    io.to(roomId).emit('game_over', { win, roundWins: { ...b.roundWins }, rewards: rew,
+      opponentType: 'ai', streak: rew.streak, ladderProtect: rew.ladderProtect,
+      chestAfter: rew.chestAfter, charBonus: rew.charBonus
+    });
   }
   rooms.removeRoom(roomId);
 }
